@@ -47,7 +47,7 @@ api: "POST /worker-bank-payout"
 </ParamField>
 
 <ParamField body="mode" type="string">
-  The payout mode defaults to `BANK_TRANSFER` for Australia and `IMPS` for India. Australia supports `NPP` and `BANK_TRANSFER`. India supports `IMPS`, `NEFT`, `RTGS`, and `UPI`. Make sure the mode you choose is supported in the recipient's country.
+  The payout mode. Defaults to `BANK_TRANSFER`. `NPP` is also supported. Make sure the mode you choose is supported in the recipient's country.
 </ParamField>
 
 ### Response Body
@@ -73,15 +73,6 @@ api: "POST /worker-bank-payout"
 | 404 | Not Found. The specified workerId, jobId or invoiceId does not exist. |
 | 409 | Conflict. Duplicate idempotency key with mismatching parameters. |
 | 500 | Internal Server Error. |
-
-### Examples
-
-| Mode | Description |
-|---|---|
-| IMPS | IMPS transfers support amounts from ₹1 to ₹5,00,000 per transaction. |
-| NEFT | NEFT transfers support amounts starting from ₹1 with no upper transaction limit. |
-| RTGS | RTGS transfers require a minimum amount of ₹2,00,000 and have no upper transaction limit. |
-| UPI | UPI transfers support amounts from ₹1 to ₹1,00,000 per transaction. |
 
 <RequestExample>
 

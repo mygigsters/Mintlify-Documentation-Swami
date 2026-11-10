@@ -165,9 +165,9 @@ The SDK uses HTTP Basic Authentication (Base64-encoded `apiKey:apiSecret`) under
 
 For international (Airwallex) beneficiary forms, the SDK uses a PKCE (Proof Key for Code Exchange) authorization flow with native `crypto.subtle` — no third-party crypto library is used.
 
-### India & International Support
+### International support
 
-The SDK automatically detects the entity type based on your account configuration and renders the appropriate form — IFSC-based for India or Airwallex-powered for international beneficiaries.
+The SDK detects the entity type from your account configuration and renders the appropriate form for the beneficiary's country.
 
 ### HTTPS Required
 
