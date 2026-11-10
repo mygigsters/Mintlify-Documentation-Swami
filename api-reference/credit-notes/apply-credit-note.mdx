@@ -85,6 +85,196 @@ curl -X POST https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply \
 }'
 ```
 
+```javascript Node.js
+const response = await fetch("https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply", {
+  method: "POST",
+  headers: {
+    Authorization: "Basic " + Buffer.from("YOUR_UUID:YOUR_SECRET").toString("base64"),
+    "idempotency-Key": "cn-req-apply-004",
+    "X-API-Version": "1.2",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    "amount": 15,
+    "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+    "notes": "Applying partial credit to invoice INV-4717"
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply",
+    auth=("YOUR_UUID", "YOUR_SECRET"),
+    headers={
+        "idempotency-Key": "cn-req-apply-004",
+        "X-API-Version": "1.2",
+    },
+    json={
+        "amount": 15,
+        "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+        "notes": "Applying partial credit to invoice INV-4717",
+    },
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply")
+request = Net::HTTP::Post.new(uri)
+request.basic_auth("YOUR_UUID", "YOUR_SECRET")
+request["idempotency-Key"] = "cn-req-apply-004"
+request["X-API-Version"] = "1.2"
+request["Content-Type"] = "application/json"
+request.body = <<~JSON
+  {
+    "amount": 15,
+    "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+    "notes": "Applying partial credit to invoice INV-4717"
+  }
+JSON
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "POST",
+    CURLOPT_USERPWD => "YOUR_UUID:YOUR_SECRET",
+    CURLOPT_HTTPHEADER => [
+        "idempotency-Key: cn-req-apply-004",
+        "X-API-Version: 1.2",
+        "Content-Type: application/json",
+    ],
+    CURLOPT_POSTFIELDS => <<<'JSON'
+{
+  "amount": 15,
+  "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+  "notes": "Applying partial credit to invoice INV-4717"
+}
+JSON,
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("YOUR_UUID:YOUR_SECRET".getBytes());
+
+        String body = String.join("\n",
+            "{",
+            "  \"amount\": 15,",
+            "  \"invoice_id\": \"669dc683-4ad1-4971-a743-90d908788f01\",",
+            "  \"notes\": \"Applying partial credit to invoice INV-4717\"",
+            "}"
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply"))
+            .header("Authorization", "Basic " + credentials)
+            .header("idempotency-Key", "cn-req-apply-004")
+            .header("X-API-Version", "1.2")
+            .header("Content-Type", "application/json")
+            .method("POST", HttpRequest.BodyPublishers.ofString(body))
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+)
+
+func main() {
+	body := strings.NewReader(`{
+  "amount": 15,
+  "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+  "notes": "Applying partial credit to invoice INV-4717"
+}`)
+
+	req, err := http.NewRequest("POST", "https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply", body)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("YOUR_UUID", "YOUR_SECRET")
+	req.Header.Set("idempotency-Key", "cn-req-apply-004")
+	req.Header.Set("X-API-Version", "1.2")
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Post, "https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("YOUR_UUID:YOUR_SECRET")));
+request.Headers.Add("idempotency-Key", "cn-req-apply-004");
+request.Headers.Add("X-API-Version", "1.2");
+request.Content = new StringContent(@"{
+  ""amount"": 15,
+  ""invoice_id"": ""669dc683-4ad1-4971-a743-90d908788f01"",
+  ""notes"": ""Applying partial credit to invoice INV-4717""
+}", Encoding.UTF8, "application/json");
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
 </RequestExample>
 
 <ResponseExample>

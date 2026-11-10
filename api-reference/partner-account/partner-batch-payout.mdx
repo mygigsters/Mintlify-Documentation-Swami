@@ -130,6 +130,345 @@ curl -X POST https://qa-payments.mygigsters.com.au/api/v1/payouts/batch \
 }'
 ```
 
+```javascript Node.js
+const response = await fetch("https://qa-payments.mygigsters.com.au/api/v1/payouts/batch", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer <accessToken>",
+    "Content-Type": "application/json",
+    "X-API-Version": "1.2",
+    "idempotency-key": "cdvdvvsvsbfbdbdbdbsdCc",
+  },
+  body: JSON.stringify({
+    "account_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "payouts": [
+      {
+        "account_name": "Jane",
+        "account_number": "12345678",
+        "bsb_number": "065163",
+        "entity_type": "PERSONAL",
+        "mode": "NPP",
+        "currency": "AUD",
+        "amount": 250.5,
+        "remarks": "October payment",
+        "reference": "PAY-001"
+      },
+      {
+        "account_name": "Jane",
+        "account_number": "12345678",
+        "bsb_number": "065163",
+        "entity_type": "PERSONAL",
+        "mode": "BANK_TRANSFER",
+        "currency": "AUD",
+        "amount": 10,
+        "remarks": "October payment",
+        "reference": "PAY-002"
+      }
+    ]
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://qa-payments.mygigsters.com.au/api/v1/payouts/batch",
+    headers={
+        "Authorization": "Bearer <accessToken>",
+        "X-API-Version": "1.2",
+        "idempotency-key": "cdvdvvsvsbfbdbdbdbsdCc",
+    },
+    json={
+        "account_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+        "payouts": [
+            {
+                "account_name": "Jane",
+                "account_number": "12345678",
+                "bsb_number": "065163",
+                "entity_type": "PERSONAL",
+                "mode": "NPP",
+                "currency": "AUD",
+                "amount": 250.5,
+                "remarks": "October payment",
+                "reference": "PAY-001",
+            },
+            {
+                "account_name": "Jane",
+                "account_number": "12345678",
+                "bsb_number": "065163",
+                "entity_type": "PERSONAL",
+                "mode": "BANK_TRANSFER",
+                "currency": "AUD",
+                "amount": 10,
+                "remarks": "October payment",
+                "reference": "PAY-002",
+            },
+        ],
+    },
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-payments.mygigsters.com.au/api/v1/payouts/batch")
+request = Net::HTTP::Post.new(uri)
+request["Authorization"] = "Bearer <accessToken>"
+request["Content-Type"] = "application/json"
+request["X-API-Version"] = "1.2"
+request["idempotency-key"] = "cdvdvvsvsbfbdbdbdbsdCc"
+request.body = <<~JSON
+  {
+    "account_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "payouts": [
+      {
+        "account_name": "Jane",
+        "account_number": "12345678",
+        "bsb_number": "065163",
+        "entity_type": "PERSONAL",
+        "mode": "NPP",
+        "currency": "AUD",
+        "amount": 250.5,
+        "remarks": "October payment",
+        "reference": "PAY-001"
+      },
+      {
+        "account_name": "Jane",
+        "account_number": "12345678",
+        "bsb_number": "065163",
+        "entity_type": "PERSONAL",
+        "mode": "BANK_TRANSFER",
+        "currency": "AUD",
+        "amount": 10,
+        "remarks": "October payment",
+        "reference": "PAY-002"
+      }
+    ]
+  }
+JSON
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-payments.mygigsters.com.au/api/v1/payouts/batch");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "POST",
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer <accessToken>",
+        "Content-Type: application/json",
+        "X-API-Version: 1.2",
+        "idempotency-key: cdvdvvsvsbfbdbdbdbsdCc",
+    ],
+    CURLOPT_POSTFIELDS => <<<'JSON'
+{
+  "account_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+  "payouts": [
+    {
+      "account_name": "Jane",
+      "account_number": "12345678",
+      "bsb_number": "065163",
+      "entity_type": "PERSONAL",
+      "mode": "NPP",
+      "currency": "AUD",
+      "amount": 250.5,
+      "remarks": "October payment",
+      "reference": "PAY-001"
+    },
+    {
+      "account_name": "Jane",
+      "account_number": "12345678",
+      "bsb_number": "065163",
+      "entity_type": "PERSONAL",
+      "mode": "BANK_TRANSFER",
+      "currency": "AUD",
+      "amount": 10,
+      "remarks": "October payment",
+      "reference": "PAY-002"
+    }
+  ]
+}
+JSON,
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String body = String.join("\n",
+            "{",
+            "  \"account_id\": \"4407c3ba-10c9-4822-9f51-c2c96692f8d7\",",
+            "  \"payouts\": [",
+            "    {",
+            "      \"account_name\": \"Jane\",",
+            "      \"account_number\": \"12345678\",",
+            "      \"bsb_number\": \"065163\",",
+            "      \"entity_type\": \"PERSONAL\",",
+            "      \"mode\": \"NPP\",",
+            "      \"currency\": \"AUD\",",
+            "      \"amount\": 250.5,",
+            "      \"remarks\": \"October payment\",",
+            "      \"reference\": \"PAY-001\"",
+            "    },",
+            "    {",
+            "      \"account_name\": \"Jane\",",
+            "      \"account_number\": \"12345678\",",
+            "      \"bsb_number\": \"065163\",",
+            "      \"entity_type\": \"PERSONAL\",",
+            "      \"mode\": \"BANK_TRANSFER\",",
+            "      \"currency\": \"AUD\",",
+            "      \"amount\": 10,",
+            "      \"remarks\": \"October payment\",",
+            "      \"reference\": \"PAY-002\"",
+            "    }",
+            "  ]",
+            "}"
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-payments.mygigsters.com.au/api/v1/payouts/batch"))
+            .header("Authorization", "Bearer <accessToken>")
+            .header("Content-Type", "application/json")
+            .header("X-API-Version", "1.2")
+            .header("idempotency-key", "cdvdvvsvsbfbdbdbdbsdCc")
+            .method("POST", HttpRequest.BodyPublishers.ofString(body))
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+)
+
+func main() {
+	body := strings.NewReader(`{
+  "account_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+  "payouts": [
+    {
+      "account_name": "Jane",
+      "account_number": "12345678",
+      "bsb_number": "065163",
+      "entity_type": "PERSONAL",
+      "mode": "NPP",
+      "currency": "AUD",
+      "amount": 250.5,
+      "remarks": "October payment",
+      "reference": "PAY-001"
+    },
+    {
+      "account_name": "Jane",
+      "account_number": "12345678",
+      "bsb_number": "065163",
+      "entity_type": "PERSONAL",
+      "mode": "BANK_TRANSFER",
+      "currency": "AUD",
+      "amount": 10,
+      "remarks": "October payment",
+      "reference": "PAY-002"
+    }
+  ]
+}`)
+
+	req, err := http.NewRequest("POST", "https://qa-payments.mygigsters.com.au/api/v1/payouts/batch", body)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Authorization", "Bearer <accessToken>")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-API-Version", "1.2")
+	req.Header.Set("idempotency-key", "cdvdvvsvsbfbdbdbdbsdCc")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Post, "https://qa-payments.mygigsters.com.au/api/v1/payouts/batch");
+request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "<accessToken>");
+request.Headers.Add("X-API-Version", "1.2");
+request.Headers.Add("idempotency-key", "cdvdvvsvsbfbdbdbdbsdCc");
+request.Content = new StringContent(@"{
+  ""account_id"": ""4407c3ba-10c9-4822-9f51-c2c96692f8d7"",
+  ""payouts"": [
+    {
+      ""account_name"": ""Jane"",
+      ""account_number"": ""12345678"",
+      ""bsb_number"": ""065163"",
+      ""entity_type"": ""PERSONAL"",
+      ""mode"": ""NPP"",
+      ""currency"": ""AUD"",
+      ""amount"": 250.5,
+      ""remarks"": ""October payment"",
+      ""reference"": ""PAY-001""
+    },
+    {
+      ""account_name"": ""Jane"",
+      ""account_number"": ""12345678"",
+      ""bsb_number"": ""065163"",
+      ""entity_type"": ""PERSONAL"",
+      ""mode"": ""BANK_TRANSFER"",
+      ""currency"": ""AUD"",
+      ""amount"": 10,
+      ""remarks"": ""October payment"",
+      ""reference"": ""PAY-002""
+    }
+  ]
+}", Encoding.UTF8, "application/json");
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
 </RequestExample>
 
 <ResponseExample>
