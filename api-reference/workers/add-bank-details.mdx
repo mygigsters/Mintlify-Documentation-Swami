@@ -4,6 +4,10 @@ description: "This endpoint allows you to add bank details for a worker."
 api: "POST /worker-bank-details"
 ---
 
+<Note>
+  Payouts are supported in 160+ countries. The `bsb` field applies to Australian bank accounts. For bank accounts in other countries, collect details with the hosted form from [Beneficiary URL](/api-reference/workers/beneficiary-url) or the [Beneficiary SDK](/sdks/beneficiary-sdk), which show the right fields for the worker's country.
+</Note>
+
 ### Headers
 
 <ParamField header="X-API-Version" type="string" default="1.2" required>
@@ -19,7 +23,7 @@ api: "POST /worker-bank-details"
 ### Request Body Parameters
 
 <ParamField body="bsb" type="string">
-  065163 for Sandbox Environment.
+  The Bank State Branch code (6 digits) for Australian bank accounts. Use `065163` in the demo environment.
 </ParamField>
 
 <ParamField body="account_number" type="string" required>

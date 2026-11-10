@@ -4,6 +4,10 @@ description: "This endpoint allows you to create a new worker with their persona
 api: "POST /worker-create"
 ---
 
+<Note>
+  Payouts are supported in 160+ countries. The `bsb` field applies to Australian bank accounts. For bank accounts in other countries, collect details with the hosted form from [Beneficiary URL](/api-reference/workers/beneficiary-url) or the [Beneficiary SDK](/sdks/beneficiary-sdk), which show the right fields for the worker's country.
+</Note>
+
 ### Headers
 
 <ParamField header="X-API-Version" type="string" default="1.2" required>
@@ -25,7 +29,7 @@ api: "POST /worker-create"
 </ParamField>
 
 <ParamField body="abn" type="string">
-  The Australian Business Number (11-digit identifier) for AU workers.
+  The Australian Business Number (11-digit identifier) for Australian workers.
 </ParamField>
 
 <ParamField body="account_name" type="string">
