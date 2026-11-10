@@ -1,0 +1,294 @@
+---
+title: "Get Employer by ID"
+description: "Retrieves a single employer record by its ID. Returns the employer's contact information, payment configuration, clearing house onboarding status, and metadata."
+api: "GET https://qa-super.mygigsters.com.au/v1/employers/{id}"
+---
+
+### Use Case
+
+- Look up a specific employer's details before submitting contributions
+- Check `onboardedAtClearingHouse` to confirm the employer is ready to receive contributions
+- Retrieve payment account details for reconciliation
+
+### Request Parameters
+
+<ParamField path="id" type="string" required>
+  The employer ID
+</ParamField>
+
+### Responses
+
+| Code | Description |
+|---|---|
+| `200` | Employer retrieved successfully |
+| `401` | Unauthorized - Invalid authentication credentials |
+| `404` | Employer not found |
+
+### Response fields
+
+<ResponseField name="id" type="string">
+  Employer ID
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Employer business name
+</ResponseField>
+
+<ResponseField name="abn" type="string">
+  Australian Business Number (ABN)
+</ResponseField>
+
+<ResponseField name="contact" type="object">
+  Employer contact information
+
+  <Expandable title="properties">
+    <ResponseField name="name" type="object">
+      Contact person name
+    </ResponseField>
+
+    <ResponseField name="phoneNumber" type="object">
+      Contact phone number
+    </ResponseField>
+
+    <ResponseField name="email" type="object">
+      Contact email address
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="clientId" type="number">
+  Client ID associated with this employer
+</ResponseField>
+
+<ResponseField name="superApiMeta" type="object">
+  Super API metadata including payment and refund account details
+
+  <Expandable title="properties">
+    <ResponseField name="paymentDetails" type="object">
+      Payment configuration for contributions
+    </ResponseField>
+
+    <ResponseField name="refundAccount" type="object">
+      Bank account details for refunds
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="onboardedAtClearingHouse" type="boolean">
+  Read-only status set by the system. Indicates whether this employer has been fully onboarded at the superannuation clearing house.
+</ResponseField>
+
+<ResponseField name="detailsSyncedAtClearingHouse" type="string">
+  Read-only status set by the system. "NA" means no employer detail updates have been made yet, "false" means updates are pending sync to the clearing house, "true" means the latest updates have been synced.
+</ResponseField>
+
+<ResponseField name="detailsSyncedAtClearingHouseAt" type="string">
+  Read-only timestamp set by the system. When the updated employer details were last synced to the clearing house.
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  Timestamp when the employer record was created
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string">
+  Timestamp when the employer record was last updated
+</ResponseField>
+
+<Accordion title="Error response fields">
+
+<ResponseField name="success" type="boolean">
+</ResponseField>
+
+<ResponseField name="statusCode" type="integer">
+</ResponseField>
+
+<ResponseField name="message" type="string">
+</ResponseField>
+
+</Accordion>
+
+<RequestExample>
+
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v1/employers/6960d86e466f44ab3f163c66' \
+    -u "apiUsername:apiPassword"
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v1/employers/6960d86e466f44ab3f163c66", {
+  method: "GET",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+  },
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://qa-super.mygigsters.com.au/v1/employers/6960d86e466f44ab3f163c66",
+    auth=("apiUsername", "apiPassword"),
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v1/employers/6960d86e466f44ab3f163c66")
+request = Net::HTTP::Get.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v1/employers/6960d86e466f44ab3f163c66");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "GET",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v1/employers/6960d86e466f44ab3f163c66"))
+            .header("Authorization", "Basic " + credentials)
+            .method("GET", HttpRequest.BodyPublishers.noBody())
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	req, err := http.NewRequest("GET", "https://qa-super.mygigsters.com.au/v1/employers/6960d86e466f44ab3f163c66", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Get, "https://qa-super.mygigsters.com.au/v1/employers/6960d86e466f44ab3f163c66");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "6960d86e466f44ab3f163c66",
+  "name": "Example Marketplace Pty Ltd",
+  "abn": "34623710896",
+  "contact": {
+    "name": {
+      "title": "Mr",
+      "firstName": "Test",
+      "middleName": " ",
+      "lastName": "User",
+      "suffix": " "
+    },
+    "phoneNumber": {
+      "type": "MOBILE_PHONE",
+      "value": "0412345678"
+    },
+    "email": {
+      "value": "accounts@example.com"
+    }
+  },
+  "clientId": 2,
+  "superApiMeta": {
+    "paymentDetails": {
+      "paymentType": "DIRECTDEBIT",
+      "directDebit": {
+        "bankAccount": {
+          "accountName": "Example Marketplace Pty Ltd",
+          "bsb": "123456",
+          "accountNumber": "12345678"
+        },
+        "directDebitPaymentAmount": {
+          "value": 0,
+          "currency": "AUD"
+        }
+      }
+    },
+    "refundAccount": {
+      "accountName": "Example Marketplace Pty Ltd",
+      "bsb": "123456",
+      "accountNumber": "12345678"
+    }
+  },
+  "onboardedAtClearingHouse": true,
+  "detailsSyncedAtClearingHouse": "NA",
+  "createdAt": "2025-12-19T06:50:36.275Z",
+  "updatedAt": "2025-12-19T06:50:36.275Z"
+}
+```
+
+</ResponseExample>

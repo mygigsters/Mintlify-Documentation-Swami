@@ -1,0 +1,260 @@
+---
+title: "List All Employees"
+description: "Retrieves all employees associated with the authenticated client. Returns a paginated list of employee records with their static information."
+api: "GET https://qa-super.mygigsters.com.au/v1/employees"
+---
+
+### Pagination
+
+This endpoint supports pagination to efficiently retrieve large employee lists. Use the `page` and `limit` query parameters to control the results.
+
+- **page**: Page number (default: 1)
+- **limit**: Number of items per page (default: 10, maximum: 100)
+
+### Use Case
+
+- Display list of employees in UI with pagination
+- Select employees for contribution submission
+- Verify which employees are onboarded
+- Efficiently browse through large employee databases
+
+### Request Parameters
+
+<ParamField query="page" type="integer">
+  Page number for pagination (default: 1)
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Number of items per page (default: 10, max: 100)
+</ParamField>
+
+### Responses
+
+| Code | Description |
+|---|---|
+| `200` | List of employees retrieved successfully |
+| `401` | Unauthorized - Invalid authentication credentials |
+
+### Response fields
+
+<ResponseField name="employees" type="array">
+  List of employees. Each employee object matches the Employee response model from `GET /v1/employees/{id}` and may include optional superannuation identifiers (usi, memberNumber, employmentPayrollNumber, abn).
+</ResponseField>
+
+<ResponseField name="total" type="number">
+  Total count of employees across all pages
+</ResponseField>
+
+<ResponseField name="totalPages" type="number">
+  Total number of pages available
+</ResponseField>
+
+<ResponseField name="hasNext" type="boolean">
+  Whether there is a next page available
+</ResponseField>
+
+<ResponseField name="hasPrevious" type="boolean">
+  Whether there is a previous page available
+</ResponseField>
+
+<Accordion title="Error response fields">
+
+<ResponseField name="success" type="boolean">
+  Always false for error responses, indicating the operation did not succeed.
+</ResponseField>
+
+<ResponseField name="statusCode" type="integer">
+  HTTP status code indicating the type of error. Common values: 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Server Error)
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Human-readable error message explaining what went wrong. May include specific details about which field or value caused the error.
+</ResponseField>
+
+<ResponseField name="errorCode" type="integer">
+  Superannuation clearing house-specific error code for programmatic error handling. Refer to the error code reference documentation for a complete list of codes. Common codes: 4030 (Employer not found), 4031 (Invalid ABN), 4040 (Fund not found).
+</ResponseField>
+
+</Accordion>
+
+<RequestExample>
+
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v1/employees' \
+    -u "apiUsername:apiPassword"
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v1/employees", {
+  method: "GET",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+  },
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://qa-super.mygigsters.com.au/v1/employees",
+    auth=("apiUsername", "apiPassword"),
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v1/employees")
+request = Net::HTTP::Get.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v1/employees");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "GET",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v1/employees"))
+            .header("Authorization", "Basic " + credentials)
+            .method("GET", HttpRequest.BodyPublishers.noBody())
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	req, err := http.NewRequest("GET", "https://qa-super.mygigsters.com.au/v1/employees", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Get, "https://qa-super.mygigsters.com.au/v1/employees");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "employees": [
+    {
+      "id": "507f1f77bcf86cd799439011",
+      "clientId": "6944f5bc514fc0a1479bffdb",
+      "email": "lisa.brown@email.com",
+      "name": {
+        "firstName": "Lisa",
+        "lastName": "Brown"
+      },
+      "gender": "FEMALE",
+      "dob": {
+        "year": 1988,
+        "month": "MAY",
+        "day": 13
+      },
+      "address": {
+        "australianAddress": {
+          "line1": "640 Gordon Street",
+          "line2": " ",
+          "line3": " ",
+          "line4": " ",
+          "suburb": "MANLY VALE",
+          "postCode": "2093",
+          "stateOrTerritory": "NSW",
+          "countryCode": "AU"
+        }
+      },
+      "taxFileNumber": "182134556",
+      "usi": "BTA0287AU",
+      "memberNumber": "MEM1001",
+      "employmentPayrollNumber": "EMP-000123",
+      "mvrStatus": "VERIFIED",
+      "mvrStatusReason": "Member was successfully verified.",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "total": 45,
+  "totalPages": 5,
+  "hasNext": true,
+  "hasPrevious": false
+}
+```
+
+</ResponseExample>

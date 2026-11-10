@@ -1,0 +1,435 @@
+---
+title: "Register webhook"
+description: "Register a URL to receive webhook event deliveries. Once registered, the platform will POST events to your URL for employer onboarding, payment status changes, MVR (Member Verification) status changes, and async (v2)..."
+api: "POST https://qa-super.mygigsters.com.au/v1/webhooks"
+---
+
+The response includes a `webhookSecret` — store it securely. It is used to verify all incoming deliveries. Calling this endpoint again rotates the secret and returns the new one.
+
+### Delivery Behaviour
+
+| Property | Value |
+|---|---|
+| Delivery cron | Every 1 minute |
+| Max attempts | 3 |
+| Retry delays | Attempt 2: after 1 minute · Attempt 3: after 5 minutes |
+| Permanent failure | After 3 failed attempts — no further retries |
+
+The receiving endpoint must return HTTP `2xx`. Any other response code or a connection error is treated as a failed attempt.
+
+### employer.onboarded_at_clearing_house
+
+Fired once when an employer completes onboarding at the super clearing house and is ready to submit contributions. This is a one-time event per employer.
+
+```json
+{
+  "event": "employer.onboarded_at_clearing_house",
+  "timestamp": "2026-06-24T11:32:41.858Z",
+  "data": {
+    "employerId": "6a3bbfd09b211a5b04229ba9",
+    "employerName": "MyGigsters Technologies Pty Ltd",
+    "abn": "34623710896",
+    "clientId": 2,
+    "onboardedAt": "2026-06-24T11:32:41.069Z"
+  }
+}
+```
+
+**`data` field reference:**`data` field reference:**
+
+| Field | Type | Description |
+|---|---|---|
+| `employerId` | string | Internal employer ID |
+| `employerName` | string | Employer display name |
+| `abn` | string | Employer ABN |
+| `clientId` | number | Client account this employer belongs to |
+| `onboardedAt` | ISO 8601 | Timestamp when onboarding was confirmed at the clearing house |
+
+**Use this event to:** unlock contribution submission for the employer in your UI, send a confirmation notification, or update your local employer state.
+
+### payment.status_changed
+
+Fired on every payment status transition — both payment-layer and fund-layer. You will receive one event per status change, per payment record. A submission with multiple funds generates multiple payment records and therefore multiple events.
+
+**Payment-layer event** (e.g. `DEBIT_CLEARED`):
+
+```json
+{
+  "event": "payment.status_changed",
+  "timestamp": "2026-06-26T04:30:00Z",
+  "data": {
+    "transactionId": "txn-72ad1383-7d2e-4511-8713-8bb47c7b5cfe",
+    "employerId": "6a3bbfd09b211a5b04229ba9",
+    "employeeId": "6a3bbfc19b211a5b04229ba7",
+    "clientId": 2,
+    "status": "DEBIT_CLEARED",
+    "processingLayer": "PAYMENT_LAYER",
+    "changedAt": "2026-06-26T04:30:00Z",
+    "fundResponseType": null,
+    "fundResponseSeverity": null,
+    "fundResponseDescription": null,
+    "fundResponseDetailedDescription": null,
+    "fundResponseReceivedAt": null,
+    "fundRefundPrn": null,
+    "fundRefundEmployerAmount": null,
+    "fundRefundMemberAmount": null,
+    "fundRefundContributionType": null,
+    "fundRefundContributionAmount": null
+  }
+}
+```
+
+**Fund-layer event** (e.g. `SETTLED_WITH_WARNING`):
+
+```json
+{
+  "event": "payment.status_changed",
+  "timestamp": "2026-07-04T01:00:00Z",
+  "data": {
+    "transactionId": "txn-72ad1383-7d2e-4511-8713-8bb47c7b5cfe",
+    "employerId": "6a3bbfd09b211a5b04229ba9",
+    "employeeId": "6a3bbfc19b211a5b04229ba7",
+    "clientId": 2,
+    "status": "SETTLED_WITH_WARNING",
+    "processingLayer": "FUND_LAYER",
+    "changedAt": "2026-07-04T01:00:00Z",
+    "fundResponseType": "NON_REFUND",
+    "fundResponseSeverity": "WARNING",
+    "fundResponseDescription": "Processed to corrected account number",
+    "fundResponseDetailedDescription": null,
+    "fundResponseReceivedAt": "2026-07-04T01:00:00Z",
+    "fundRefundPrn": null,
+    "fundRefundEmployerAmount": null,
+    "fundRefundMemberAmount": null,
+    "fundRefundContributionType": null,
+    "fundRefundContributionAmount": null
+  }
+}
+```
+
+> **Note:** The SuperStream process assumes all submissions succeed. The clearing house does not give us an exact settlement date, so a `SETTLED` / `SETTLED_WITH_WARNING` event (and its `changedAt` timestamp) is only indicative — it is based on the super fund not rejecting the contribution within 3 business days of receiving it.
+
+**`data` field reference:**`data` field reference:**
+
+| Field | Type | Description |  |
+|---|---|---|---|
+| `transactionId` | string | Transaction ID for the payment record |  |
+| `employerId` | string | Employer that made the contribution |  |
+| `employeeId` | string | The member this payment record belongs to |  |
+| `clientId` | number | Client account |  |
+| `status` | string | New status — see Contribution History for the full status lifecycle |  |
+| `processingLayer` | string | `PAYMENT_LAYER` or `FUND_LAYER` |  |
+| `changedAt` | ISO 8601 | When this transition occurred |  |
+| `fundResponseType` | string \ | null | Populated on fund-layer transitions only (`NON_REFUND`, `EMPLOYER_REFUND`, `MEMBER_REFUND`, `MEMBER_CONTRIBUTION_TYPE_REFUND`) |
+| `fundResponseSeverity` | string \ | null | `INFORMATION`, `WARNING`, or `ERROR` |
+| `fundResponseDescription` | string \ | null | Human-readable reason from the fund |
+| `fundResponseDetailedDescription` | string \ | null | Detailed error description from the fund — populated alongside `fundResponseDescription` |
+| `fundResponseReceivedAt` | ISO 8601 \ | null | When the fund responded |
+| `fundRefundPrn` | string \ | null | Refund payment reference number |
+| `fundRefundEmployerAmount` | number \ | null | Amount refunded to employer (AUD) |
+| `fundRefundMemberAmount` | number \ | null | Amount refunded to member (AUD) — `MEMBER_REFUND` only |
+| `fundRefundContributionType` | string \ | null | Contribution type refunded — `MEMBER_CONTRIBUTION_TYPE_REFUND` only |
+| `fundRefundContributionAmount` | number \ | null | Contribution amount refunded (AUD) — `MEMBER_CONTRIBUTION_TYPE_REFUND` only |
+
+### employee.mvr_status_changed
+
+Fired when an employee's MVR (Member Verification) status changes — only for employees created or updated through the [Employees v2](/super/api-reference/employees/create-employee) endpoints. Never fired for `PENDING` (the initial submitted state); only on a terminal outcome: `VERIFIED`, `WARNING`, `REJECTED`, `NOT_SUPPORTED`, or `TIMED_OUT`. See the [MVR Verification](/super/guides/member-verification) guide for what each status means.
+
+```json
+{
+  "event": "employee.mvr_status_changed",
+  "timestamp": "2026-08-24T20:03:42.000Z",
+  "data": {
+    "employeeId": "6a3bbfc19b211a5b04229ba7",
+    "status": "REJECTED",
+    "reason": "Member not found with supplied information.",
+    "transactionId": "txn-2fbab110-d866-4896-8ba1-43aa1319297f"
+  }
+}
+```
+
+> **Note:** `transactionId` is present when the outcome came back from the fund (via polling). It is absent when MVR could not even be submitted — e.g. no employer at the client is yet onboarded and synced at the clearing house — since no transaction was ever created in that case.
+
+**`data` field reference:**`data` field reference:**
+
+| Field | Type | Description |  |
+|---|---|---|---|
+| `employeeId` | string | The employee this status change applies to |  |
+| `status` | string | New `mvrStatus` — `VERIFIED`, `WARNING`, `REJECTED`, `NOT_SUPPORTED`, or `TIMED_OUT` |  |
+| `reason` | string \ | null | Human-readable reason (matches `mvrStatusReason` on the employee record) |
+| `transactionId` | string \ | undefined | SuperChoice transaction ID, when one exists |
+
+### contribution.submission_completed
+
+Fired once when an [async (v2) contribution submission](/super/guides/async-submissions) reaches a final status: `SUBMITTED`, `FAILED`, or `UNDER_REVIEW`. Not fired for v1 submissions.
+
+```json
+{
+  "event": "contribution.submission_completed",
+  "timestamp": "2026-10-27T10:34:05.148Z",
+  "data": {
+    "transactionId": "txn-3cb85051-09cd-4a04-9952-100b20384ada",
+    "employerId": "6960d86e466f44ab3f163c66",
+    "status": "SUBMITTED",
+    "totals": { "funds": 2, "members": 3, "amount": "3.00" },
+    "completedAt": "2026-10-27T10:34:04.123Z"
+  }
+}
+```
+
+**`data` field reference:**`data` field reference:**
+
+| Field | Type | Description |  |
+|---|---|---|---|
+| `transactionId` | string | SuperChoice transaction ID returned by `POST /v2/contributions` |  |
+| `employerId` | string | Employer that made the contribution |  |
+| `status` | string | `SUBMITTED`, `FAILED`, or `UNDER_REVIEW` |  |
+| `totals` | object | `funds` (number), `members` (number), `amount` (2-decimal string) for the whole submission |  |
+| `completedAt` | ISO 8601 | When the final status was reached |  |
+| `error` | object \ | undefined | `{ message }` — present only for `FAILED` or `UNDER_REVIEW` |
+
+**Use this event to:** mark the pay run as submitted, or surface the error for a `FAILED` submission. Do **not** resubmit an `UNDER_REVIEW` submission — it may already have been paid.
+
+### HMAC Signature Verification
+
+Every delivery includes an `X-Signature` header — an HMAC-SHA256 hex digest of the raw request body signed with your webhook secret.
+
+```http
+X-Signature: sha256=<hex>
+```
+
+Verify on receipt:
+
+```javascript
+const crypto = require('crypto');
+
+const sig = req.headers['x-signature'];
+const expected = 'sha256=' + crypto
+  .createHmac('sha256', webhookSecret)
+  .update(rawBody)      // raw bytes before JSON.parse — do not use parsed body
+  .digest('hex');
+
+if (sig !== expected) {
+  return res.status(401).send('Invalid signature');
+}
+```
+
+### Request Body
+
+<ParamField body="url" type="string" required>
+  The HTTPS URL to receive webhook event deliveries. Must be publicly accessible and return HTTP 2xx for successful deliveries.
+</ParamField>
+
+### Responses
+
+| Code | Description |
+|---|---|
+| `200` | Webhook registered successfully. Store the webhookSecret securely — it is used to verify all incoming deliveries. |
+| `201` |  |
+| `400` | Bad request — invalid URL format |
+| `401` | Unauthorized — invalid authentication credentials |
+
+### Response fields
+
+<ResponseField name="url" type="string">
+  The registered webhook URL
+</ResponseField>
+
+<ResponseField name="webhookSecret" type="string">
+  Secret used to verify HMAC signatures on incoming webhook deliveries. Store this securely — it is only returned once.
+</ResponseField>
+
+<Accordion title="Error response fields">
+
+<ResponseField name="success" type="boolean">
+</ResponseField>
+
+<ResponseField name="statusCode" type="integer">
+</ResponseField>
+
+<ResponseField name="message" type="string">
+</ResponseField>
+
+</Accordion>
+
+<RequestExample>
+
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v1/webhooks' -X POST \
+    -u "apiUsername:apiPassword"  \
+    -H "Content-Type: application/json" --data '{"url":"https://your-server.com/webhook-receiver"}'
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v1/webhooks", {
+  method: "POST",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    "url": "https://your-server.com/webhook-receiver"
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://qa-super.mygigsters.com.au/v1/webhooks",
+    auth=("apiUsername", "apiPassword"),
+    json={
+        "url": "https://your-server.com/webhook-receiver",
+    },
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v1/webhooks")
+request = Net::HTTP::Post.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+request["Content-Type"] = "application/json"
+request.body = <<~JSON
+  {
+    "url": "https://your-server.com/webhook-receiver"
+  }
+JSON
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v1/webhooks");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "POST",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+    CURLOPT_HTTPHEADER => [
+        "Content-Type: application/json",
+    ],
+    CURLOPT_POSTFIELDS => <<<'JSON'
+{
+  "url": "https://your-server.com/webhook-receiver"
+}
+JSON,
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        String body = String.join("\n",
+            "{",
+            "  \"url\": \"https://your-server.com/webhook-receiver\"",
+            "}"
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v1/webhooks"))
+            .header("Authorization", "Basic " + credentials)
+            .header("Content-Type", "application/json")
+            .method("POST", HttpRequest.BodyPublishers.ofString(body))
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+)
+
+func main() {
+	body := strings.NewReader(`{
+  "url": "https://your-server.com/webhook-receiver"
+}`)
+
+	req, err := http.NewRequest("POST", "https://qa-super.mygigsters.com.au/v1/webhooks", body)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Post, "https://qa-super.mygigsters.com.au/v1/webhooks");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+request.Content = new StringContent(@"{
+  ""url"": ""https://your-server.com/webhook-receiver""
+}", Encoding.UTF8, "application/json");
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```text 200
+""
+```
+
+```text 201
+""
+```
+
+</ResponseExample>

@@ -1,0 +1,194 @@
+---
+title: "Cancel Contribution Batch"
+description: "Cancels an in-flight contribution batch with the clearing house. The cancellation window is narrow — the payment must be in **SOURCE PENDING** state, meaning the debit has been initiated but has not yet cleared from the..."
+api: "POST https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/{transactionId}"
+---
+
+### Cancellation Window
+
+| Payment `status` | Can cancel? |
+|---|---|
+| `SUBMITTED` — debit not yet initiated | No — clearing house rejects (error 4024) |
+| `EMPLOYER_PAYMENT` — debit initiated, not yet cleared | **Yes** |
+| `DEBIT_CLEARED` or later | No — money has already moved |
+| `FUNDS_IN_TRANSIT`, `AWAITING_FUND_RESPONSE`, or any terminal status | No — too late |
+
+### After a Successful Cancellation
+
+On a `202 Accepted` response:
+
+- All payment records for this `transactionId` are immediately updated to `CANCELLED` status.
+- A `payment.status_changed` webhook is fired for each affected record.
+- No further status transitions will occur for this transaction.
+
+### Error 4024
+
+If the clearing house cannot cancel the transaction (payment is outside the cancellation window), it returns error code `4024`. Check the current `status` of the payment records via the [Contribution History](/super/api-reference/contributions/get-contribution-history) endpoint before attempting cancellation.
+
+### Request Parameters
+
+<ParamField path="transactionId" type="string" required>
+  The clearing house transaction ID returned when the contribution batch was submitted.
+</ParamField>
+
+### Responses
+
+| Code | Description |
+|---|---|
+| `202` | Cancellation accepted. All payment records for this transaction are immediately updated to CANCELLED and a payment.status_changed webhook is fired for each record. No response body is returned. |
+| `400` | Cancellation rejected — the payment is not in a cancellable state. This typically means the debit has already cleared or the transaction has not yet been initiated. The clearing house returns error code 4024. |
+| `401` | Unauthorized - Invalid authentication credentials |
+| `404` | Transaction not found — no contribution batch exists for the provided transactionId |
+| `500` | Internal server error |
+
+<Accordion title="Error response fields">
+
+<ResponseField name="errorCode" type="string">
+  Clearing house error code identifying the rejection reason
+</ResponseField>
+
+<ResponseField name="errorMessage" type="string">
+  Human-readable reason for the rejection
+</ResponseField>
+
+</Accordion>
+
+<RequestExample>
+
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/undefined' -X POST \
+    -u "apiUsername:apiPassword"
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/undefined", {
+  method: "POST",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+  },
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/undefined",
+    auth=("apiUsername", "apiPassword"),
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/undefined")
+request = Net::HTTP::Post.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/undefined");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "POST",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/undefined"))
+            .header("Authorization", "Basic " + credentials)
+            .method("POST", HttpRequest.BodyPublishers.noBody())
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	req, err := http.NewRequest("POST", "https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/undefined", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Post, "https://qa-super.mygigsters.com.au/v1/contributions/cancelBatch/undefined");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```text 202
+""
+```
+
+</ResponseExample>

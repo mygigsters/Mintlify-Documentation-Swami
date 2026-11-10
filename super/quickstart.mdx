@@ -1,0 +1,166 @@
+---
+title: "Quickstart"
+description: "Go from an API key to a submitted super contribution in six steps."
+---
+
+This walkthrough takes you through a complete super integration in the demo environment, from creating an API key to tracking a contribution.
+
+<Steps>
+  <Step title="Create an API key">
+    Sign in with a one-time passcode and create a key pair. See [Authentication](/super/authentication).
+  </Step>
+  <Step title="Make your first request">
+    Check your credentials by listing your employees.
+
+    <CodeGroup>
+    ```bash cURL
+    curl 'https://qa-super.mygigsters.com.au/v1/employees' \
+      -u 'apiUsername:apiPassword'
+    ```
+
+    ```javascript Node.js
+    const response = await fetch("https://qa-super.mygigsters.com.au/v1/employees", {
+      method: "GET",
+      headers: {
+        Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+      },
+    });
+
+    const data = await response.json();
+    console.log(data);
+    ```
+
+    ```python Python
+    import requests
+
+    response = requests.get(
+        "https://qa-super.mygigsters.com.au/v1/employees",
+        auth=("apiUsername", "apiPassword"),
+    )
+
+    print(response.json())
+    ```
+
+    ```ruby Ruby
+    require "net/http"
+    require "json"
+    require "uri"
+
+    uri = URI("https://qa-super.mygigsters.com.au/v1/employees")
+    request = Net::HTTP::Get.new(uri)
+    request.basic_auth("apiUsername", "apiPassword")
+
+    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(request)
+    end
+
+    puts JSON.parse(response.body)
+    ```
+
+    ```php PHP
+    <?php
+
+    $ch = curl_init("https://qa-super.mygigsters.com.au/v1/employees");
+
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_USERPWD => "apiUsername:apiPassword",
+    ]);
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    print_r(json_decode($response, true));
+    ```
+
+    ```java Java
+    import java.net.URI;
+    import java.net.http.HttpClient;
+    import java.net.http.HttpRequest;
+    import java.net.http.HttpResponse;
+    import java.util.Base64;
+
+    public class Example {
+        public static void main(String[] args) throws Exception {
+            String credentials = Base64.getEncoder()
+                .encodeToString("apiUsername:apiPassword".getBytes());
+
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://qa-super.mygigsters.com.au/v1/employees"))
+                .header("Authorization", "Basic " + credentials)
+                .method("GET", HttpRequest.BodyPublishers.noBody())
+                .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                .send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println(response.body());
+        }
+    }
+    ```
+
+    ```go Go
+    package main
+
+    import (
+    	"fmt"
+    	"io"
+    	"net/http"
+    )
+
+    func main() {
+    	req, err := http.NewRequest("GET", "https://qa-super.mygigsters.com.au/v1/employees", nil)
+    	if err != nil {
+    		panic(err)
+    	}
+    	req.SetBasicAuth("apiUsername", "apiPassword")
+
+    	res, err := http.DefaultClient.Do(req)
+    	if err != nil {
+    		panic(err)
+    	}
+    	defer res.Body.Close()
+
+    	data, _ := io.ReadAll(res.Body)
+    	fmt.Println(string(data))
+    }
+    ```
+
+    ```csharp .NET
+    using System.Net.Http.Headers;
+    using System.Text;
+
+    using var client = new HttpClient();
+
+    var request = new HttpRequestMessage(HttpMethod.Get, "https://qa-super.mygigsters.com.au/v1/employees");
+    request.Headers.Authorization = new AuthenticationHeaderValue(
+        "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+
+    var response = await client.SendAsync(request);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Onboard an employer">
+    Create the employer of record with [Onboard employer](/super/api-reference/employers/onboard-employer). This sets up the company details, the contact, and the bank account contributions are debited from. The direct debit agreement must be accepted to complete onboarding.
+  </Step>
+  <Step title="Register your freelancers">
+    Add each freelancer with [Create employee](/super/api-reference/employees/create-employee). To pre-fill their fund details, search with [SuperSelector](/super/api-reference/funds/superselector), or let them pick from [active funds](/super/api-reference/funds/get-active-superannuation-funds).
+  </Step>
+  <Step title="Validate before you pay">
+    Check each fund's USI with [Validate superannuation fund](/super/api-reference/funds/validate-superannuation-fund). To confirm the fund will accept contributions for that member, use [member verification](/super/guides/member-verification).
+  </Step>
+  <Step title="Submit a contribution">
+    Send the contribution with [Submit contribution](/super/api-reference/contributions/submit-contribution). For large pay runs, use [async submissions](/super/guides/async-submissions).
+  </Step>
+  <Step title="Track it to the fund">
+    Follow the contribution with [Get contribution history](/super/api-reference/contributions/get-contribution-history) and [Get payment status](/super/api-reference/payment-status/get-payment-status), or [register a webhook](/super/api-reference/webhooks/register-webhook) to be notified.
+  </Step>
+</Steps>
+
+## Handle errors
+
+- Check the status code on every response.
+- Fix and resend `4xx` errors. The response body says which field was wrong.
+- Retry `5xx` errors with exponential backoff.

@@ -1,0 +1,140 @@
+---
+title: "Self-managed super funds (SMSF)"
+description: "Validate and pay contributions to self-managed super funds."
+---
+
+Self-managed super funds (SMSF) are supported as an alternative to an APRA fund USI across three endpoints: [Validate Fund](/super/api-reference/funds/validate-superannuation-fund), [Submit Contribution](/super/api-reference/contributions/submit-contribution), and [Employees](/super/api-reference/employees/create-employee). This page documents the shared SMSF object once so you don't have to piece it together from three separate endpoint pages.
+
+## What is SMSF support
+
+An **APRA fund** is identified by its USI (Unique Superannuation Identifier) — a 14-character code looked up against the active funds registry. A **self-managed super fund (SMSF)** has no USI: it is identified instead by its own organisation details and bank account, since members manage the fund directly rather than through a public offer fund.
+
+Every endpoint below accepts SMSF as an alternative to a USI — never both at once, and never neither. Provide a USI for an APRA fund, or the SMSF object described below for a self-managed fund.
+
+## The shared SMSF object
+
+All three endpoints use the exact same SMSF object shape:
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `organisationName` | string | Yes | Max 200 characters |
+| `australianBusinessNumber` | string | Yes | Exactly 11 digits, must pass the ATO ABN checksum |
+| `esaAlias` | string | Yes | Electronic Service Address alias |
+| `account` | object | Yes | `accountName` (max 32 chars), `bsb` (exactly 6 digits, not all zeros), `accountNumber` (6–9 digits, not all zeros) |
+| `emailAddress` | string | No | Contact email for the SMSF |
+| `phoneNumber` | string | No | Contact phone number for the SMSF |
+
+```json
+{
+  "organisationName": "Test Superannuation Fund",
+  "australianBusinessNumber": "34623710896",
+  "esaAlias": "SUPERCHOICE",
+  "account": {
+    "accountName": "Test Superannuation Fund",
+    "bsb": "923100",
+    "accountNumber": "62645812"
+  },
+  "emailAddress": "smsf@email.com.au",
+  "phoneNumber": "80386700"
+}
+```
+
+## APRA vs. SMSF at a glance
+
+|  | APRA fund | SMSF |
+|---|---|---|
+| Identifier | `usi` string | `smsf` object |
+| Fund lookup | Checked against the active funds registry | Not applicable — no registry entry |
+| Where it's used | Validate Fund, Submit Contribution, Employees — provide one or the other, never both, never neither |  |
+
+## Using SMSF per endpoint
+
+### Validate Fund
+
+Pass one or more SMSF objects in `smsfFunds`, alongside or instead of `fundUsis`. At least one of the two arrays must be non-empty. No two entries in `smsfFunds` may share the same `australianBusinessNumber`.
+
+```json
+{
+  "smsfFunds": [
+    {
+      "organisationName": "Test Superannuation Fund",
+      "australianBusinessNumber": "34623710896",
+      "esaAlias": "SUPERCHOICE",
+      "account": {
+        "accountName": "Test Superannuation Fund",
+        "bsb": "923100",
+        "accountNumber": "62645812"
+      }
+    }
+  ]
+}
+```
+
+Full endpoint reference: [Validation](/super/api-reference/funds/validate-superannuation-fund)
+
+### Submit Contribution
+
+On each entry in `contributionDetails.funds[]`, provide `smsf` instead of `usi`. Exactly one of the two must be present on that fund entry.
+
+```json
+{
+  "employerId": "6960d86e466f44ab3f163c66",
+  "contributionDetails": {
+    "funds": [
+      {
+        "smsf": {
+          "organisationName": "Test Superannuation Fund",
+          "australianBusinessNumber": "34623710896",
+          "esaAlias": "SUPERCHOICE",
+          "account": {
+            "accountName": "Test Superannuation Fund",
+            "bsb": "923100",
+            "accountNumber": "62645812"
+          }
+        },
+        "amountForFund": { "value": 100, "currency": "AUD" },
+        "members": [
+          {
+            "employeeId": "69a2c642d87a988244021bbe",
+            "payPeriodStartDate": 1638277200,
+            "payPeriodEndDate": 1640955600,
+            "employmentStatus": "FULL_TIME",
+            "totalMemberContributionAmount": { "value": 100, "currency": "AUD" },
+            "superGuaranteeAmount": { "value": 100, "currency": "AUD" }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Full endpoint reference: [Submission](/super/api-reference/contributions/submit-contribution)
+
+### Employees
+
+On both create (`POST /v1/employees`) and update (`PUT /v1/employees/:id`), provide `smsf` instead of `usi` on the employee record.
+
+```json
+{
+  "smsf": {
+    "organisationName": "Test Superannuation Fund",
+    "australianBusinessNumber": "34623710896",
+    "esaAlias": "SUPERCHOICE",
+    "account": {
+      "accountName": "Test Superannuation Fund",
+      "bsb": "923100",
+      "accountNumber": "62645812"
+    }
+  }
+}
+```
+
+Full endpoint reference: [Employees](/super/api-reference/employees/create-employee)
+
+## Validation rules & common errors
+
+- **Invalid ABN checksum** — `australianBusinessNumber` must be 11 digits AND pass the ATO checksum algorithm. An 11-digit number that fails the checksum is rejected.
+- **Duplicate ABN in one request** — Validate Fund rejects a request where two entries in `smsfFunds` share the same `australianBusinessNumber`.
+- **All-zero BSB or account number** — `account.bsb` and `account.accountNumber` are both rejected if every digit is zero.
+- **Both or neither fund identifier provided** — every fund entry, contribution fund, or employee record must provide exactly one of `usi` / `smsf`. Providing both, or providing neither, is rejected.

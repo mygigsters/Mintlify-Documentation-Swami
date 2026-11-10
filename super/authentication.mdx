@@ -1,0 +1,181 @@
+---
+title: "Authentication"
+description: "Authenticate Super API requests with an API key pair sent over HTTP Basic authentication."
+---
+
+The Super API authenticates requests with an API key pair sent with HTTP Basic authentication. The key endpoints themselves are the exception: you sign in with a one-time passcode to create your first key.
+
+## Base URLs
+
+| Environment | Base URL |
+|---|---|
+| Demo (QA) | `https://qa-super.mygigsters.com.au` |
+| Production | `https://super.mygigsters.com.au` |
+
+## Create an API key
+
+<Steps>
+  <Step title="Log in">
+    Call [Log in](/super/api-reference/api-keys/log-in) to request a one-time passcode.
+  </Step>
+  <Step title="Verify the passcode">
+    Call [Verify OTP](/super/api-reference/api-keys/verify-otp) to exchange the passcode for a JWT.
+  </Step>
+  <Step title="Create the key">
+    Call [Create API key](/super/api-reference/api-keys/create-api-key) with the JWT as a Bearer token and a friendly name for the key.
+
+    ```json Response
+    {
+      "apiUsername": "39534898-f44e-461e-99fb-c27f3bdd515b",
+      "apiPassword": "YOUR_API_PASSWORD"
+    }
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  The `apiPassword` is shown only once. Store it securely. If you lose it, create a new API key.
+</Warning>
+
+## Send credentials with every request
+
+Use `apiUsername` as the username and `apiPassword` as the password. Most HTTP clients build the Basic header for you.
+
+<CodeGroup>
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v1/employees' \
+  -u 'apiUsername:apiPassword'
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v1/employees", {
+  method: "GET",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+  },
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://qa-super.mygigsters.com.au/v1/employees",
+    auth=("apiUsername", "apiPassword"),
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v1/employees")
+request = Net::HTTP::Get.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v1/employees");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "GET",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v1/employees"))
+            .header("Authorization", "Basic " + credentials)
+            .method("GET", HttpRequest.BodyPublishers.noBody())
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	req, err := http.NewRequest("GET", "https://qa-super.mygigsters.com.au/v1/employees", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Get, "https://qa-super.mygigsters.com.au/v1/employees");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+</CodeGroup>
+
+To build the header yourself, base64-encode `apiUsername:apiPassword` and send it as `Authorization: Basic {encoded}`.
+
+## Keep your keys safe
+
+- Never commit API keys to version control.
+- Store credentials in environment variables.
+- Rotate API keys regularly, and delete unused keys with [Delete API key](/super/api-reference/api-keys/delete-api-key).
+- Use HTTPS for every request.

@@ -1,0 +1,628 @@
+---
+title: "Submit Contribution"
+description: "Submits a superannuation contribution for processing. This endpoint automatically retrieves employer and employee static information from the database, so you only need to provide variable data such as fund amounts, pay..."
+api: "POST https://qa-super.mygigsters.com.au/v1/contributions/contribution"
+---
+
+<Tip>
+  **Why it's useful:** Use it to pay super for several workers and funds in one request.
+</Tip>
+
+### Simplified Request Format
+
+Instead of providing the full contribution payload, you only need to provide:
+
+- **Employer ID**: The employer ID that this contribution belongs to (required)
+- **Fund USI**: The superannuation fund identifier
+- **Employee ID**: Reference to employee stored in database (from GET /v1/employees)
+- **Amounts**: Contribution amounts for each employee
+- **Pay Periods**: Start and end dates for the pay period
+- **Employment Status**: Employment status for this pay period
+- **invoiceNumber** (optional): An invoice reference you can attach to each fund in the request (`funds[].invoiceNumber`)
+
+### Multi-fund + Multi-member
+
+- A single request can include multiple funds (`contributionDetails.funds[]`).
+- Each fund can include multiple members (`funds[].members[]`).
+
+### Payments Created
+
+We create **1 payment history record per member (per fund)** in the `Submitted History` section.
+
+### invoiceNumber Attachment
+
+If provided, `invoiceNumber` is:
+
+- Sent as `funds[].invoiceNumber` in this simplified request
+- Stored on each created payment record as `payment.invoiceNumber`
+
+All created payment records share the same `transactionId` returned by the upstream clearing service. Each payment record also contains the associated fund info at `payment.contributionDetails.fund` (e.g. USI), so you can see which fund was associated with that member payment.
+
+For this **simplified** endpoint, you do **not** send `memberNumber` or `employmentPayrollNumber` in the member objects. These identifiers are automatically populated from the onboarded employee record and passed through in the full clearing-house payload that we build internally.
+
+### Workflow
+
+- **Onboard Employer**: Store employer information in database (internal process)
+- **Onboard Employees**: Use POST /v1/employees to store employee static data (including USI, memberNumber, and employmentPayrollNumber)
+- **Submit Contribution**: Use this endpoint with employerId and only variable data
+
+### Benefits
+
+- **Reduced Payload Size**: Only send variable data that changes per contribution
+- **Data Consistency**: Static data is stored once and reused
+- **Simplified Integration**: Less data to manage in your payroll system
+- **Automatic Updates**: Update employee data once, affects all future contributions
+
+### Automatic Contribution History Storage
+
+When contributions are submitted via this endpoint, the system **automatically stores** the contribution details in the history. This happens in the background and does not affect the contribution submission response. You can retrieve the stored contribution history using the `GET /v1/contributions/submitted/history` endpoint.
+
+**Note:** This automatic storage ensures all submitted contributions are tracked and can be retrieved later for auditing, reporting, or reconciliation purposes.
+
+### Transaction ID - Server-Generated
+
+The server automatically generates a unique transaction ID and timestamp for each request.
+
+**Transaction ID Format:** `txn-{uuid}`
+
+**Example generated IDs:**
+
+- `txn-550e8400-e29b-41d4-a716-446655440000`
+- `txn-6ba7b810-9dad-11d1-80b4-00c04fd430c8`
+
+The transaction ID will be:
+
+- Included in all response payloads
+- Available in error messages for troubleshooting
+- Returned in response headers for request tracking
+
+### Example Request
+
+```json
+{
+  "employerId": "6960d86e466f44ab3f163c66",
+  "contributionDetails": {
+    "funds": [
+      {
+        "usi": "40328908469310",
+        "amountForFund": { "value": 100, "currency": "AUD" },
+        "invoiceNumber": "INV-2025-001",
+        "members": [
+          {
+            "employeeId": "69a2c642d87a988244021bbe",
+            "payPeriodStartDate": 1638277200000,
+            "payPeriodEndDate": 1640955600000,
+            "employmentStatus": "FULL_TIME",
+            "totalMemberContributionAmount": { "value": 100, "currency": "AUD" },
+            "superGuaranteeAmount": { "value": 100, "currency": "AUD" }
+          }
+        ]
+      },
+      {
+        "usi": "65127917725001",
+        "amountForFund": { "value": 200, "currency": "AUD" },
+        "invoiceNumber": "INV-2025-002",
+        "members": [
+          {
+            "employeeId": "69a2c642d87a988244021bbe",
+            "payPeriodStartDate": 1638277200000,
+            "payPeriodEndDate": 1640955600000,
+            "employmentStatus": "FULL_TIME",
+            "totalMemberContributionAmount": { "value": 200, "currency": "AUD" },
+            "superGuaranteeAmount": { "value": 200, "currency": "AUD" }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Request Body
+
+<ParamField body="employerId" type="string" required>
+  Employer ID that this contribution belongs to. The employer must be associated with the authenticated client.
+</ParamField>
+
+<ParamField body="contributionDetails" type="object" required>
+  Simplified contribution details. Only variable data (fund USIs, amounts, pay periods) is required. Employee and employer static data will be automatically retrieved from the database.
+</ParamField>
+
+### Responses
+
+| Code | Description |
+|---|---|
+| `200` | Contribution submitted successfully. The payment has been queued for processing. The response includes the full payload that was sent to Superannuation clearing house API. |
+| `400` | Submission failed - Invalid data or employee/employer not found. |
+| `401` | Unauthorized - Invalid authentication credentials. |
+| `404` | Employee or employer not found in database. |
+
+### Response fields
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the operation completed successfully. True means the validation passed or submission was accepted.
+</ResponseField>
+
+<ResponseField name="statusCode" type="integer">
+  HTTP status code of the response. 200 indicates success.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Human-readable message describing the operation result. For successful operations, provides confirmation of what was validated or submitted.
+</ResponseField>
+
+<ResponseField name="transactionId" type="string">
+  Server-generated transaction ID in the format `txn-{uuid}`. This ID is automatically generated by the server for tracking and correlation purposes.
+</ResponseField>
+
+<ResponseField name="payload">
+  The complete contribution payload that was submitted to Superannuation clearing house API. This includes all employer details, fund information, and member contributions with full employee data.
+</ResponseField>
+
+<Accordion title="Error response fields">
+
+<ResponseField name="success" type="boolean">
+  Always false for error responses, indicating the operation did not succeed.
+</ResponseField>
+
+<ResponseField name="statusCode" type="integer">
+  HTTP status code indicating the type of error. Common values: 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Server Error)
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Human-readable error message explaining what went wrong. May include specific details about which field or value caused the error.
+</ResponseField>
+
+<ResponseField name="errorCode" type="integer">
+  Superannuation clearing house-specific error code for programmatic error handling. Refer to the error code reference documentation for a complete list of codes. Common codes: 4030 (Employer not found), 4031 (Invalid ABN), 4040 (Fund not found).
+</ResponseField>
+
+</Accordion>
+
+<RequestExample>
+
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v1/contributions/contribution' -X POST \
+    -u "apiUsername:apiPassword"  \
+    -H "Content-Type: application/json" --data '{"employerId":"6960d86e466f44ab3f163c66","contributionDetails":{"funds":[{"usi":"40328908469310","amountForFund":{"value":1391.67,"currency":"AUD"},"members":[{"employeeId":"507f1f77bcf86cd799439011","payPeriodStartDate":1638277200000,"payPeriodEndDate":1640955600000,"employmentStatus":"FULL_TIME","totalMemberContributionAmount":{"value":1391.67,"currency":"AUD"},"superGuaranteeAmount":{"value":1391.67,"currency":"AUD"}}]}]}}'
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v1/contributions/contribution", {
+  method: "POST",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    "employerId": "6960d86e466f44ab3f163c66",
+    "contributionDetails": {
+      "funds": [
+        {
+          "usi": "40328908469310",
+          "amountForFund": {
+            "value": 1391.67,
+            "currency": "AUD"
+          },
+          "members": [
+            {
+              "employeeId": "507f1f77bcf86cd799439011",
+              "payPeriodStartDate": 1638277200000,
+              "payPeriodEndDate": 1640955600000,
+              "employmentStatus": "FULL_TIME",
+              "totalMemberContributionAmount": {
+                "value": 1391.67,
+                "currency": "AUD"
+              },
+              "superGuaranteeAmount": {
+                "value": 1391.67,
+                "currency": "AUD"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://qa-super.mygigsters.com.au/v1/contributions/contribution",
+    auth=("apiUsername", "apiPassword"),
+    json={
+        "employerId": "6960d86e466f44ab3f163c66",
+        "contributionDetails": {
+            "funds": [
+                {
+                    "usi": "40328908469310",
+                    "amountForFund": {
+                        "value": 1391.67,
+                        "currency": "AUD",
+                    },
+                    "members": [
+                        {
+                            "employeeId": "507f1f77bcf86cd799439011",
+                            "payPeriodStartDate": 1638277200000,
+                            "payPeriodEndDate": 1640955600000,
+                            "employmentStatus": "FULL_TIME",
+                            "totalMemberContributionAmount": {
+                                "value": 1391.67,
+                                "currency": "AUD",
+                            },
+                            "superGuaranteeAmount": {
+                                "value": 1391.67,
+                                "currency": "AUD",
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v1/contributions/contribution")
+request = Net::HTTP::Post.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+request["Content-Type"] = "application/json"
+request.body = <<~JSON
+  {
+    "employerId": "6960d86e466f44ab3f163c66",
+    "contributionDetails": {
+      "funds": [
+        {
+          "usi": "40328908469310",
+          "amountForFund": {
+            "value": 1391.67,
+            "currency": "AUD"
+          },
+          "members": [
+            {
+              "employeeId": "507f1f77bcf86cd799439011",
+              "payPeriodStartDate": 1638277200000,
+              "payPeriodEndDate": 1640955600000,
+              "employmentStatus": "FULL_TIME",
+              "totalMemberContributionAmount": {
+                "value": 1391.67,
+                "currency": "AUD"
+              },
+              "superGuaranteeAmount": {
+                "value": 1391.67,
+                "currency": "AUD"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+JSON
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v1/contributions/contribution");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "POST",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+    CURLOPT_HTTPHEADER => [
+        "Content-Type: application/json",
+    ],
+    CURLOPT_POSTFIELDS => <<<'JSON'
+{
+  "employerId": "6960d86e466f44ab3f163c66",
+  "contributionDetails": {
+    "funds": [
+      {
+        "usi": "40328908469310",
+        "amountForFund": {
+          "value": 1391.67,
+          "currency": "AUD"
+        },
+        "members": [
+          {
+            "employeeId": "507f1f77bcf86cd799439011",
+            "payPeriodStartDate": 1638277200000,
+            "payPeriodEndDate": 1640955600000,
+            "employmentStatus": "FULL_TIME",
+            "totalMemberContributionAmount": {
+              "value": 1391.67,
+              "currency": "AUD"
+            },
+            "superGuaranteeAmount": {
+              "value": 1391.67,
+              "currency": "AUD"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+JSON,
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        String body = String.join("\n",
+            "{",
+            "  \"employerId\": \"6960d86e466f44ab3f163c66\",",
+            "  \"contributionDetails\": {",
+            "    \"funds\": [",
+            "      {",
+            "        \"usi\": \"40328908469310\",",
+            "        \"amountForFund\": {",
+            "          \"value\": 1391.67,",
+            "          \"currency\": \"AUD\"",
+            "        },",
+            "        \"members\": [",
+            "          {",
+            "            \"employeeId\": \"507f1f77bcf86cd799439011\",",
+            "            \"payPeriodStartDate\": 1638277200000,",
+            "            \"payPeriodEndDate\": 1640955600000,",
+            "            \"employmentStatus\": \"FULL_TIME\",",
+            "            \"totalMemberContributionAmount\": {",
+            "              \"value\": 1391.67,",
+            "              \"currency\": \"AUD\"",
+            "            },",
+            "            \"superGuaranteeAmount\": {",
+            "              \"value\": 1391.67,",
+            "              \"currency\": \"AUD\"",
+            "            }",
+            "          }",
+            "        ]",
+            "      }",
+            "    ]",
+            "  }",
+            "}"
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v1/contributions/contribution"))
+            .header("Authorization", "Basic " + credentials)
+            .header("Content-Type", "application/json")
+            .method("POST", HttpRequest.BodyPublishers.ofString(body))
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+)
+
+func main() {
+	body := strings.NewReader(`{
+  "employerId": "6960d86e466f44ab3f163c66",
+  "contributionDetails": {
+    "funds": [
+      {
+        "usi": "40328908469310",
+        "amountForFund": {
+          "value": 1391.67,
+          "currency": "AUD"
+        },
+        "members": [
+          {
+            "employeeId": "507f1f77bcf86cd799439011",
+            "payPeriodStartDate": 1638277200000,
+            "payPeriodEndDate": 1640955600000,
+            "employmentStatus": "FULL_TIME",
+            "totalMemberContributionAmount": {
+              "value": 1391.67,
+              "currency": "AUD"
+            },
+            "superGuaranteeAmount": {
+              "value": 1391.67,
+              "currency": "AUD"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}`)
+
+	req, err := http.NewRequest("POST", "https://qa-super.mygigsters.com.au/v1/contributions/contribution", body)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Post, "https://qa-super.mygigsters.com.au/v1/contributions/contribution");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+request.Content = new StringContent(@"{
+  ""employerId"": ""6960d86e466f44ab3f163c66"",
+  ""contributionDetails"": {
+    ""funds"": [
+      {
+        ""usi"": ""40328908469310"",
+        ""amountForFund"": {
+          ""value"": 1391.67,
+          ""currency"": ""AUD""
+        },
+        ""members"": [
+          {
+            ""employeeId"": ""507f1f77bcf86cd799439011"",
+            ""payPeriodStartDate"": 1638277200000,
+            ""payPeriodEndDate"": 1640955600000,
+            ""employmentStatus"": ""FULL_TIME"",
+            ""totalMemberContributionAmount"": {
+              ""value"": 1391.67,
+              ""currency"": ""AUD""
+            },
+            ""superGuaranteeAmount"": {
+              ""value"": 1391.67,
+              ""currency"": ""AUD""
+            }
+          }
+        ]
+      }
+    ]
+  }
+}", Encoding.UTF8, "application/json");
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Contribution submitted successfully",
+  "transactionId": "txn-550e8400-e29b-41d4-a716-446655440000",
+  "payload": {
+    "identifier": {
+      "transactionId": {
+        "value": "txn-550e8400-e29b-41d4-a716-446655440000"
+      },
+      "timeInUTC": 1765780000000
+    },
+    "contributionDetails": {
+      "employer": {
+        "employerDetails": {
+          "organisationName": "MyGigsters Technologies Pty Ltd",
+          "australianBusinessNumber": "34623710896",
+          "paymentDetails": {
+            "paymentType": "DIRECTDEBIT",
+            "directDebit": {
+              "bankAccount": {
+                "accountName": "MyGigsters Technologies Pty Ltd",
+                "bsb": "923100",
+                "accountNumber": "62645812"
+              },
+              "directDebitPaymentAmount": {
+                "value": 1391.67,
+                "currency": "AUD"
+              }
+            }
+          },
+          "refundAccount": {
+            "accountName": "MyGigsters Technologies Pty Ltd",
+            "bsb": "923100",
+            "accountNumber": "62645812"
+          },
+          "contactDetails": {
+            "name": {
+              "title": "Mr",
+              "firstName": "Jonathan",
+              "middleName": " ",
+              "lastName": "Vella",
+              "suffix": " "
+            },
+            "phoneNumber": {
+              "type": "MOBILE_PHONE",
+              "value": "0424022864"
+            },
+            "email": {
+              "value": "jon.vella@company.com"
+            }
+          }
+        },
+        "funds": [
+          {
+            "usi": "40328908469310",
+            "amountForFund": {
+              "value": 1391.67,
+              "currency": "AUD"
+            },
+            "members": [
+              {
+                "employeeId": "507f1f77bcf86cd799439011",
+                "payPeriodStartDate": 1638277200000,
+                "payPeriodEndDate": 1640955600000,
+                "employmentStatus": "FULL_TIME",
+                "totalMemberContributionAmount": {
+                  "value": 1391.67,
+                  "currency": "AUD"
+                },
+                "superGuaranteeAmount": {
+                  "value": 1391.67,
+                  "currency": "AUD"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+</ResponseExample>
