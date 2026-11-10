@@ -1,0 +1,84 @@
+---
+title: "Member verification (MVR)"
+description: "Check that a super fund will accept contributions for a member before you pay."
+---
+
+MVR (Member Verification Request) is an automatic fund-eligibility check that runs on the [Employees v2](/super/api-reference/employees/create-employee) endpoints. This page explains what it does, what it means for payment eligibility, and how to call it directly when you need to (see Endpoints below).
+
+## What is MVR verification
+
+When you create or update an employee through a `v2` employee endpoint, we automatically check with the employee's super fund that they can actually accept contributions for that member — before you ever submit a payment. This catches problems (wrong member number, fund doesn't recognise the member, ineligible fund) up front instead of after a failed contribution.
+
+Calling a `v2` endpoint instead of `v1` is itself the opt-in — there's no separate flag. Your existing `v1` integration is completely unaffected if you don't use the v2 endpoints.
+
+## The mvrStatus lifecycle
+
+Every employee record returned by a `v2` call includes `mvrStatus` and `mvrStatusReason`. Poll `GET /v1/employees/:id` to watch a `PENDING` status resolve — verification is asynchronous and resolves within **24–48 hours**.
+
+| Status | Meaning | Payment allowed? |
+|---|---|---|
+| `NOT_APPLICABLE` | No fund identity (usi/smsf) set yet — nothing to verify | Yes |
+| `PENDING` | Submitted to the fund, awaiting a response | No |
+| `VERIFIED` | Fund confirmed the member — all clear | Yes |
+| `WARNING` | Fund verified with a non-blocking warning | Yes |
+| `REJECTED` | Fund rejected the member (see `mvrStatusReason`) | No |
+| `NOT_SUPPORTED` | The member's fund hasn't enabled MVR yet — see below | Yes |
+| `TIMED_OUT` | No response from the fund within the expected window | No |
+
+## Common mvrStatusReason messages
+
+`mvrStatusReason` is always plain text from the fund, not a code — it can vary by fund, but these are the most common reasons you'll see:
+
+| mvrStatus | Typical reason |
+|---|---|
+| `REJECTED` | Member not found — the supplied details (name, DOB, fund info, etc.) couldn't be matched to a member account |
+| `REJECTED` | Person is no longer a member of that superannuation fund |
+| `REJECTED` | Contributions can't be accepted because the product is closed, a defined-benefit product, or a pension fund |
+| `REJECTED` | Contributions can't be accepted due to the member's age or eligibility restrictions |
+| `WARNING` | For SMSFs — the fund's ABN isn't recognised by the fund's message receiver (not properly registered with an Electronic Service Address) |
+| `REJECTED` | No account exists and there's no default employer relationship with the fund to register the member |
+| `REJECTED` | The fund is not open to new members |
+
+Remember: `WARNING` does **not** block payment — only `REJECTED` does. For a `REJECTED` member, double-check the details against what's registered with their fund (name, DOB, member number), correct them, then update the employee's fund identity via `v2` to retry verification.
+
+## Not every fund supports MVR yet
+
+MVR is a new, industry-wide capability being rolled out under the ATO's Payday Super reforms. Super funds have a **9-month window, from 1 July 2026 to 1 March 2027**, to commence support for it — **1 March 2027** is the current deadline by which every fund must be able to support MVR.
+
+Until a member's fund has enabled MVR, verification comes back as `NOT_SUPPORTED`, with `mvrStatusReason` explaining why. This is expected and normal during the rollout window — it is **not an error on your part**, and it does not block payment: contribution submission proceeds normally for that employee.
+
+## Effect on contribution submission
+
+`POST /v1/contributions/contribution` checks every member's current `mvrStatus` before submitting. If any employee in the request is `PENDING`, `REJECTED`, or `TIMED_OUT`, the **entire request is rejected with a 403** — including every other employee in that same batch, not just the blocked one.
+
+If you never use the `v2` employee endpoints, none of your employees will ever have a status in this state, and contribution submission behaves exactly as it always has.
+
+Need a specific employee exempted from this check — without changing anything about their actual verification? See `PATCH /v2/mvr/employee/:employeeId/override` below.
+
+## When it triggers
+
+- **Creating an employee** via `POST /v2/employees` or `POST /v2/employees/bulk-upload` — only for rows that include a `usi` or `smsf` at creation time.
+- **Updating an employee's fund identity, name, gender, date of birth, address, or TFN** via `PUT /v2/employees/:employeeId` — these are exactly the details the fund matches against, so a genuine change to any one of them re-triggers verification. Only real changes count — resending the same value does nothing.
+- An employee created without a fund identity gets `NOT_APPLICABLE` and stays that way until you set one via a v2 update.
+
+## Common questions
+
+Why is my employee's mvrStatus still PENDING?
+
+Verification is asynchronous — it resolves within **24–48 hours**. Poll `GET /v1/employees/:id` to check the latest status.
+
+My employee is NOT_SUPPORTED — is that a problem?
+
+No — it means the member's fund hasn't enabled MVR yet. Funds have until **1 March 2027** to support it. Payment is not blocked; nothing further to do until the fund enables it.
+
+My employee is REJECTED — what do I do?
+
+Check `mvrStatusReason` for the fund's reason, then correct the underlying detail through a `PUT /v2/employees/:employeeId` call — this alone re-triggers verification, whether the fix is to their fund (usi/smsf), name, date of birth, address, or TFN. If nothing about the employee actually needs correcting (e.g. the rejection was a transient SuperChoice-side timeout), call `POST /v2/mvr/submit` directly instead to retry without touching their record. Need payment to go through regardless while you sort it out? Use `PATCH /v2/mvr/employee/:employeeId/override` — it doesn't touch mvrStatus at all, it just stops it from blocking payment.
+
+Can I opt an existing (v1) employee into MVR?
+
+Yes — send any update through `PUT /v2/employees/:employeeId` that changes one of the MVR-relevant fields: fund identity (`usi`/`smsf`, even to the same fund under a different value, or simply set for the first time), name, gender, date of birth, address, or TFN. Any genuine change to one of those triggers verification, even if you never touch their fund.
+
+Real funds never reply in QA — how do I test my integration against every outcome?
+
+Use `PATCH /v2/mvr/employee/:employeeId` to force any status directly (no real SuperChoice call) — it fires the real `employee.mvr_status_changed` webhook for terminal statuses, so you can confirm your webhook receiver and your UI handle `VERIFIED`, `WARNING`, `REJECTED`, `NOT_SUPPORTED`, and `TIMED_OUT` correctly, without waiting on a real fund.

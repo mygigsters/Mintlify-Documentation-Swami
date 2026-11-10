@@ -1,0 +1,124 @@
+---
+title: "Async contribution submissions"
+description: "Submit large contribution batches asynchronously and get the result by webhook or polling."
+---
+
+`POST /v2/contributions` is an asynchronous version of the [v1 contribution submission](/super/api-reference/contributions/submit-contribution) endpoint. It takes exactly the same request body, but accepts much larger batches: it validates the request straight away, returns a `transactionId` with `202 Accepted`, and submits to the clearing house in the background. The outcome arrives by webhook (or you can poll for it).
+
+## When to use v2 vs v1
+
+|  | v1 `POST /v1/contributions/contribution` | v2 `POST /v2/contributions` |
+|---|---|---|
+| Request body | Simplified contribution request | **Identical** to v1 |
+| Response | Synchronous — the submission result | `202 Accepted` with a `transactionId`; result later by webhook / polling |
+| Limits per request | 8 funds / 40 members | **100 funds / 1000 members** |
+| `Idempotency-Key` header | Not used | **Required** |
+| Inactive USI check | — | Every `usi` must be an active fund |
+
+Use v2 when your pay runs exceed the v1 limits, or when you'd rather not split one pay run into many v1 requests. v1 is unchanged and still available — you don't have to migrate.
+
+## How it works
+
+- **Submit** — `POST /v2/contributions` with your `Idempotency-Key` header.
+- **Validated up front, all or nothing** — we check the payload, that the employer exists and is onboarded at the clearing house, that every employee exists for your client, the [MVR payment gate](/super/guides/member-verification) (same rules as v1), and that every `usi` is an active fund. If anything fails you get a `400` listing **every** error, and nothing is stored.
+- **`202 Accepted`** — you get back a `transactionId`. This is the one SuperChoice transaction ID used everywhere afterwards: payments, payment status endpoints, and `payment.status_changed` webhooks.
+- **Background submission** — the submission is usually picked up within about a minute and sent to the clearing house as **one transaction** (one direct debit).
+- **Outcome** — the `contribution.submission_completed` webhook fires, or poll `GET /v2/contributions/:transactionId`.
+- **After `SUBMITTED`** — everything else (payment status, `payment.status_changed` webhooks, fund responses) works exactly as it does for v1 transactions.
+
+## Idempotency-Key
+
+The `Idempotency-Key` header is required. Generate a unique key for each new submission (a UUID, or something derived from your own pay-run ID), store it, and **send the same key again if you retry the same request** — for example after a timeout or network error.
+
+| Situation | Result |
+|---|---|
+| Same key + same body | `202` with the original `transactionId` (and its current status) — nothing is submitted twice |
+| Same key + different body | `409 Conflict` |
+| Header missing | `400` |
+
+Keys are scoped to your client account and never expire, so never reuse a key for a different submission.
+
+```bash
+curl -X POST 'https://qa-super.mygigsters.com.au/v2/contributions' \
+  -u "apiUsername:apiPassword" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: payrun-2026-10-27-001" \
+  --data @contribution.json
+```
+
+```json
+{
+  "transactionId": "txn-3cb85051-09cd-4a04-9952-100b20384ada",
+  "employerId": "6960d86e466f44ab3f163c66",
+  "status": "ACCEPTED",
+  "totals": { "funds": 2, "members": 3, "amount": "3.00" }
+}
+```
+
+## Validation errors
+
+A `400` lists every business-rule problem in the request at once, each with the path of the field that caused it, so you can fix everything in one go:
+
+```json
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Contribution validation failed",
+  "errors": [
+    {
+      "path": "contributionDetails.funds[0].usi",
+      "message": "USI 12345678901234 is not an active fund"
+    },
+    {
+      "path": "contributionDetails.funds[1].members[2].employeeId",
+      "message": "Payment blocked for employee 6a58c9406820b9ff62b527b3: MVR status is PENDING"
+    }
+  ]
+}
+```
+
+Field-format errors (e.g. a missing amount or an invalid `employmentStatus`) are reported in `message`, the same way as v1. Requests over the limits are rejected before any other check.
+
+## Statuses
+
+| Status | Meaning | What to do |
+|---|---|---|
+| `ACCEPTED` | Validated and queued | Wait |
+| `PROCESSING` | Being submitted to the clearing house | Wait |
+| `SUBMITTED` | The clearing house has the transaction | Track payments via [Payment Status](/super/api-reference/payment-status/get-payment-status) and `payment.status_changed` webhooks, as for v1 |
+| `FAILED` | Rejected — `error.message` says why | Fix the problem and resubmit with a **new** `Idempotency-Key` |
+| `UNDER_REVIEW` | We couldn't confirm whether the clearing house received it, even after retries. Our team is investigating | Do not resubmit — you could pay twice. Contact support if you need an update |
+
+`SUBMITTED`, `FAILED` and `UNDER_REVIEW` are final.
+
+## Webhook: contribution.submission_completed
+
+Delivered through your [registered webhook](/super/api-reference/webhooks/register-webhook) with the same HMAC signing and retries as every other event, once the submission reaches a final status:
+
+```json
+{
+  "event": "contribution.submission_completed",
+  "timestamp": "2026-10-27T10:34:05.148Z",
+  "data": {
+    "transactionId": "txn-3cb85051-09cd-4a04-9952-100b20384ada",
+    "employerId": "6960d86e466f44ab3f163c66",
+    "status": "SUBMITTED",
+    "totals": { "funds": 2, "members": 3, "amount": "3.00" },
+    "completedAt": "2026-10-27T10:34:04.123Z"
+  }
+}
+```
+
+`data.error: { "message": "..." }` is included only when `status` is `FAILED` or `UNDER_REVIEW`. The message can be long (up to 4000 characters) when the clearing house reports many field errors. `GET /v2/contributions/:transactionId` returns the same fields as `data`.
+
+## Retrying safely
+
+- **No response / timeout / 5xx from `POST /v2/contributions`** — resend the same body with the **same** `Idempotency-Key`. You'll get the original `transactionId` back; nothing is submitted twice.
+- **`400`** — nothing was stored. Fix the errors and send again (the same key is fine, since nothing was stored under it).
+- **`FAILED`** — safe to fix and resubmit, with a **new** `Idempotency-Key`. Requests are re-checked just before sending, so `FAILED` can also mean something changed after you submitted (for example, an employee's MVR status).
+- **`UNDER_REVIEW`** — don't resubmit. The money may already have gone through; our team will resolve it.
+
+## Limits
+
+- **100 funds** and **1000 members** (across all funds) per request.
+- Need more? Split the pay run into several requests, each with its own `Idempotency-Key`.

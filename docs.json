@@ -253,6 +253,112 @@
         ]
       },
       {
+        "tab": "Superannuation",
+        "groups": [
+          {
+            "group": "Get started",
+            "icon": "rocket",
+            "pages": [
+              "super/overview",
+              "super/quickstart",
+              "super/authentication"
+            ]
+          },
+          {
+            "group": "Guides",
+            "icon": "book-open",
+            "pages": [
+              "super/guides/member-verification",
+              "super/guides/async-submissions",
+              "super/guides/smsf",
+              "super/guides/embedded-widget"
+            ]
+          },
+          {
+            "group": "API reference",
+            "icon": "code",
+            "pages": [
+              {
+                "group": "API keys",
+                "pages": [
+                  "super/api-reference/api-keys/log-in",
+                  "super/api-reference/api-keys/verify-otp",
+                  "super/api-reference/api-keys/create-api-key",
+                  "super/api-reference/api-keys/list-api-keys",
+                  "super/api-reference/api-keys/delete-api-key"
+                ]
+              },
+              {
+                "group": "Employers",
+                "pages": [
+                  "super/api-reference/employers/onboard-employer",
+                  "super/api-reference/employers/list-client-employers",
+                  "super/api-reference/employers/get-employer-by-id",
+                  "super/api-reference/employers/update-employer"
+                ]
+              },
+              {
+                "group": "Employees",
+                "pages": [
+                  "super/api-reference/employees/create-employee",
+                  "super/api-reference/employees/list-all-employees",
+                  "super/api-reference/employees/get-employee-by-id",
+                  "super/api-reference/employees/update-employee",
+                  "super/api-reference/employees/search-employees",
+                  "super/api-reference/employees/get-super-owed",
+                  "super/api-reference/employees/create-employee-v2",
+                  "super/api-reference/employees/bulk-upload-employees-v2",
+                  "super/api-reference/employees/update-employee-v2"
+                ]
+              },
+              {
+                "group": "Member verification",
+                "pages": [
+                  "super/api-reference/member-verification/submit-member-verification",
+                  "super/api-reference/member-verification/validate-member-verification",
+                  "super/api-reference/member-verification/get-mvr-outcome",
+                  "super/api-reference/member-verification/override-mvr-payment-gate",
+                  "super/api-reference/member-verification/set-mvr-status-testing"
+                ]
+              },
+              {
+                "group": "Funds",
+                "pages": [
+                  "super/api-reference/funds/validate-superannuation-fund",
+                  "super/api-reference/funds/superselector",
+                  "super/api-reference/funds/get-active-superannuation-funds"
+                ]
+              },
+              {
+                "group": "Contributions",
+                "pages": [
+                  "super/api-reference/contributions/submit-contribution",
+                  "super/api-reference/contributions/submit-contribution-async",
+                  "super/api-reference/contributions/get-async-submission-status",
+                  "super/api-reference/contributions/cancel-contribution-batch",
+                  "super/api-reference/contributions/get-contribution-history"
+                ]
+              },
+              {
+                "group": "Payment status",
+                "pages": [
+                  "super/api-reference/payment-status/get-payment-status",
+                  "super/api-reference/payment-status/get-transaction-response",
+                  "super/api-reference/payment-status/get-detailed-transaction-response"
+                ]
+              },
+              {
+                "group": "Webhooks",
+                "pages": [
+                  "super/api-reference/webhooks/register-webhook",
+                  "super/api-reference/webhooks/remove-webhook"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
         "tab": "SDKs",
         "groups": [
           {

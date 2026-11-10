@@ -1,0 +1,566 @@
+---
+title: "Get transaction response"
+description: "Fetches the fund response payload from the super clearing house after contributions have been processed. Available once the super clearing house has received responses from super funds. Each entry in responseTransaction..."
+api: "GET https://qa-super.mygigsters.com.au/v1/payments/response/transaction/{transactionId}"
+---
+
+### When to Call This Endpoint
+
+Call this endpoint after a transaction has reached `AWAITING_FUND_RESPONSE`, `SETTLED`, `SETTLED_WITH_WARNING`, `REFUNDED`, or `FUND_TRANSFER_FAILED` status in the contribution history. The fund response is only available once the fund has processed the payment and returned a result.
+
+### Response Structure
+
+```json
+{
+  "identifier": {
+    "transactionId": { "value": "34623710896_20250115_001" },
+    "timeInUTC": 1737000000000
+  },
+  "responseTransaction": [
+    {
+      "transactionFund": {
+        "fund": { "usi": "STA0100AU", "fen": "FEN123" },
+        "smsf": null
+      },
+      "employerResponseDetails": {
+        "employerRequest": {
+          "organisationName": "Acme Pty Ltd",
+          "australianBusinessNumber": "34623710896",
+          "paymentDetails": {
+            "paymentType": "DIRECTDEBIT",
+            "directDebit": {
+              "bankAccount": {
+                "accountName": "Acme Pty Ltd",
+                "bsb": "062000",
+                "accountNumber": "12345678"
+              },
+              "directDebitPaymentAmount": { "value": 7838.46, "currency": "AUD" }
+            }
+          },
+          "refundAccount": {
+            "accountName": "Acme Refund",
+            "bsb": "062001",
+            "accountNumber": "87654321"
+          },
+          "contactDetails": {
+            "name": { "firstName": "Jane", "lastName": "Smith" },
+            "phoneNumber": { "type": "MOBILE_PHONE", "value": "0400000000" },
+            "email": { "value": "jane@acme.com.au" }
+          }
+        },
+        "employerResponse": {
+          "responseType": "EMPLOYER_REFUND",
+          "refundData": {
+            "employerPaymentPRN": "PC190716-000001340",
+            "employerRefundPaymentAmount": { "value": 831.60, "currency": "AUD" },
+            "memberRefundPaymentAmount": null,
+            "memberRefundContributionType": null
+          },
+          "errorDetails": {
+            "errorSeverityCode": "ERROR",
+            "errorDescription": "No longer a member of superannuation entity"
+          }
+        }
+      },
+      "memberResponseDetails": null
+    },
+    {
+      "transactionFund": {
+        "fund": { "usi": "BTA0287AU", "fen": null }
+      },
+      "employerResponseDetails": null,
+      "memberResponseDetails": {
+        "memberRequest": {
+          "name": { "title": "Mr", "firstName": "Manuel", "lastName": "Samson" },
+          "gender": "MALE",
+          "dob": { "year": 1979, "month": "JANUARY", "day": 11 },
+          "address": {
+            "australianAddress": {
+              "line1": "Unit 7",
+              "line2": "40 Epping Road",
+              "suburb": "Lane Cove",
+              "postCode": "2066",
+              "stateOrTerritory": "NSW",
+              "countryCode": "AU"
+            }
+          },
+          "taxFileNumber": "223344",
+          "memberNumber": "ZZZ",
+          "employmentPayrollNumber": "EMP-000123",
+          "employmentStartDate": 1445341213,
+          "employmentEndDate": null,
+          "employmentEndReason": null,
+          "benefitCategory": null,
+          "employmentStatus": "CASUAL",
+          "payPeriodStartDate": 1445341213234,
+          "payPeriodEndDate": 1447933213234,
+          "totalMemberContributionAmount": { "value": 1000.00, "currency": "AUD" },
+          "superGuaranteeAmount": { "value": 100.00, "currency": "AUD" },
+          "awardOrProductivityAmount": { "value": 100.00, "currency": "AUD" },
+          "personalContributionsAmount": { "value": 100.00, "currency": "AUD" },
+          "salarySacrificedAmount": { "value": 100.00, "currency": "AUD" },
+          "voluntaryAmount": { "value": 100.00, "currency": "AUD" },
+          "spouseContributionsAmount": { "value": 100.00, "currency": "AUD" },
+          "childContributionsAmount": { "value": 100.00, "currency": "AUD" },
+          "otherThirdPartyContributionsAmount": { "value": 300.00, "currency": "AUD" },
+          "context": {
+            "contextIdentifier": "TUY56789",
+            "tfnEntityIdentifier": "223344",
+            "otherEntityIdentifier": "6789097",
+            "employersABN": "34623710896",
+            "superannuationFundABN": "67890067456",
+            "superannuationFundUSI": "BTA0287AU"
+          }
+        },
+        "memberResponse": {
+          "responseType": "NON_REFUND",
+          "refundData": null,
+          "errorDetails": null
+        }
+      }
+    }
+  ]
+}
+```
+
+### Top-level
+
+| Field | Type | Description |
+|---|---|---|
+| `identifier.transactionId.value` | string | The transaction ID submitted with the contribution |
+| `identifier.timeInUTC` | number | Epoch milliseconds when the transaction was submitted |
+| `responseTransaction` | array | One entry per fund per transaction (see below) |
+
+### responseTransaction[] entry
+
+Each entry is for one fund. It contains either `employerResponseDetails` or `memberResponseDetails` (not both — they are mutually exclusive).
+
+| Field | Type | Description |
+|---|---|---|
+| `transactionFund.fund.usi` | string | USI of the APRA fund |
+| `transactionFund.fund.fen` | string | Fund Employer Number (optional) |
+| `transactionFund.smsf` | object | SMSF details if fund is an SMSF (otherwise null) |
+| `employerResponseDetails` | object | Employer-level response (null if member-level) |
+| `memberResponseDetails` | object | Member-level response (null if employer-level) |
+
+### memberResponseDetails.memberRequest key fields
+
+These fields come from the original contribution submission and are echoed back in the response so you can identify which member this entry belongs to.
+
+| Field | Type | Description |
+|---|---|---|
+| `memberRequest.employmentPayrollNumber` | string | **Primary identifier** — the payroll number you submitted for this employee. Use this to match the response entry back to the correct employee in your system, especially when multiple members share the same USI |
+| `memberRequest.memberNumber` | string | Fund-assigned member number |
+| `memberRequest.taxFileNumber` | string | Member TFN |
+| `memberRequest.name` | object | Member name (`firstName`, `lastName`) |
+| `memberRequest.employmentStatus` | string | e.g. `CASUAL`, `FULL_TIME` |
+| `memberRequest.payPeriodStartDate` | number | Pay period start (epoch ms) |
+| `memberRequest.payPeriodEndDate` | number | Pay period end (epoch ms) |
+| `memberRequest.totalMemberContributionAmount` | object | Total contribution amount for this member |
+| `memberRequest.superGuaranteeAmount` | object | SG component |
+| `memberRequest.salarySacrificedAmount` | object | Salary sacrifice component |
+| `memberRequest.personalContributionsAmount` | object | Personal contributions component |
+
+### employerResponse / memberResponse
+
+| Field | Type | Description |
+|---|---|---|
+| `responseType` | string | See Response Types below |
+| `refundData` | object | Present only for refund response types (`EMPLOYER_REFUND`, `MEMBER_REFUND`, `MEMBER_CONTRIBUTION_TYPE_REFUND`). Omitted entirely (not null) for `NON_REFUND` |
+| `errorDetails` | object | Present when the fund has a warning or error to report. Omitted entirely (not null) for a clean NON_REFUND with no notes |
+
+### refundData
+
+| Field | When present | Description |
+|---|---|---|
+| `employerPaymentPRN` | All refund types | Payment Reference Number for the refund |
+| `employerRefundPaymentAmount` | All refund types | Amount refunded to employer |
+| `memberRefundPaymentAmount` | `MEMBER_REFUND` | Amount refunded for the member |
+| `memberRefundContributionType.contributionType` | `MEMBER_CONTRIBUTION_TYPE_REFUND` | The contribution type being refunded |
+| `memberRefundContributionType.contributionTypeAmount` | `MEMBER_CONTRIBUTION_TYPE_REFUND` | Amount of that contribution type refunded |
+
+### errorDetails
+
+| Field | Type | Description |
+|---|---|---|
+| `errorSeverityCode` | string | See Error Severity Codes below |
+| `errorDescription` | string | Standard error message |
+
+### Response Types
+
+`responseType` on `employerResponse.responseType` or `memberResponse.responseType`:
+
+| Value | Meaning |
+|---|---|
+| `NON_REFUND` | Contribution accepted by the fund — no refund issued |
+| `EMPLOYER_REFUND` | Entire contribution refunded to employer (e.g. fund rejected it) |
+| `MEMBER_REFUND` | Contribution refunded for a specific member |
+| `MEMBER_CONTRIBUTION_TYPE_REFUND` | A specific contribution type refunded for a member (e.g. personal contributions amount) |
+
+### Error Severity Codes
+
+`errorSeverityCode` on `errorDetails.errorSeverityCode`:
+
+| Value | Meaning |
+|---|---|
+| `ERROR` | Hard error — contribution rejected or refunded |
+| `WARNING` | Accepted with a warning (e.g. minor data issue noted by fund) |
+| `INFORMATION` | Accepted; informational note only |
+| `Response` | Standard response acknowledgement |
+| `Partial` | Partial acceptance |
+| `Progressive` | Progressive/interim status |
+
+### When does a member appear in the response?
+
+Not every member appears in `responseTransaction`. The fund only includes entries when it has something to report:
+
+| Scenario | Appears in response? | `responseType` | `errorDetails` |
+|---|---|---|---|
+| Contribution accepted, no issues | **No** | — | — |
+| Accepted with a warning/note from fund | **Yes** | `NON_REFUND` | Present (`WARNING` or `INFORMATION`) |
+| Contribution rejected / refunded | **Yes** | `EMPLOYER_REFUND`, `MEMBER_REFUND`, or `MEMBER_CONTRIBUTION_TYPE_REFUND` | Present (`ERROR`) |
+
+So **absence means clean success**. If a member appears with `NON_REFUND + WARNING`, their contribution was still processed — the fund is just flagging a note (e.g. account number was auto-corrected). If they appear with a refund type, the contribution was rejected and money is being returned.
+
+### When does the payment status update?
+
+After a payment reaches `AWAITING_FUND_RESPONSE`, a background process polls the fund response once the response window has passed. When the fund responds, the payment status in the contribution history will update to one of the following terminal statuses:
+
+| Fund response | Payment status |
+|---|---|
+| Contribution accepted, no issues | `SETTLED` |
+| Contribution accepted with a warning | `SETTLED_WITH_WARNING` |
+| Contribution refunded | `REFUNDED` |
+| Hard error from fund | `FUND_TRANSFER_FAILED` |
+
+Each status change also triggers a `payment.status_changed` webhook event if a webhook URL is registered.
+
+> **Note:** The SuperStream process assumes all submissions succeed. The clearing house does not give us an exact settlement date, so `SETTLED` / `SETTLED_WITH_WARNING` is only indicative — it is based on the super fund not rejecting the contribution within 3 business days of receiving it.
+
+### Multi-Member USI Note
+
+When multiple members share the same USI and one has an issue, only the member with something to report will appear in `responseTransaction`. A cleanly accepted member will have no entry.
+
+To identify which employee an entry belongs to, read `memberResponseDetails.memberRequest.employmentPayrollNumber`. This is the payroll number you submitted when creating the employee, and it is the only reliable way to match a response entry back to a specific person when multiple members share a USI.
+
+> **Note:** Optional `memberRequest` fields (e.g. `phoneNumber`, `salarySacrificedAmount`, `employmentStartDate`) are only echoed back if they were included in the original contribution submission. Fields not submitted will be absent from the response, not null.
+
+### Employer Refund
+
+```json
+{
+  "responseType": "EMPLOYER_REFUND",
+  "refundData": {
+    "employerPaymentPRN": "PC190716-000001340",
+    "employerRefundPaymentAmount": { "value": 831.60, "currency": "AUD" }
+  },
+  "errorDetails": {
+    "errorSeverityCode": "ERROR",
+    "errorDescription": "No longer a member of superannuation entity"
+  }
+}
+```
+
+### Member Refund
+
+```json
+{
+  "responseType": "MEMBER_REFUND",
+  "refundData": {
+    "employerPaymentPRN": "PC190716-000001260",
+    "employerRefundPaymentAmount": { "value": 1000.00, "currency": "AUD" },
+    "memberRefundPaymentAmount": { "value": 1000.00, "currency": "AUD" }
+  },
+  "errorDetails": {
+    "errorSeverityCode": "ERROR",
+    "errorDescription": "No longer a member of Superannuation entity"
+  }
+}
+```
+
+### Member Contribution Type Refund
+
+```json
+{
+  "responseType": "MEMBER_CONTRIBUTION_TYPE_REFUND",
+  "refundData": {
+    "employerPaymentPRN": "PC190716-000001589",
+    "employerRefundPaymentAmount": { "value": 100.00, "currency": "AUD" },
+    "memberRefundContributionType": {
+      "contributionType": "SuperannuationContribution.PersonalContributions.Amount",
+      "contributionTypeAmount": { "value": 100.00, "currency": "AUD" }
+    }
+  },
+  "errorDetails": {
+    "errorSeverityCode": "ERROR",
+    "errorDescription": "TFN is invalid for the member"
+  }
+}
+```
+
+### Successful (No Refund)
+
+```json
+{
+  "responseType": "NON_REFUND"
+}
+```
+
+### Request Parameters
+
+<ParamField path="transactionId" type="string" required>
+  Transaction ID from the contribution submission
+</ParamField>
+
+### Responses
+
+| Code | Description |
+|---|---|
+| `200` | Transaction response retrieved successfully |
+| `400` | Bad request - Invalid transaction ID. |
+| `401` | Unauthorized - Invalid authentication credentials |
+| `404` | Transaction not found |
+| `500` | Internal server error. |
+
+### Response fields
+
+<ResponseField name="identifier" type="object">
+  Request identifier
+
+  <Expandable title="properties">
+    <ResponseField name="transactionId" type="object">
+    </ResponseField>
+
+    <ResponseField name="timeInUTC" type="number">
+      Epoch milliseconds when the transaction was submitted
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="responseTransaction" type="array">
+  One entry per fund per transaction. Each entry contains either employerResponseDetails or memberResponseDetails (mutually exclusive).
+</ResponseField>
+
+<Accordion title="Error response fields">
+
+<ResponseField name="success" type="boolean">
+</ResponseField>
+
+<ResponseField name="statusCode" type="integer">
+</ResponseField>
+
+<ResponseField name="message" type="string">
+</ResponseField>
+
+</Accordion>
+
+<RequestExample>
+
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v1/payments/response/transaction/34623710896_20250115_001' \
+    -u "apiUsername:apiPassword"
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v1/payments/response/transaction/34623710896_20250115_001", {
+  method: "GET",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+  },
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://qa-super.mygigsters.com.au/v1/payments/response/transaction/34623710896_20250115_001",
+    auth=("apiUsername", "apiPassword"),
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v1/payments/response/transaction/34623710896_20250115_001")
+request = Net::HTTP::Get.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v1/payments/response/transaction/34623710896_20250115_001");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "GET",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v1/payments/response/transaction/34623710896_20250115_001"))
+            .header("Authorization", "Basic " + credentials)
+            .method("GET", HttpRequest.BodyPublishers.noBody())
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	req, err := http.NewRequest("GET", "https://qa-super.mygigsters.com.au/v1/payments/response/transaction/34623710896_20250115_001", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Get, "https://qa-super.mygigsters.com.au/v1/payments/response/transaction/34623710896_20250115_001");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "identifier": {
+    "transactionId": {
+      "value": "txn-3f3d4099-ca8c-48cd-bad6-244ffb999961"
+    },
+    "timeInUTC": 1781080202143
+  },
+  "responseTransaction": [
+    {
+      "transactionFund": {
+        "fund": {
+          "usi": "FSF0511AU"
+        }
+      },
+      "memberResponseDetails": {
+        "memberRequest": {
+          "name": {
+            "firstName": "Meg",
+            "lastName": "Rowlings"
+          },
+          "gender": "FEMALE",
+          "dob": {
+            "year": 1970,
+            "month": "NOVEMBER",
+            "day": 13
+          },
+          "address": {
+            "australianAddress": {
+              "line1": "190 Childers Street",
+              "suburb": "NORTH ADELAIDE",
+              "postCode": "5006",
+              "stateOrTerritory": "SA",
+              "countryCode": "AU"
+            }
+          },
+          "email": {
+            "value": "sam.jones@example.com"
+          },
+          "taxFileNumber": "171159126",
+          "memberNumber": "30216675",
+          "employmentPayrollNumber": "EMP-000003",
+          "employmentStatus": "FULL_TIME",
+          "payPeriodStartDate": 1739404800000,
+          "payPeriodEndDate": 1743292800000,
+          "totalMemberContributionAmount": {
+            "value": 561.6,
+            "currency": "AUD"
+          },
+          "superGuaranteeAmount": {
+            "value": 561.6,
+            "currency": "AUD"
+          },
+          "context": {
+            "contextIdentifier": "Member1",
+            "tfnEntityIdentifier": "171159126",
+            "otherEntityIdentifier": "60752360-9940-4728",
+            "employersABN": "30846154332",
+            "superannuationFundABN": "26458298557",
+            "superannuationFundUSI": "FSF0511AU"
+          }
+        },
+        "memberResponse": {
+          "responseType": "NON_REFUND",
+          "errorDetails": {
+            "errorSeverityCode": "WARNING",
+            "errorDescription": "CTR has been processed with warnings. Please review detailed description for further details."
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+</ResponseExample>

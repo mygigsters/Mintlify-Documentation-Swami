@@ -1,0 +1,240 @@
+---
+title: "Submit member verification"
+description: "Manually submit a Member Verification Request for an employee to SuperChoice. This is the same funnel used internally by the Employees v2 endpoints' automatic MVR trigger — calling it directly behaves identically: the..."
+api: "POST https://qa-super.mygigsters.com.au/v2/mvr/submit"
+---
+
+<Tip>
+  **Why it's useful:** Use it to make sure the member you are onboarding can receive superannuation contributions with the details they gave you. Funds can take up to 24 hours to respond.
+</Tip>
+
+Employer, fund, and member details are resolved server-side from the employee's stored record — you only need to supply the `employeeId`. Use this endpoint to:
+
+- Manually (re-)run verification for a v1 employee without otherwise updating their record
+- Retry a `REJECTED` or `NOT_SUPPORTED` employee after confirming their details are correct
+- Force a check ahead of submitting a contribution for a client with more than one onboarded employer (via `employerId`)
+
+> Note: use `GET /v2/mvr/:transactionId` (with the `transactionId` returned here) to poll the outcome, or watch for the `employee.mvr_status_changed` webhook.
+
+### Request Body
+
+<ParamField body="employeeId" type="string" required>
+  The employeeId of the member to run a Member Verification Request for. Employer, fund, and member details are resolved server-side from this employee's stored record.
+</ParamField>
+
+<ParamField body="employerId" type="string">
+  Optional explicit employerId to use instead of auto-picking the eligible employer for the client. Use when you already know which employer this employee's contribution was actually sent through, since a client with more than one onboarded-and-synced employer has no reliable way to auto-pick the right one.
+</ParamField>
+
+### Responses
+
+| Code | Description |
+|---|---|
+| `200` | MVR submitted successfully — verification is now pending |
+| `400` | Bad request. Two distinct cases share this status: (1) request-building failed before anything was sent to SuperChoice — the employee has no fund identity (usi/smsf), or no employer at the client is onboarded and synced at the clearing house; (2) SuperChoice itself rejected the submission — in this case the employee's mvrStatus is set to NOT_SUPPORTED (errorCode 4032, fund not yet MVR-certified) or REJECTED (any other errorCode) and the employee.mvr_status_changed webhook fires, before this response is returned. The status code is the same either way — check errorCode in the body to tell them apart. |
+| `401` | Unauthorized — invalid authentication credentials |
+| `404` | Employee not found for this client |
+
+### Response fields
+
+<ResponseField name="transactionId" type="string">
+  SuperChoice transaction ID for this MVR submission. Use it to poll GET /v2/mvr/:transactionId for the outcome.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Always PENDING immediately after a successful submission — the employee's mvrStatus is set to this at the same time.
+</ResponseField>
+
+<Accordion title="Error response fields">
+
+<ResponseField name="success" type="boolean">
+</ResponseField>
+
+<ResponseField name="statusCode" type="integer">
+</ResponseField>
+
+<ResponseField name="message" type="string">
+</ResponseField>
+
+<ResponseField name="errorCode" type="integer">
+</ResponseField>
+
+</Accordion>
+
+<RequestExample>
+
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v2/mvr/submit' -X POST \
+    -u "apiUsername:apiPassword"  \
+    -H "Content-Type: application/json" --data '{"employeeId":"6a58c9406820b9ff62b527b3"}'
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v2/mvr/submit", {
+  method: "POST",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    "employeeId": "6a58c9406820b9ff62b527b3"
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://qa-super.mygigsters.com.au/v2/mvr/submit",
+    auth=("apiUsername", "apiPassword"),
+    json={
+        "employeeId": "6a58c9406820b9ff62b527b3",
+    },
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v2/mvr/submit")
+request = Net::HTTP::Post.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+request["Content-Type"] = "application/json"
+request.body = <<~JSON
+  {
+    "employeeId": "6a58c9406820b9ff62b527b3"
+  }
+JSON
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v2/mvr/submit");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "POST",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+    CURLOPT_HTTPHEADER => [
+        "Content-Type: application/json",
+    ],
+    CURLOPT_POSTFIELDS => <<<'JSON'
+{
+  "employeeId": "6a58c9406820b9ff62b527b3"
+}
+JSON,
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        String body = String.join("\n",
+            "{",
+            "  \"employeeId\": \"6a58c9406820b9ff62b527b3\"",
+            "}"
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v2/mvr/submit"))
+            .header("Authorization", "Basic " + credentials)
+            .header("Content-Type", "application/json")
+            .method("POST", HttpRequest.BodyPublishers.ofString(body))
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+)
+
+func main() {
+	body := strings.NewReader(`{
+  "employeeId": "6a58c9406820b9ff62b527b3"
+}`)
+
+	req, err := http.NewRequest("POST", "https://qa-super.mygigsters.com.au/v2/mvr/submit", body)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Post, "https://qa-super.mygigsters.com.au/v2/mvr/submit");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+request.Content = new StringContent(@"{
+  ""employeeId"": ""6a58c9406820b9ff62b527b3""
+}", Encoding.UTF8, "application/json");
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```text 200
+""
+```
+
+</ResponseExample>

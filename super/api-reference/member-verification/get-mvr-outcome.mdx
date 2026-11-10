@@ -1,0 +1,232 @@
+---
+title: "Get MVR outcome"
+description: "Look up the stored outcome of an MVR request by its transactionId — the same ID returned by POST /v2/mvr/submit (or found via the Employees v2 automatic trigger). Use this to poll for a result instead of waiting for the..."
+api: "GET https://qa-super.mygigsters.com.au/v2/mvr/{transactionId}"
+---
+
+`status` starts at `PENDING` and moves to a terminal state (`VERIFIED`, `WARNING`, `REJECTED`, or `TIMED_OUT`) once the fund responds — usually within 24–48 hours. See the [MVR Verification](/super/guides/member-verification) guide for what each status means.
+
+### Request Parameters
+
+<ParamField path="transactionId" type="string" required>
+  The transactionId returned by POST /v2/mvr/submit
+</ParamField>
+
+### Responses
+
+| Code | Description |
+|---|---|
+| `200` | MVR request found |
+| `401` | Unauthorized — invalid authentication credentials |
+| `404` | No MVR request found for this transactionId, or it belongs to a different client |
+
+### Response fields
+
+<ResponseField name="id" type="string">
+  Internal record ID
+</ResponseField>
+
+<ResponseField name="transactionId" type="string">
+</ResponseField>
+
+<ResponseField name="employeeId" type="string">
+</ResponseField>
+
+<ResponseField name="employerId" type="string">
+</ResponseField>
+
+<ResponseField name="clientId" type="number">
+</ResponseField>
+
+<ResponseField name="fundGroupKey" type="string">
+  The fund this request was verified against — a USI (APRA fund), or smsf:&lt;abn> for an SMSF.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+</ResponseField>
+
+<ResponseField name="submittedAt" type="string">
+</ResponseField>
+
+<ResponseField name="lastPolledAt" type="string">
+  Absent until the poller has checked SuperChoice for a result at least once
+</ResponseField>
+
+<ResponseField name="nextPollAt" type="string">
+  Absent once status is terminal — nothing left to poll for
+</ResponseField>
+
+<ResponseField name="responseCode" type="string">
+  SuperChoice's internal MVOR response code — absent until a fund response is received. Not returned as-is on the employee record; see mvrStatus/mvrStatusReason instead.
+</ResponseField>
+
+<ResponseField name="responseSeverity" type="string">
+  Absent until a fund response is received
+</ResponseField>
+
+<ResponseField name="shortDescription" type="string">
+  Absent until a fund response is received
+</ResponseField>
+
+<ResponseField name="detailedDescription" type="string">
+  Absent until a fund response is received, or on a submit-time failure
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string">
+</ResponseField>
+
+<Accordion title="Error response fields">
+
+<ResponseField name="success" type="boolean">
+</ResponseField>
+
+<ResponseField name="statusCode" type="integer">
+</ResponseField>
+
+<ResponseField name="message" type="string">
+</ResponseField>
+
+</Accordion>
+
+<RequestExample>
+
+```bash cURL
+curl 'https://qa-super.mygigsters.com.au/v2/mvr/txn-2fbab110-d866-4896-8ba1-43aa1319297f' \
+    -u "apiUsername:apiPassword"
+```
+
+```javascript Node.js
+const response = await fetch("https://qa-super.mygigsters.com.au/v2/mvr/txn-2fbab110-d866-4896-8ba1-43aa1319297f", {
+  method: "GET",
+  headers: {
+    Authorization: "Basic " + Buffer.from("apiUsername:apiPassword").toString("base64"),
+  },
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://qa-super.mygigsters.com.au/v2/mvr/txn-2fbab110-d866-4896-8ba1-43aa1319297f",
+    auth=("apiUsername", "apiPassword"),
+)
+
+print(response.json())
+```
+
+```ruby Ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://qa-super.mygigsters.com.au/v2/mvr/txn-2fbab110-d866-4896-8ba1-43aa1319297f")
+request = Net::HTTP::Get.new(uri)
+request.basic_auth("apiUsername", "apiPassword")
+
+response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(request)
+end
+
+puts JSON.parse(response.body)
+```
+
+```php PHP
+<?php
+
+$ch = curl_init("https://qa-super.mygigsters.com.au/v2/mvr/txn-2fbab110-d866-4896-8ba1-43aa1319297f");
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => "GET",
+    CURLOPT_USERPWD => "apiUsername:apiPassword",
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+print_r(json_decode($response, true));
+```
+
+```java Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        String credentials = Base64.getEncoder()
+            .encodeToString("apiUsername:apiPassword".getBytes());
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://qa-super.mygigsters.com.au/v2/mvr/txn-2fbab110-d866-4896-8ba1-43aa1319297f"))
+            .header("Authorization", "Basic " + credentials)
+            .method("GET", HttpRequest.BodyPublishers.noBody())
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
+    }
+}
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	req, err := http.NewRequest("GET", "https://qa-super.mygigsters.com.au/v2/mvr/txn-2fbab110-d866-4896-8ba1-43aa1319297f", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth("apiUsername", "apiPassword")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	data, _ := io.ReadAll(res.Body)
+	fmt.Println(string(data))
+}
+```
+
+```csharp .NET
+using System.Net.Http.Headers;
+using System.Text;
+
+using var client = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Get, "https://qa-super.mygigsters.com.au/v2/mvr/txn-2fbab110-d866-4896-8ba1-43aa1319297f");
+request.Headers.Authorization = new AuthenticationHeaderValue(
+    "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("apiUsername:apiPassword")));
+
+var response = await client.SendAsync(request);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```text 200
+""
+```
+
+</ResponseExample>
