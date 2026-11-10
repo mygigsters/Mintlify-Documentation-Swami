@@ -3,7 +3,7 @@ title: "Onboard and pay out a worker"
 description: "Register a worker, collect their bank details, and send a payout."
 ---
 
-Register a worker, collect their bank details, then pay them. Workers can be Australian (BSB) or Indian (IFSC/UPI) beneficiaries.
+Register a worker, collect their bank details, then pay them. You can pay out workers in over 160 countries.
 
 <Steps>
 
@@ -15,7 +15,7 @@ Register the worker with [Worker Create](/api-reference/workers/worker-create). 
 
 <Step title="Collect bank details — three options">
 
-- **You already have them:** submit via [Add Bank Details](/api-reference/workers/add-bank-details) (BSB for AU, IFSC/UPI for India).
+- **You already have them:** submit via [Add Bank Details](/api-reference/workers/add-bank-details).
 - **Hosted form:** request a [Beneficiary URL](/api-reference/workers/beneficiary-url) and redirect the worker to a secure MyGigsters-hosted page. They enter details themselves and are returned to your `return_url`.
 - **Embedded form:** mount the [Beneficiary SDK](/sdks/beneficiary-sdk) directly in your web app for a fully in-context experience.
 
@@ -243,8 +243,6 @@ var response = await client.SendAsync(request);
 Console.WriteLine(await response.Content.ReadAsStringAsync());
 ```
 </CodeGroup>
-
-For Indian beneficiaries you can choose the rail with `mode`: IMPS (₹1–₹5,00,000), NEFT (₹1+, no cap), RTGS (min ₹2,00,000), UPI (₹1–₹1,00,000).
 
 </Step>
 
