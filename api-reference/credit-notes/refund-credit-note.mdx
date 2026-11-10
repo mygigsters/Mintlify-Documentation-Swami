@@ -1,0 +1,145 @@
+---
+title: "Refund credit note"
+description: "Processes a payment gateway refund against the credit note balance. The refund is disbursed directly back to the customer's original payment method, remaining balance is deducted, and a refund allocation is created for auditing."
+api: "POST /credit-notes/{id}/refund"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+<ParamField header="Idempotency-Key" type="string">
+  A unique key so a retried request is not processed twice.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  Credit note number (e.g. `CN-8466`) or unique ID from which balance is refunded.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="amount" type="number" required>
+  The amount to refund to customer. Cannot exceed `remainingAmount`.
+</ParamField>
+
+<ParamField body="reason" type="string" required>
+  Audit reason for issuing the refund (e.g. `Customer requested refund for unused service`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Status flag (`true` on success).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message (`Credit note refund processed successfully`).
+</ResponseField>
+
+<ResponseField name="data.creditNote.status" type="string">
+  Updated state: `PARTIALLY_REFUNDED` or `REFUNDED`.
+</ResponseField>
+
+<ResponseField name="data.creditNote.refundedAmount" type="string">
+  Total cumulative amount refunded to customer.
+</ResponseField>
+
+<ResponseField name="data.creditNote.remainingAmount" type="string">
+  Remaining credit balance available.
+</ResponseField>
+
+<ResponseField name="data.creditNote.allocations" type="array">
+  List of allocations including the newly recorded Airwallex refund allocation entry.
+</ResponseField>
+
+<ResponseField name="data.refund.refundId" type="string">
+  Payment gateway refund reference ID (e.g. `rfd_sgpvwpnw7hmk2c9sx5s_pihj7h`).
+</ResponseField>
+
+<ResponseField name="data.refund.status" type="string">
+  Gateway status (e.g. `RECEIVED`).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Credit note refund processed successfully. |
+| 400 | Bad Request. Amount exceeds remaining credit balance or reason is missing. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Credit note not found. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/credit-notes/CN-8466/refund \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: cn-req-refund-005" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "amount": 20,
+  "reason": "Customer requested refund for unused service"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Credit note refund processed successfully",
+  "data": {
+    "credit_note": {
+      "id": 24,
+      "credit_note_number": "CN-8466",
+      "client_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+      "customer_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+      "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+      "invoice_number": "INV-4717",
+      "payment_id": "int_hkdmrmxh7hcf5pihj7h",
+      "total_amount": "30.00",
+      "remaining_amount": "10.00",
+      "applied_amount": "0.00",
+      "refunded_amount": "20.00",
+      "currency": "AUD",
+      "status": "PARTIALLY_REFUNDED",
+      "reason": "Overbilled service hours",
+      "description": null,
+      "date": "2026-09-23T07:57:52.000Z",
+      "deleted_at": null,
+      "created_at": "2026-09-21T14:34:29.000Z",
+      "updated_at": "2026-09-23T09:34:18.000Z",
+      "allocations": [
+        {
+          "id": 8,
+          "credit_note_id": 24,
+          "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+          "amount": "20.00",
+          "notes": "Airwallex Refund (rfd_sgpvwpnw7hmk2c9sx5s_pihj7h): Customer requested refund for unused service",
+          "deleted_at": null,
+          "created_at": "2026-09-23T09:34:17.000Z",
+          "updated_at": "2026-09-23T09:34:17.000Z"
+        }
+      ]
+    },
+    "refund": {
+      "refund_id": "rfd_sgpvwpnw7hmk2c9sx5s_pihj7h",
+      "amount": "20.00",
+      "currency": "AUD",
+      "status": "RECEIVED",
+      "payment_intent_id": "int_hkdmrmxh7hcf5pihj7h",
+      "reason": "Customer requested refund for unused service"
+    }
+  }
+}
+```
+
+</ResponseExample>

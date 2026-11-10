@@ -1,0 +1,99 @@
+---
+title: "Police check status"
+description: "This endpoint retrieves the current status of a police check application. It returns the applicant's details, processing status, verification status, and the check result from ACIC (Australian Criminal Intelligence Commission)."
+api: "POST /status/police-check"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="reference_id" type="string" required>
+  The reference ID of the police check to retrieve the status for.
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | A message describing the response status (e.g. "Verification Result"). |
+| `data`object | object | The police check details. |
+| ↳`id` | number | The unique identifier for the police check. |
+| ↳`continue_url` | string | URL for the applicant to continue or resume the police check process. |
+| ↳`verify_status` | string | The identity verification status (e.g. "PRIOR", "VERIFIED", "UNVERIFIED"). |
+| ↳`status` | string | The current processing status of the check (e.g. "PREP", "SUBMITTED", "COMPLETE"). |
+| ↳`first_name` | string | The first name of the applicant. |
+| ↳`last_name` | string | The last name of the applicant. |
+| ↳`email` | string | The email address of the applicant. |
+| ↳`type` | string | The type of check (e.g. "EMPLOYMENT"). |
+| ↳`reason` | string | The reason for the police check (e.g. "Driver"). |
+| ↳`services` | array | The list of services included in the check (e.g. ["Police"]). |
+| ↳`accept_status` | string | Whether the applicant has accepted the terms (e.g. "ACCEPTED", "PENDING"). |
+| ↳`result` | string | The check result (e.g. "UNKNOWN", "CLEAR", "DISCLOSABLE"). |
+| `result`object | object | A summary of the police check result. |
+| ↳`status` | string | The overall result status (e.g. "UNKNOWN", "CLEAR", "DISCLOSABLE"). |
+| ↳`message` | string | A human-readable message explaining the current result status. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | The police check status was successfully retrieved. |
+| 400 | Bad Request. Missing or invalid reference_id. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/status/police-check \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "reference_id": "14005220"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Verification Result",
+  "data": {
+    "id": 14005220,
+    "continue_url": "https://mygigsterspoltest.nationalcrimecheck.com.au/consumer/resume/14005220/AJRVTEEC",
+    "verify_status": "PRIOR",
+    "status": "PREP",
+    "client_ref": "",
+    "cost_centre": "",
+    "first_name": "John",
+    "middle_name": "",
+    "last_name": "Smith",
+    "single_name": false,
+    "dob": "0000-00-00",
+    "sex": "",
+    "email": "john.smith@example.com",
+    "mobile": "",
+    "type": "EMPLOYMENT",
+    "reason": "Driver",
+    "services": [
+      "Police"
+    ],
+    "accept_status": "ACCEPTED",
+    "result": "UNKNOWN"
+  },
+  "result": {
+    "status": "UNKNOWN",
+    "message": "The check result has not yet been received from ACIC, so the result is currently not known."
+  }
+}
+```
+
+</ResponseExample>

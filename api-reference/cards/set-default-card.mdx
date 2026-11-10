@@ -1,0 +1,64 @@
+---
+title: "Set default card"
+description: "This endpoint allows you to set an existing card as default for a specific customer in the system. It is used to associate a payment card with a customer's profile, enabling seamless transactions in future interactions."
+api: "POST /customer/default-card/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="card_id" type="string" required>
+  The unique identifier for the card being set as default.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+<ResponseField name="message" type="string">
+  A message indicating the status of the request.
+</ResponseField>
+
+<ResponseField name="card_id" type="string">
+  The identifier of the card that was set as default.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | The request was successful, and the card has been set as default for the customer's profile. |
+| 400 | Bad Request. Invalid request payload or missing parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Customer or card not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/default-card/cus_hkdmn5lcqh5enc37sp6 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "card_id": "cst_hkdm54ctjhaatgv0i7q"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Default card updated successfully.",
+  "card_id": "cst_hkdm54ctjhaatgv0i7q"
+}
+```
+
+</ResponseExample>

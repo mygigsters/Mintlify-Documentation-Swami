@@ -1,6 +1,13 @@
 ---
-title: "Environments"
-description: "TODO: migrate from the current docs."
+title: "Environments and base URLs"
+description: "Build and test against the demo environment, then switch base URLs to go live."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Build and test against the demo (QA) environment, then switch base URLs to go live.
+
+| Environment | Base URL | Use for |
+|---|---|---|
+| `Demo / QA` | https://qa-payments.mygigsters.com.au/api/v1 | Development and testing. No real money moves. |
+| `Production` | https://prod-payments.mygigsters.com.au/api/v1 | Live traffic and real payments/payouts. |
+
+API keys are environment-specific: a key generated in the QA dashboard will not work in production, and vice versa.

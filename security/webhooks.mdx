@@ -1,6 +1,979 @@
 ---
-title: "Webhooks"
-description: "TODO: migrate from the current docs."
+title: "Receive webhooks"
+description: "Get notified about payment, payout, beneficiary, and invoice events as they happen, instead of polling."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Webhooks send your server an HTTP `POST` whenever an event you've subscribed to occurs. Use them instead of polling for status.
+
+## Set up a webhook
+
+<Steps>
+  <Step title="Open the webhooks page">
+    Log in to the portal and go to **Developer Tools > Webhooks**.
+  </Step>
+  <Step title="Add your endpoint">
+    Click **Add Webhook** and enter your webhook URL. It must be served over HTTPS.
+  </Step>
+  <Step title="Choose events">
+    Select the events you want to receive, then save.
+  </Step>
+  <Step title="Store the signature key">
+    A unique signature key is generated for the webhook. You use it to check that incoming requests come from MyGigsters.
+  </Step>
+</Steps>
+
+## Verify the signature
+
+Every webhook request includes an `x-signature-key` header. Compare it with the signature key configured for your webhook, and reject requests where it doesn't match.
+
+```http Request headers
+Content-Type: application/json
+x-signature-key: your-generated-signature-key
+```
+
+```javascript Node.js
+const receivedSignature = req.headers["x-signature-key"];
+if (receivedSignature !== process.env.WEBHOOK_SIGNATURE_KEY) {
+  return res.status(401).json({ status: "invalid_signature" });
+}
+```
+
+{/* TODO: the changelog says version 1.2 signs webhooks with HMAC-SHA256 in an X-MyGigsters-Signature header, but this section describes a plain x-signature-key comparison. Confirm which is current and update this page. */}
+
+## Acknowledge the event
+
+Return `200 OK` to confirm you received the event. Respond straight after validating the request and do any long-running work asynchronously.
+
+```javascript Node.js
+return res.status(200).json({ status: "received" });
+```
+
+## Retries
+
+If your endpoint doesn't return `200 OK`, the delivery counts as failed. MyGigsters retries up to **3 times** before marking the event as failed. A delivery can fail because of:
+
+- a non-200 HTTP status code
+- a request timeout
+- a network connectivity issue
+- an SSL/TLS certificate error
+- your endpoint being unavailable
+
+<Note>
+  Retries can deliver the same event more than once. Make your handler idempotent so duplicates are safe.
+</Note>
+
+## Event structure
+
+Every webhook payload has the same outer envelope. The resource that changed is inside `data`.
+
+| Field | Type | Description |
+|---|---|---|
+| `code` | string | Unique event identifier, for example `payment_intent.succeeded`. |
+| `event_name` | string | Name of the event that triggered the webhook. |
+| `type` | string | The category of the event: `payment`, `payout`, `beneficiary`, or `invoice`. |
+| `description` | string | Brief description of the event. |
+| `data` | object | The resource payload. Its shape depends on the event type. |
+
+<Warning>
+  The envelope has no top-level event ID. To match an event to your own records and to detect duplicates:
+
+  - **Payment intents:** use `data.merchant_order_id`, which matches the `job_id` you passed when creating the intent, and `data.id`, the payment intent ID.
+  - **Payouts and transfers:** use `data.reference` or `data.remarks`, which carries your internal payout or invoice identifier, and `data.id`.
+</Warning>
+
+## Event catalogue
+
+| Event | When it occurs |
+|---|---|
+| `payment_intent.succeeded` | Occurs when a payment intent has completed execution and funds are secured. |
+| `payment_intent.failed` | Occurs when a payment intent has failed to execute or is explicitly cancelled. |
+| `refund.succeeded` | Occurs when a payment refund is completed and funds are returned to the payer. |
+| `refund.failed` | Occurs when a payment refund request is rejected or declined by the provider. |
+| `payment_link.paid` | Occurs when a shopper pays for a payment link successfully. |
+| `payment_link.failed` | Occurs when a payment link expires or is unpaid. |
+| `payout.succeeded` | Occurs when a worker payout is processed and transferred successfully. |
+| `payout.failed` | Occurs when a worker payout fails or gets rejected by the bank. |
+| `beneficiary.created` | Occurs when a new worker beneficiary account/bank details profile has been created. |
+| `beneficiary.deleted` | Occurs when a worker beneficiary account/bank details profile is deleted. |
+| `client.invoice.paid` | Occurs when one or more client invoices have been marked as paid. |
+
+### Payments
+
+<AccordionGroup>
+<Accordion title="Payment Intent Succeeded" description="payment_intent.succeeded">
+
+Occurs when a payment intent has completed execution and funds are secured.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `object.id` | string | Unique identifier for the payment intent object. |
+| `object.amount` | number | The total payment amount. |
+| `object.currency` | string | Three-letter ISO currency code of the payment. |
+| `object.status` | string | The status of the payment intent. Fixed to 'SUCCEEDED'. |
+| `object.captured_amount` | number | The amount captured by the transaction. |
+| `object.latest_payment_attempt.id` | string | Unique identifier of the latest authorization attempt. |
+| `object.latest_payment_attempt.payment_method.type` | string | The type of payment method used (e.g., 'card'). |
+
+```json Sample payload
+{
+  "code": "payment_intent.succeeded",
+  "data": {
+    "object": {
+      "id": "int_sgst8jdw8h0herze16s",
+      "order": {
+        "type": "v_goods",
+        "products": [
+          {
+            "sku": "piece",
+            "url": "test_url",
+            "code": "3414314111",
+            "desc": "test desc",
+            "name": "IPHONE7",
+            "type": "physical",
+            "quantity": 5,
+            "unit_price": 10
+          }
+        ]
+      },
+      "amount": 10,
+      "status": "SUCCEEDED",
+      "currency": "HKD",
+      "created_at": "2024-10-02T15:40:21+0000",
+      "descriptor": "vip8888",
+      "request_id": "38aef22a-3d63-43c1-850c-714bcafd03ec",
+      "updated_at": "2024-10-02T15:40:26+0000",
+      "base_amount": 10,
+      "base_currency": "HKD",
+      "additional_info": {
+        "enhanced_scheme_data": {
+          "customer": {
+            "last_name": "Doe",
+            "reference": "CUST12345",
+            "first_name": "John"
+          },
+          "products": [
+            {
+              "code": "3414314111",
+              "desc": "IPHONE 7",
+              "unit": "EAC",
+              "quantity": 5,
+              "unit_price": 10.02,
+              "tax_percent": 10.55,
+              "total_amount": 45.05,
+              "commodity_code": "08081000",
+              "discount_amount": 1.01,
+              "total_tax_amount": 1.01
+            }
+          ],
+          "shipping": {
+            "date": "2024-09-29",
+            "address": {
+              "city": "Shanghai",
+              "state": "Shanghai",
+              "street": "Pudong District",
+              "postcode": "100000",
+              "country_code": "CN"
+            },
+            "fee_amount": 1.5,
+            "from_postcode": "100000"
+          },
+          "duty_amount": 12.01,
+          "local_tax_amount": 10.01,
+          "total_tax_amount": 15.55,
+          "invoice_reference": "INV2023000123",
+          "merchant_reference": "MER2749372932",
+          "national_tax_amount": 5.54,
+          "vat_invoice_reference": "INV2023000123",
+          "summary_commodity_code": "12345678",
+          "customer_tax_identifier": "DE123456789",
+          "merchant_tax_identifier": "202312345K"
+        }
+      },
+      "captured_amount": 10,
+      "merchant_order_id": "a647fd73-b71f-4f0b-b25b-42c794655bc5",
+      "risk_control_options": {
+        "skip_risk_processing": true
+      },
+      "latest_payment_attempt": {
+        "id": "att_sgst8jdw8h0herzl2bk_rze16s",
+        "amount": 10,
+        "status": "AUTHORIZED",
+        "currency": "HKD",
+        "created_at": "2024-10-02T15:40:21+0000",
+        "settle_via": "airwallex",
+        "updated_at": "2024-10-02T15:40:26+0000",
+        "payment_method": {
+          "card": {
+            "bin": "22230000",
+            "name": "mastercard2",
+            "brand": "mastercard",
+            "last4": "1375",
+            "billing": {
+              "email": "test@example.com",
+              "address": {
+                "city": "Shanghai",
+                "state": "Shanghai",
+                "street": "Pudong District",
+                "postcode": "201304",
+                "country_code": "CN"
+              },
+              "last_name": "He",
+              "first_name": "Jim",
+              "phone_number": "1367875786",
+              "date_of_birth": "2011-10-12"
+            },
+            "card_type": "CREDIT",
+            "expiry_year": "2025",
+            "fingerprint": "aE6wrBilLBQ/T/fWK1t95AjBL2I=",
+            "issuer_name": "MTF INTERNAL MEMBER ID - USA",
+            "number_type": "PAN",
+            "expiry_month": "11",
+            "is_commercial": false,
+            "issuer_country_code": "US"
+          },
+          "type": "card"
+        },
+        "captured_amount": 0,
+        "refunded_amount": 0,
+        "merchant_order_id": "a647fd73-b71f-4f0b-b25b-42c794655bc5",
+        "payment_intent_id": "int_sgst8jdw8h0herze16s",
+        "authorization_code": "NOJVKV",
+        "authentication_data": {
+          "ds_data": {
+            "retry_count_for_auth_decline": 0
+          },
+          "cvc_code": "M",
+          "avs_result": "N",
+          "cvc_result": "Y",
+          "fraud_data": {
+            "score": "0",
+            "action": "VERIFY",
+            "risk_factors": [
+              {
+                "description": "Transaction triggered force 3DS"
+              }
+            ]
+          }
+        },
+        "payment_method_options": {
+          "card": {
+            "authorization_type": "final_auth"
+          }
+        },
+        "provider_transaction_id": "MABIDTYSS1002",
+        "provider_original_response_code": "00"
+      },
+      "payment_method_options": {
+        "card": {
+          "risk_control": {
+            "skip_risk_processing": true
+          }
+        }
+      }
+    }
+  },
+  "type": "payment",
+  "version": "2024-09-27",
+  "event_name": "payment_intent.succeeded",
+  "created_at": "2026-04-15T07:17:22+0000",
+  "description": "Payment intent succeeded"
+}
+```
+
+</Accordion>
+<Accordion title="Payment Intent Failed" description="payment_intent.failed">
+
+Occurs when a payment intent has failed to execute or is explicitly cancelled.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `object.id` | string | Unique identifier for the payment intent. |
+| `object.amount` | number | Total transaction amount. |
+| `object.currency` | string | Three-letter ISO currency code. |
+| `object.status` | string | Status of the payment intent. Fixed to 'CANCELLED'. |
+| `object.customer.name` | string | Name of the customer associated with the payment attempt. |
+| `object.latest_payment_attempt.authentication_data.fraud_data.score` | string | Risk assessment score (0-100) from the fraud engine. |
+
+```json Sample payload
+{
+  "code": "payment_intent.failed",
+  "data": {
+    "object": {
+      "id": "int_hkstlgtcqh0q72yfhkg",
+      "order": {
+        "type": "v_goods",
+        "products": [
+          {
+            "sku": "piece",
+            "url": "test_url",
+            "code": "3414314111",
+            "desc": "test desc",
+            "name": "IPHONE7",
+            "type": "physical",
+            "quantity": 5,
+            "unit_price": 100.01
+          }
+        ],
+        "shipping": {
+          "address": {
+            "city": "Shanghai",
+            "state": "Shanghai",
+            "street": "Pudong District",
+            "postcode": "291201",
+            "country_code": "JP"
+          },
+          "last_name": "client",
+          "first_name": "Verify",
+          "shipping_method": "sameday"
+        },
+        "supplier": {
+          "address": {
+            "city": "Shanghai",
+            "state": "Shanghai",
+            "street": "Pudong District",
+            "postcode": "201304",
+            "country_code": "CN"
+          },
+          "business_name": "Test ABC Ltd"
+        }
+      },
+      "amount": 100,
+      "status": "CANCELLED",
+      "currency": "EUR",
+      "customer": {
+        "name": "Test name",
+        "address": {
+          "city": "Shanghai",
+          "state": "Shanghai",
+          "street": "Pudong District",
+          "postcode": "201304",
+          "country_code": "CN"
+        },
+        "business_name": "Test ABC Ltd"
+      },
+      "metadata": {
+        "test": "test"
+      },
+      "created_at": "2024-10-10T14:55:47+0000",
+      "descriptor": "Cathy Testing",
+      "request_id": "a7d1c7e0-fa28-4fc6-9b21-cd36016b92c2",
+      "return_url": "https://www.example.com/",
+      "updated_at": "2024-10-10T14:55:51+0000",
+      "base_amount": 100,
+      "base_currency": "EUR",
+      "additional_info": {
+        "enhanced_scheme_data": {
+          "customer": {
+            "last_name": "Doe",
+            "reference": "CUST12345",
+            "first_name": "John"
+          },
+          "products": [
+            {
+              "code": "3414314111",
+              "desc": "IPHONE 7",
+              "unit": "EAC",
+              "quantity": 5,
+              "unit_price": 10.02,
+              "tax_percent": 10.55,
+              "total_amount": 45.05,
+              "commodity_code": "08081000",
+              "discount_amount": 1.01,
+              "total_tax_amount": 1.01
+            }
+          ],
+          "shipping": {
+            "date": "2024-10-29",
+            "address": {
+              "city": "Shanghai",
+              "state": "Shanghai",
+              "street": "Pudong District",
+              "postcode": "100000",
+              "country_code": "CN"
+            },
+            "fee_amount": 1.5,
+            "from_postcode": "100000"
+          },
+          "duty_amount": 12.01,
+          "local_tax_amount": 10.01,
+          "total_tax_amount": 15.55,
+          "invoice_reference": "INV2023000123",
+          "merchant_reference": "MER2749372932",
+          "national_tax_amount": 5.54,
+          "vat_invoice_reference": "INV2023000123",
+          "summary_commodity_code": "12345678",
+          "customer_tax_identifier": "DE123456789",
+          "merchant_tax_identifier": "202312345K"
+        }
+      },
+      "captured_amount": 0,
+      "merchant_order_id": "a7d1c7e0-fa28-4fc6-9b21-cd36016b92c2",
+      "risk_control_options": {
+        "tra_applicable": false,
+        "skip_risk_processing": true
+      },
+      "latest_payment_attempt": {
+        "id": "att_hkstlgtcqh0q72yinrp_2yfhkg",
+        "amount": 100,
+        "status": "CANCELLED",
+        "currency": "EUR",
+        "created_at": "2024-10-10T14:55:48+0000",
+        "expires_at": "2024-10-10T16:55:48+0000",
+        "settle_via": "airwallex",
+        "updated_at": "2024-10-10T14:55:51+0000",
+        "payment_method": {
+          "card": {
+            "bin": "54252334",
+            "name": "Auto Testing",
+            "brand": "mastercard",
+            "last4": "9903",
+            "billing": {
+              "email": "test@example.com",
+              "address": {
+                "city": "Shanghai",
+                "state": "Shanghai",
+                "street": "Pudong District",
+                "postcode": "201304",
+                "country_code": "CN"
+              },
+              "last_name": "He",
+              "first_name": "john",
+              "phone_number": "1234567890123",
+              "date_of_birth": "2011-10-12"
+            },
+            "card_type": "CREDIT",
+            "expiry_year": "2025",
+            "fingerprint": "4fcJ7fIZiTB+0KkLUbxlw2BbON8=",
+            "issuer_name": "ALLIED IRISH BANKS, PLC",
+            "number_type": "PAN",
+            "expiry_month": "08",
+            "is_commercial": false,
+            "issuer_country_code": "IE"
+          },
+          "type": "card"
+        },
+        "captured_amount": 0,
+        "refunded_amount": 0,
+        "merchant_order_id": "a7d1c7e0-fa28-4fc6-9b21-cd36016b92c2",
+        "payment_intent_id": "int_hkstlgtcqh0q72yfhkg",
+        "authorization_code": "TFTFOG",
+        "authentication_data": {
+          "ds_data": {
+            "eci": "02",
+            "xid": "a9a196cf-725c-4ffc-ac81-8ee2d7f68e83",
+            "cavv": "ACIzRFVmd4iZAKq7zN3u/wAAAAA=",
+            "version": "2.2.0",
+            "enrolled": "Y",
+            "frictionless": "N",
+            "pa_res_status": "Y",
+            "liability_shift_indicator": "Y",
+            "retry_count_for_auth_decline": 0
+          },
+          "cvc_code": "M",
+          "avs_result": "N",
+          "cvc_result": "Y",
+          "fraud_data": {
+            "score": "90",
+            "action": "VERIFY",
+            "risk_factors": [
+              {
+                "description": "Transaction triggered force 3DS"
+              }
+            ]
+          }
+        },
+        "payment_method_options": {
+          "card": {
+            "authorization_type": "final_auth"
+          }
+        },
+        "provider_transaction_id": "MABCDBMGO1010",
+        "provider_original_response_code": "00"
+      },
+      "payment_method_options": {
+        "card": {
+          "risk_control": {
+            "three_ds_action": "FORCE_3DS",
+            "skip_risk_processing": true,
+            "three_domain_secure_action": "FORCE_3DS"
+          },
+          "three_ds_action": "FORCE_3DS"
+        }
+      }
+    }
+  },
+  "type": "payment",
+  "version": "2024-09-27",
+  "event_name": "payment_intent.failed",
+  "created_at": "2026-04-15T10:10:35+0000",
+  "description": "Payment intent failed"
+}
+```
+
+</Accordion>
+<Accordion title="Payment Refund Succeeded" description="refund.succeeded">
+
+Occurs when a payment refund is completed and funds are returned to the payer.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `object.id` | string | Unique identifier for the refund object. |
+| `object.amount` | number | The amount refunded. |
+| `object.currency` | string | Three-letter ISO currency code of the refund. |
+| `object.status` | string | Status of the refund (e.g., 'SUCCEEDED'). |
+| `object.payment_intent_id` | string | The ID of the payment intent that was refunded. |
+
+```json Sample payload
+{
+  "code": "refund.succeeded",
+  "data": {
+    "object": {
+      "id": "rfd_hkst88q2wh0q0il04ug_ijcyvo",
+      "amount": 10,
+      "reason": "message",
+      "status": "SUCCEEDED",
+      "currency": "EUR",
+      "created_at": "2024-10-10T10:57:35+0000",
+      "request_id": "a26949a3-6702-46e7-ade5-37506559abb1",
+      "updated_at": "2024-10-10T15:17:53+0000",
+      "merchant_order_id": "1cd12332-9c7a-3ad8-2e3d-312f6cd819ff",
+      "payment_intent_id": "int_hkstlgtcqh0q0ijcyvo",
+      "payment_attempt_id": "att_hkstlgtcqh0q0ijhutf_ijcyvo"
+    }
+  },
+  "type": "payment",
+  "version": "2024-09-27",
+  "event_name": "refund.succeeded",
+  "created_at": "2026-04-15T09:49:23+0000",
+  "description": "Payment refund succeeded"
+}
+```
+
+</Accordion>
+<Accordion title="Payment Refund Failed" description="refund.failed">
+
+Occurs when a payment refund request is rejected or declined by the provider.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `data.error.code` | string | Error category code (e.g. 'provider_declined'). |
+| `data.error.message` | string | Detailed explanation of why the refund failed. |
+| `object.id` | string | Unique identifier for the refund object. |
+| `object.amount` | number | The attempted refund amount. |
+| `object.status` | string | Status of the refund. Fixed to 'FAILED'. |
+
+```json Sample payload
+{
+  "code": "refund.failed",
+  "data": {
+    "error": {
+      "code": "provider_declined",
+      "details": {
+        "original_response_code": "Simulate failure for refund"
+      },
+      "message": "The payment provider declined this transaction. Please refer to the original response code.",
+      "trace_id": "6b0e2154d327565e3fe71c18c1b44762",
+      "provider_original_response_code": "Simulate failure for refund"
+    },
+    "object": {
+      "id": "rfd_hkst88q2wh0q6t0m4on_sxdko3",
+      "amount": 80,
+      "reason": "message",
+      "status": "FAILED",
+      "currency": "HKD",
+      "created_at": "2024-10-10T14:45:46+0000",
+      "request_id": "ba86c3ad-5963-467d-9968-6d5924471cd4",
+      "updated_at": "2024-10-10T14:45:47+0000",
+      "merchant_order_id": "1cd12332-9c7a-3ad8-2e3d-312f6cd819ff",
+      "payment_intent_id": "int_hkst88q2wh0q6sxdko3",
+      "payment_attempt_id": "att_hkst88q2wh0q6sz97vi_sxdko3"
+    }
+  },
+  "type": "payment",
+  "version": "2024-09-27",
+  "event_name": "refund.failed",
+  "created_at": "2026-04-15T10:14:53+0000",
+  "description": "Payment refund failed"
+}
+```
+
+</Accordion>
+<Accordion title="Payment Link Paid" description="payment_link.paid">
+
+Occurs when a shopper pays for a payment link successfully.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `object.id` | string | Unique identifier for the payment link. |
+| `object.url` | string | The URL of the payment link. |
+| `object.amount` | number | The total payment link amount. |
+| `object.status` | string | Status of the payment link. Fixed to 'PAID'. |
+| `object.latest_successful_payment_intent_id` | string | The ID of the generated payment intent. |
+
+```json Sample payload
+{
+  "code": "payment_link.paid",
+  "data": {
+    "object": {
+      "id": "4dfbf08f-e85a-42b9-8e25-05250872f85d",
+      "url": "https://pay-demo.airwallex.com/hkhhmb20x9bl",
+      "title": "General Practitioner New - INV-202604-862A8",
+      "active": true,
+      "amount": 322.74,
+      "status": "PAID",
+      "currency": "AUD",
+      "metadata": {},
+      "reusable": false,
+      "reference": "INV-202604-862A8",
+      "created_at": "2026-04-15T04:10:10+0000",
+      "expires_at": "2026-04-29T04:10:09+0000",
+      "updated_at": "2026-04-15T04:14:42+0000",
+      "description": "Payment Link for General Practitioner New - 2026-04-03",
+      "supported_currencies": [],
+      "collectable_shopper_info": {
+        "message": true,
+        "reference": false,
+        "phone_number": false,
+        "billing_address": false,
+        "shipping_address": false
+      },
+      "successful_payment_intent_count": 1,
+      "latest_successful_payment_intent_id": "int_hkdmffkfnhhmb63n99g"
+    }
+  },
+  "type": "payment",
+  "event_name": "payment_link.paid",
+  "description": "Payment link paid"
+}
+```
+
+</Accordion>
+<Accordion title="Payment Link Failed" description="payment_link.failed">
+
+Occurs when a payment link expires or is unpaid.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `object.id` | string | Unique identifier for the payment link. |
+| `object.active` | boolean | Whether this payment link is currently active. |
+| `object.amount` | number | The total payment link amount. |
+| `object.status` | string | Status of the payment link. Fixed to 'UNPAID'. |
+
+```json Sample payload
+{
+  "code": "payment_link.failed",
+  "data": {
+    "object": {
+      "id": "d8de8e97-8dad-4dea-978b-3ce42693b715",
+      "url": "https://pay-demo.airwallex.com/hkhhmaxwz97y",
+      "title": "General Practitioner New - INV-202604-E90B3",
+      "active": false,
+      "amount": 322.74,
+      "status": "UNPAID",
+      "currency": "AUD",
+      "metadata": {},
+      "reusable": false,
+      "reference": "INV-202604-E90B3",
+      "created_at": "2026-04-15T04:06:02+0000",
+      "expires_at": "2026-04-29T04:06:00+0000",
+      "updated_at": "2026-04-15T04:06:02+0000",
+      "description": "Payment Link for General Practitioner New - 2026-04-03",
+      "supported_currencies": [],
+      "collectable_shopper_info": {
+        "message": true,
+        "reference": false,
+        "phone_number": false,
+        "billing_address": false,
+        "shipping_address": false
+      },
+      "successful_payment_intent_count": 0
+    }
+  },
+  "type": "payment",
+  "event_name": "payment_link.failed",
+  "description": "Payment link failed"
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### Payouts
+
+<AccordionGroup>
+<Accordion title="Payout Succeeded" description="payout.succeeded">
+
+Occurs when a worker payout is processed and transferred successfully.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique identifier for the payout event. |
+| `status` | string | Payout transfer status. Fixed to 'PAID'. |
+| `source_amount` | number | Amount charged from the payer account. |
+| `source_currency` | string | ISO code of the funding source currency. |
+| `transfer_amount` | number | The converted amount sent to the worker. |
+| `transfer_currency` | string | ISO code of the transferred currency. |
+| `transfer_method` | string | Route used (e.g., 'LOCAL' or 'SWIFT'). |
+
+```json Sample payload
+{
+  "code": "payout.succeeded",
+  "data": {
+    "id": "9f61b7d3-cde4-4c51-801a-2c9558ced13c",
+    "status": "PAID",
+    "remarks": "Any information",
+    "created_at": "2022-04-06T04:24:00+0000",
+    "source_amount": 1000,
+    "transfer_date": "2022-04-06",
+    "source_currency": "CNY",
+    "transfer_amount": 206.6,
+    "transfer_method": "LOCAL",
+    "amount_payer_pays": 1000,
+    "transfer_currency": "AUD",
+    "amount_beneficiary_receives": 205.28
+  },
+  "type": "payout",
+  "event_name": "payout.succeeded",
+  "description": "Payout succeeded"
+}
+```
+
+</Accordion>
+<Accordion title="Payout Failed" description="payout.failed">
+
+Occurs when a worker payout fails or gets rejected by the bank.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique identifier for the payout event. |
+| `status` | string | Payout transfer status. Fixed to 'FAILED'. |
+| `source_amount` | number | The attempted amount. |
+| `transfer_amount` | number | The attempted transfer amount. |
+| `transfer_currency` | string | ISO code of the transferred currency. |
+
+```json Sample payload
+{
+  "code": "payout.failed",
+  "data": {
+    "id": "9f61b7d3-cde4-4c51-801a-2c9558ced13c",
+    "status": "FAILED",
+    "remarks": "Any information",
+    "created_at": "2022-04-06T04:24:00+0000",
+    "source_amount": 1000,
+    "transfer_date": "2022-04-06",
+    "source_currency": "CNY",
+    "transfer_amount": 206.6,
+    "transfer_method": "LOCAL",
+    "amount_payer_pays": 1000,
+    "transfer_currency": "AUD",
+    "amount_beneficiary_receives": 205.28
+  },
+  "type": "payout",
+  "event_name": "payout.failed",
+  "description": "Payout failed"
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### Beneficiaries
+
+<AccordionGroup>
+<Accordion title="Beneficiary Created" description="beneficiary.created">
+
+Occurs when a new worker beneficiary account/bank details profile has been created.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `worker_id` | string | Unique worker ID referencing this beneficiary. |
+| `beneficiary_data.id` | string | Unique beneficiary account ID. |
+| `beneficiary_data.nickname` | string | Nickname alias for the beneficiary. |
+| `beneficiary_data.beneficiary.first_name` | string | First name of beneficiary. |
+| `beneficiary_data.beneficiary.last_name` | string | Last name of beneficiary. |
+| `beneficiary_data.beneficiary.bank_details.iban` | string | IBAN code if applicable. |
+| `beneficiary_data.beneficiary.bank_details.bank_name` | string | Name of beneficiary's bank. |
+
+```json Sample payload
+{
+  "code": "beneficiary.created",
+  "data": {
+    "worker_id": "8365ea88-2946-4877-abe1-e02a1015288d",
+    "beneficiary_data": {
+      "id": "8365ea88-2946-4877-abe1-e02a1015288d",
+      "nickname": "Complete Concrete Pty Ltd",
+      "beneficiary": {
+        "address": {
+          "city": "Melbourne",
+          "state": "VIC",
+          "postcode": "3000",
+          "country_code": "AU",
+          "street_address": "15 William Street"
+        },
+        "last_name": "Walker",
+        "first_name": "John",
+        "entity_type": "COMPANY",
+        "bank_details": {
+          "iban": "ES8023100001180000012345",
+          "bank_name": "National Australia Bank",
+          "bank_state": "string",
+          "swift_code": "CTBAAU2S",
+          "bank_branch": "Melbourne",
+          "fingerprint": "2e99758548972a8e8822ad47fa1017ff72f06f3ff6a016851f45c398732bc50c",
+          "account_name": "Lee Da Ming",
+          "account_number": "12750852",
+          "account_currency": "AUD",
+          "bank_country_code": "AU",
+          "account_name_alias": "Lee D M",
+          "bank_street_address": "500 Bourke Street, Melbourne 3000, Australia",
+          "account_routing_type1": "bsb",
+          "account_routing_type2": "sort_code",
+          "bank_account_category": "Checking,Savings,Vista,Maestra",
+          "binding_mobile_number": "654897612345",
+          "local_clearing_system": "ACH",
+          "account_routing_value1": "083064",
+          "account_routing_value2": "123456",
+          "intermediary_bank_name": "National Australia Bank",
+          "intermediary_bank_swift_code": "CTBAAU2S"
+        },
+        "company_name": "Complete Concrete Pty Ltd",
+        "date_of_birth": "1976-08-26",
+        "additional_info": {
+          "business_area": "Travel",
+          "personal_email": "jane.smith@example.com",
+          "personal_id_type": "NATIONAL_ID",
+          "security_question": "What is the name of my second puppy?",
+          "personal_id_number": "1234567890",
+          "external_identifier": "string",
+          "legal_rep_id_number": "110108199304203520",
+          "recipient_account_id": "string",
+          "business_phone_number": "689342234",
+          "personal_mobile_number": "13651362890",
+          "legal_rep_mobile_number": "13651362890",
+          "security_question_answer": "Scooby Doo",
+          "business_registration_number": "IT593003",
+          "legal_rep_bank_account_number": "44250100003700000000",
+          "personal_last_name_in_chinese": "李",
+          "legal_rep_last_name_in_chinese": "刘",
+          "personal_first_name_in_chinese": "大明",
+          "legal_rep_first_name_in_chinese": "小芳"
+        }
+      },
+      "sca_exemptible": false,
+      "transfer_methods": [
+        "SWIFT"
+      ],
+      "payer_entity_type": "COMPANY"
+    }
+  },
+  "type": "beneficiary",
+  "event_name": "beneficiary.created",
+  "description": "New beneficiary account created"
+}
+```
+
+</Accordion>
+<Accordion title="Beneficiary Deleted" description="beneficiary.deleted">
+
+Occurs when a worker beneficiary account/bank details profile is deleted.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `worker_id` | string | Unique worker ID referencing this beneficiary. |
+| `beneficiary_id` | string | Unique ID of the deleted beneficiary profile. |
+
+```json Sample payload
+{
+  "code": "beneficiary.deleted",
+  "data": {
+    "worker_id": "8365ea88-2946-4877-abe1-e02a1015288d",
+    "beneficiary_id": "8365ea88-2946-4877-abe1-e02a1015288d"
+  },
+  "type": "beneficiary",
+  "event_name": "beneficiary.deleted",
+  "description": "Beneficiary account deleted"
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### Invoices
+
+<AccordionGroup>
+<Accordion title="Client Invoice Paid" description="client.invoice.paid">
+
+Occurs when one or more client invoices have been marked as paid.
+
+Fields in `data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `invoice_ids` | array&lt;string> | List of invoice UUIDs associated with the completed payment. |
+
+```json Sample payload
+{
+  "code": "client.invoice.paid",
+  "data": {
+    "invoice_ids": [
+      "669dc683-4ad1-4971-a743-90d908788f0e",
+      "24de1b2b-6875-4cca-927d-2ad3c4d564b5",
+      "d9980b9e-086a-4a18-9000-7bc836d1b805"
+    ]
+  },
+  "type": "invoice",
+  "event_name": "client.invoice.paid",
+  "description": "Client Invoice Paid"
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+## Best practices
+
+- **Validate signatures.** Check the `x-signature-key` header before processing any webhook data.
+- **Respond quickly.** Return `200 OK` as soon as you've validated the request.
+- **Handle duplicates.** Use the identifiers described in [Event structure](#event-structure) to avoid processing an event twice.
+- **Use HTTPS.** Serve your webhook endpoint over HTTPS.
+- **Log webhook activity.** Keep logs of incoming requests and your responses for troubleshooting.
+
+## Manage webhooks
+
+In the portal, under **Developer Tools > Webhooks**, you can create a webhook, update its URL, change its event subscriptions, view the signature key, enable or disable it, and delete it.
+
+You can also manage webhooks through the API:
+
+- `GET /api/v1/webhooks/` lists your registered webhooks and their event subscriptions.
+- `POST /api/v1/webhooks/` registers a new webhook URL and event subscriptions.
+- `DELETE /api/v1/webhooks/:id` removes a webhook.
+
+## Get help
+
+If you're not receiving webhooks, contact support with:
+
+- the webhook URL
+- the event name
+- the approximate time of the event
+- the response status your endpoint returned
+- relevant application logs

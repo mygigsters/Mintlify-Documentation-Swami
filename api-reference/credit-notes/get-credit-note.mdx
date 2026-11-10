@@ -1,0 +1,102 @@
+---
+title: "Retrieve credit note"
+description: "Retrieves the full details of a specific credit note including balance calculations, associated customer and invoice details, and current lifecycle status."
+api: "GET /credit-notes/{id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique ID (UUID) of the credit note to retrieve.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="data.id" type="string">
+  Unique identifier (UUID) of the credit note.
+</ResponseField>
+
+<ResponseField name="data.creditNoteNumber" type="string">
+  Credit note code (e.g. `CN-2026-0089` or `DRAFT`).
+</ResponseField>
+
+<ResponseField name="data.status" type="string">
+  Current status (`DRAFT`, `ISSUED`, `PARTIALLY_APPLIED`, `FULLY_APPLIED`, or `VOIDED`).
+</ResponseField>
+
+<ResponseField name="data.totalAmount" type="number">
+  Total credit granted.
+</ResponseField>
+
+<ResponseField name="data.appliedAmount" type="number">
+  Cumulative amount applied to date.
+</ResponseField>
+
+<ResponseField name="data.remainingAmount" type="number">
+  Remaining credit balance available for invoice allocation.
+</ResponseField>
+
+<ResponseField name="data.invoiceId" type="string">
+  Target invoice UUID.
+</ResponseField>
+
+<ResponseField name="data.customerName" type="string">
+  Associated customer or client name.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Credit note details retrieved successfully. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Credit note not found. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "credit_note_number": "CN-0001",
+    "client_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "customer_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+    "invoice_number": "INV-4717",
+    "payment_id": null,
+    "total_amount": "50.00",
+    "remaining_amount": "50.00",
+    "applied_amount": "0.00",
+    "currency": "AUD",
+    "status": "ISSUED",
+    "reason": "Customer discount / Service dispute",
+    "description": "50 AUD credit issued for overbilled service hours",
+    "date": "2026-09-16T05:51:09.000Z",
+    "deleted_at": null,
+    "created_at": "2026-09-16T05:51:09.000Z",
+    "updated_at": "2026-09-16T05:51:09.000Z",
+    "allocations": []
+  }
+}
+```
+
+</ResponseExample>

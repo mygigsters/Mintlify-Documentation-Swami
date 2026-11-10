@@ -1,6 +1,41 @@
 ---
-title: "Payment links"
-description: "TODO: migrate from the current docs."
+title: "Take payments with payment links"
+description: "Generate a hosted payment link, send it to your customer, and track its status."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+No integration on the payment page required: generate a hosted link, send it to your customer, and poll or listen for its status. Payment links currently support AUD only.
+
+<Steps>
+
+<Step title="Generate the link">
+
+```bash
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/create/payment-link \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: sb184dc0-281b-4cd3-847e-d3791a84f3ab" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 250.00,
+    "title": "Site cleanup - Bondi",
+    "description": "Final payment for job #8842",
+    "reference": "job_8842",
+    "expires_at": "2026-08-01T00:00:00Z"
+  }'
+```
+
+</Step>
+
+<Step title="Share the URL">
+
+The response contains the hosted payment page `url` and the link’s `id`. Email or SMS it to your customer, or embed it in an invoice (see invoicing).
+
+</Step>
+
+<Step title="Track payment">
+
+Check [Payment Link Status](/api-reference/payments/get-payment-link-status) with the link id, or subscribe to payment webhooks to be notified in real time. Once paid, use the returned `intent_id` with [Get Payment Details](/api-reference/payments/get-payment-details) for fee and settlement breakdown.
+
+</Step>
+
+</Steps>

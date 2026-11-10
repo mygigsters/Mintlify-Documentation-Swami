@@ -1,0 +1,51 @@
+---
+title: "Download credit note PDF"
+description: "Generates and streams the formal credit note PDF document containing company details, credited items, tax information, and issued status."
+api: "GET /credit-notes/{id}/download"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique ID (UUID) of the credit note to download.
+</ParamField>
+
+### Response Body
+
+| Type | Description |
+|---|---|
+| application/pdf | Binary PDF stream of the branded credit note document. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | PDF generated and returned as binary document. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Credit note not found. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/credit-notes/cn_df8913b4-16a7-47ab-b295-ffc129e01861/download \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+[Binary PDF Stream: application/pdf]
+```
+
+</ResponseExample>

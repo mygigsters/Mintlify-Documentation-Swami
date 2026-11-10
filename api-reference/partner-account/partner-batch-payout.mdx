@@ -1,0 +1,149 @@
+---
+title: "Batch payout"
+description: "Submits a bulk payout batch containing multiple payment instructions. Supports real-time NPP (fast transfer) or standard Bank Transfer clearing rails with idempotency protection."
+api: "POST /payouts/batch"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique client-generated string (e.g. UUID) to prevent accidental double-submission of bulk payout batches.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="account_id" type="string" required>
+  The unique UUID of the partner platform executing the payouts.
+</ParamField>
+
+<ParamField body="payouts" type="array of objects" required>
+  List of individual payout transfer instructions.
+</ParamField>
+
+<ParamField body="payouts[].account_name" type="string" required>
+  Name on the recipient bank account.
+</ParamField>
+
+<ParamField body="payouts[].account_number" type="string" required>
+  Recipient bank account number.
+</ParamField>
+
+<ParamField body="payouts[].bsb_number" type="string" required>
+  6-digit Australian BSB number (e.g. `065163`).
+</ParamField>
+
+<ParamField body="payouts[].entity_type" type="string" required>
+  Recipient entity type: `PERSONAL` or `BUSINESS`.
+</ParamField>
+
+<ParamField body="payouts[].mode" type="string" required>
+  Payment clearing method: `NPP` (real-time fast transfer) or `BANK_TRANSFER` (standard direct entry).
+</ParamField>
+
+<ParamField body="payouts[].currency" type="string" required>
+  Three-letter ISO currency code (e.g. `AUD`).
+</ParamField>
+
+<ParamField body="payouts[].amount" type="number" required>
+  Disbursement amount.
+</ParamField>
+
+<ParamField body="payouts[].remarks" type="string">
+  Payment narrative or remarks (e.g. `October payment`).
+</ParamField>
+
+<ParamField body="payouts[].reference" type="string">
+  Client-side unique transaction reference (e.g. `PAY-001`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the batch validation and creation succeeded (`true`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Informational notice: `Payouts validated successfully`.
+</ResponseField>
+
+<ResponseField name="data.batchId" type="string">
+  The unique batch identifier (e.g. `bat_1d9248bb02add09754f4b9d527c88661`) used to poll status.
+</ResponseField>
+
+<ResponseField name="data.account_id" type="string">
+  Partner platform UUID that originated the batch.
+</ResponseField>
+
+<ResponseField name="data.totalPayouts" type="number">
+  Total count of payouts accepted into this batch.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Batch payout validated and submitted successfully. |
+| 400 | Bad Request. Invalid BSB, missing recipient details, or zero/negative amount. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 409 | Conflict. An idempotent request with this idempotency key has already been executed. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/payouts/batch \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -H "idempotency-key: cdvdvvsvsbfbdbdbdbsdCc" \
+  -H "Authorization: Bearer <accessToken>" \
+  -d '{
+  "account_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+  "payouts": [
+    {
+      "account_name": "Jane",
+      "account_number": "12345678",
+      "bsb_number": "065163",
+      "entity_type": "PERSONAL",
+      "mode": "NPP",
+      "currency": "AUD",
+      "amount": 250.5,
+      "remarks": "October payment",
+      "reference": "PAY-001"
+    },
+    {
+      "account_name": "Jane",
+      "account_number": "12345678",
+      "bsb_number": "065163",
+      "entity_type": "PERSONAL",
+      "mode": "BANK_TRANSFER",
+      "currency": "AUD",
+      "amount": 10,
+      "remarks": "October payment",
+      "reference": "PAY-002"
+    }
+  ]
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Payouts validated successfully",
+  "data": {
+    "batch_id": "bat_1d9248bb02add09754f4b9d527c88661",
+    "account_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "total_payouts": 2
+  }
+}
+```
+
+</ResponseExample>

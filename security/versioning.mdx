@@ -1,6 +1,89 @@
 ---
-title: "Versioning"
-description: "TODO: migrate from the current docs."
+title: "API versioning"
+description: "Pin your integration to an API version with the X-API-Version header and upgrade on your own schedule."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+MyGigsters versions the API with a mandatory `X-API-Version` header. You pin your integration to a release and upgrade when you're ready. Breaking changes are never deployed to an existing version.
+
+## Send the version header
+
+Every request must include `X-API-Version: 1.2` (recommended) or `X-API-Version: 1.1`.
+
+```bash
+curl -X GET "https://qa-payments.mygigsters.com.au/api/v1/customer" \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+<Warning>
+  Requests without a supported version header are rejected. See [Authentication](/get-started/authentication) for the error responses.
+</Warning>
+
+## Available versions
+
+| Version | Status | Released | Notes |
+|---|---|---|---|
+| `1.2` | Current | January 2026 | snake_case field names, Card and Beneficiary SDKs, document verification, partner accounts, credit notes, wallet balances, one error format, signed webhooks. |
+| `1.1` | Maintenance | June 2025 | Baseline release. Reaches end of life on 31 December 2026. |
+
+See the [changelog](/changelog) for what changed in each version.
+
+## Deprecation policy
+
+<Columns cols={3}>
+  <Card title="12 months' notice" icon="calendar">
+    A deprecated version keeps working in production for at least 12 months after the announcement.
+  </Card>
+  <Card title="Sunset alerts" icon="bell">
+    Responses from a deprecated version include a `Warning: 299` header with the sunset date. You also get email and dashboard alerts.
+  </Card>
+  <Card title="No surprise breaks" icon="shield-halved">
+    New optional fields, endpoints, and webhook events ship without a version bump.
+  </Card>
+</Columns>
+
+### What counts as a breaking change
+
+| Change | Breaking? | New version? | Effect on your integration |
+|---|---|---|---|
+| Add an endpoint or webhook event | No | No | None. |
+| Add an optional request parameter | No | No | Defaults are applied server-side. |
+| Add fields to a JSON response | No | No | Your parser should ignore unknown keys. |
+| Rename or delete a field | Yes | Yes | Only introduced in a new version. |
+| Change field types or validation rules | Yes | Yes | The old version keeps its original rules. |
+| Change HTTP status codes | Yes | Yes | Status codes stay consistent for a pinned version. |
+
+## Upgrade from 1.1 to 1.2
+
+<Steps>
+  <Step title="Rename camelCase fields to snake_case">
+    Version 1.2 uses snake_case for every request and response field, for example `customer_id`, `due_date`, `gst_registered`, and `save_card`. Update any field names your integration sends or reads.
+  </Step>
+  <Step title="Update the version header">
+    Change the default header in your HTTP client, middleware, or API gateway. If you don't use any renamed fields, this is the only required change.
+
+    <CodeGroup>
+    ```javascript 1.1 (before)
+    const headers = {
+      "Authorization": "Basic " + btoa(uuid + ":" + secret),
+      "X-API-Version": "1.1",
+      "Content-Type": "application/json"
+    };
+    ```
+
+    ```javascript 1.2 (after)
+    const headers = {
+      "Authorization": "Basic " + btoa(uuid + ":" + secret),
+      "X-API-Version": "1.2",
+      "Content-Type": "application/json",
+      // Optional: idempotency key for POST and PUT
+      "idempotency-Key": crypto.randomUUID()
+    };
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Update error and webhook handling">
+    Version 1.2 returns one error format for all 4xx and 5xx responses and signs webhooks with HMAC-SHA256. See [Errors and conventions](/api-reference/errors-and-conventions) and [Receive webhooks](/security/webhooks).
+  </Step>
+</Steps>

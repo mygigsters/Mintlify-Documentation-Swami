@@ -1,0 +1,121 @@
+---
+title: "Update subscription"
+description: "The Update Subscription endpoint is used to update an existing subscription's parameters such as amount, frequency, start date, and end date."
+api: "PUT /update/{id}/subscription"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the subscription to update (e.g. `2`).
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="customer_id" type="string" required>
+  The unique identifier of the customer.
+</ParamField>
+
+<ParamField body="amount" type="number" required>
+  The updated recurring amount of the subscription.
+</ParamField>
+
+<ParamField body="frequency" type="string" required>
+  The frequency of billing cycles: `daily`, `weekly`, or `monthly`.
+</ParamField>
+
+<ParamField body="start_date" type="string" required>
+  The start date of the subscription in ISO 8601 format.
+</ParamField>
+
+<ParamField body="end_date" type="string" required>
+  The end date of the subscription in ISO 8601 format. Must be greater than `start_date`.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  Three-letter ISO currency code (e.g. `AUD`).
+</ParamField>
+
+### Response Body
+
+The response for the Update Subscription request is a JSON object with the following schema:
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | Indicates the status code of the update request. |
+| `message` | string | Success message. |
+| `data`object | object | The details of the updated subscription. |
+| ↳`id` | number | Subscription unique ID. |
+| ↳`client_id` | string | Client identifier. |
+| ↳`customer_id` | string | Customer identifier. |
+| ↳`amount` | number | Updated subscription amount. |
+| ↳`frequency` | string | Billing frequency (e.g. `weekly`). |
+| ↳`start_date` | string | Start date timestamp. |
+| ↳`end_date` | string | End date timestamp. |
+| ↳`status` | string | Subscription status (e.g. `active`). |
+| ↳`currency` | string | Currency code (e.g. `AUD`). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | OK. The subscription has been successfully updated. |
+| 400 | Bad Request. Validation error (e.g. endDate must be greater than startDate). |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified subscription ID does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT https://qa-payments.mygigsters.com.au/api/v1/update/2/subscription \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "customer_id": "cus_hkdmgcfzjhhmn1t6osi",
+  "amount": 100.5,
+  "frequency": "weekly",
+  "start_date": "2026-05-20T00:00:00.000Z",
+  "end_date": "2026-12-20T00:00:00.000Z",
+  "currency": "AUD"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Subscription updated successfully",
+  "data": {
+    "id": 2,
+    "client_id": "1",
+    "customer_id": "cus_hkdmgcfzjhhmn1t6osi",
+    "amount": 100.5,
+    "frequency": "weekly",
+    "start_date": "2026-05-20T00:00:00.000Z",
+    "end_date": "2026-12-20T00:00:00.000Z",
+    "next_charge_date": "2026-06-13T00:00:00.000Z",
+    "last_charge_date": "2026-05-13T11:55:32.000Z",
+    "status": "active",
+    "retry_count": 0,
+    "max_retries": 3,
+    "currency": "AUD",
+    "remarks": null,
+    "deleted_at": null,
+    "created_at": "2026-05-13T11:53:32.000Z",
+    "updated_at": "2026-09-14T11:02:07.220Z"
+  }
+}
+```
+
+</ResponseExample>

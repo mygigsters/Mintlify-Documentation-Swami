@@ -1,0 +1,60 @@
+---
+title: "Default card status"
+description: "This endpoint retrieves the default card status for a specific customer."
+api: "GET /customer/default-card-status/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="customer_id" type="string" required>
+  The unique identifier of the customer.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+<ResponseField name="message" type="string">
+  The status message.
+</ResponseField>
+
+<ResponseField name="card_status" type="boolean">
+  Indicates whether the customer has a valid default card linked (`true` or `false`).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the default card status is returned. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Customer ID not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/customer/default-card-status/cus_hkdmc5m2th9i6uf6g01 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Card found",
+  "card_status": true
+}
+```
+
+</ResponseExample>

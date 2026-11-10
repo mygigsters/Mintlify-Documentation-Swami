@@ -1,0 +1,62 @@
+---
+title: "Pause subscription"
+description: "The Pause Subscription endpoint is used to pause an existing subscription."
+api: "PUT /pause/{subscription_id}/subscription"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="subscription_id" type="string" required>
+  The unique identifier of the subscription to pause.
+</ParamField>
+
+### Response Body
+
+The response for the Pause Subscription request is a JSON object with the following schema:
+
+<ResponseField name="status" type="number">
+  Indicates the status code of the pause subscription request.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the subscription is paused. |
+| 400 | Bad Request. Invalid request payload or parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified subscriptionId does not exist. |
+| 409 | Conflict. The subscription is already paused/cancelled or cannot be paused in its current state. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT https://qa-payments.mygigsters.com.au/api/v1/pause/sub_hkdmqx5cchbvdq4qaao/subscription \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Subscription paused successfully"
+}
+```
+
+</ResponseExample>

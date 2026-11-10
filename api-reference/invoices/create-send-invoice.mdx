@@ -1,0 +1,191 @@
+---
+title: "Create and send invoice"
+description: "This endpoint creates an invoice, generates a PDF, and optionally emails it to the customer."
+api: "POST /invoice/create-send-invoice"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="name" type="string" required>
+  Name of the business issuing the invoice.
+</ParamField>
+
+<ParamField body="logo" type="string">
+  URL of the business logo image.
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  Address of the business.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Business email address.
+</ParamField>
+
+<ParamField body="reg_number" type="string" required>
+  Registration number of the business (e.g., ABN for Australia, UEN for Singapore, or GST registration number).
+</ParamField>
+
+<ParamField body="bank" type="object" required>
+  Bank details of the business. Object containing: bsb (string), and accountNumber (string).
+</ParamField>
+
+<ParamField body="customer" type="object" required>
+  Customer details. Object containing: customerName (string), customerEmail (string), and customerAddress (string).
+</ParamField>
+
+<ParamField body="invoice_number" type="string" required>
+  Unique identifier code for the invoice.
+</ParamField>
+
+<ParamField body="reference" type="string">
+  Invoice reference code or brief memo.
+</ParamField>
+
+<ParamField body="reference_name" type="string">
+  Name of the reference target (e.g. Project Name).
+</ParamField>
+
+<ParamField body="date" type="string" required>
+  Date when the invoice is issued (Format: YYYY-MM-DD).
+</ParamField>
+
+<ParamField body="due_date" type="string" required>
+  Due date for payment (Format: YYYY-MM-DD).
+</ParamField>
+
+<ParamField body="gst_applicable" type="boolean" required>
+  Indicates whether Goods and Services Tax (GST) is applied to the items.
+</ParamField>
+
+<ParamField body="gst" type="number" required>
+  GST percentage rate (e.g. 10 for 10% GST).
+</ParamField>
+
+<ParamField body="items" type="array" required>
+  Array of invoice line items. Each element is an object containing: description (string), quantity (number), and unitPrice (number).
+</ParamField>
+
+<ParamField body="type" type="string">
+  Type of invoice. Supported values: `cost_of_sales` or `sales`. Default is `sales`.
+</ParamField>
+
+<ParamField body="notes" type="string">
+  Additional terms or notes shown on the PDF.
+</ParamField>
+
+<ParamField body="send_email" type="boolean" required>
+  If set to true, the system automatically emails the invoice to the customer.
+</ParamField>
+
+<ParamField body="payment_link" type="boolean" required>
+  If set to true, a payment link is automatically generated and embedded directly inside the invoice PDF.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  Indicates the status code of the response.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message indicating the invoice was created successfully.
+</ResponseField>
+
+<ResponseField name="invoice_id" type="string">
+  The unique ID of the created invoice (prefixed with `inv_`).
+</ResponseField>
+
+<ResponseField name="pdf_url" type="string">
+  URL to download the generated invoice PDF file.
+</ResponseField>
+
+<ResponseField name="payment_link" type="string">
+  URL to the generated checkout payment link (returned if `paymentLink` was true in the request).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Invoice created successfully and sent to the customer. |
+| 400 | Bad Request. Invalid parameters or validation failure. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 409 | Conflict. Duplicate idempotency key or invoice number already exists. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/invoice/create-send-invoice \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "name": "Your Business Name",
+  "logo": "https://app-qa-payments.mygigsters.com.au/assets/AppLogo1_black-BprEQ1v2.png",
+  "address": "Your Business Address",
+  "email": "jane.smith@example.com",
+  "reg_number": "33623510396",
+  "bank": {
+    "abn": "123456789",
+    "bsb_number": "086568",
+    "account_number": "77868647"
+  },
+  "customer": {
+    "customer_name": "Jane Smith",
+    "customer_email": "jane.smith@example.com",
+    "customer_address": "123, Melbourne, AU"
+  },
+  "invoice_number": "INV-0002",
+  "reference": "Test reference",
+  "reference_name": "Project Name",
+  "date": "2025-11-26",
+  "due_date": "2025-12-25",
+  "gst_applicable": true,
+  "gst": 10,
+  "items": [
+    {
+      "description": "Product A",
+      "quantity": 2,
+      "unit_price": 5000
+    },
+    {
+      "description": "Product B",
+      "quantity": 3,
+      "unit_price": 7500
+    },
+    {
+      "description": "Product C",
+      "quantity": 43,
+      "unit_price": 1500
+    }
+  ],
+  "type": "cost_of_sales",
+  "notes": "Add notes here, if any",
+  "send_email": false,
+  "payment_link": true
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Invoice created and sent successfully",
+  "invoice_id": "d24152f8-7e53-4952-a0b2-e9895365bdea",
+  "pdf_url": "https://qa-payments.mygigsters.com.au/api/v1/download-invoice?id=d24152f8-7e53-4952-a0b2-e9895365bdea",
+  "payment_link": "https://pay-demo.airwallex.com/hkhixsm2kmf6"
+}
+```
+
+</ResponseExample>

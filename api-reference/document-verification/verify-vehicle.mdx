@@ -1,0 +1,86 @@
+---
+title: "Vehicle registration check"
+description: "This endpoint checks a vehicle registration against official records and returns detailed vehicle information including make, model, colour, body style, registration expiry, and insurance details."
+api: "POST /verify/vehicle-registration"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="registration_number" type="string" required>
+  The vehicle registration plate number (e.g. "S306CPS").
+</ParamField>
+
+<ParamField body="state" type="string" required>
+  The Australian state where the vehicle is registered (e.g. "SA", "VIC", "NSW", "QLD").
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | string | A message describing the response status (e.g. "Verification Result"). |
+| `data`object | object | The vehicle registration verification result data. |
+| ↳`Description` | string | A description of the vehicle (e.g. "GREY KIA STATION WAGON"). |
+| ↳`CarMake` | string | The make/manufacturer of the vehicle (e.g. "KIA", "TOYOTA"). |
+| ↳`CarModel` | string\|null | The model of the vehicle. May be null if not available. |
+| ↳`RegistrationYear` | string\|null | The year of registration. May be null if not available. |
+| ↳`BodyStyle` | string | The body style of the vehicle (e.g. "STATION WAGON", "SEDAN"). |
+| ↳`Colour` | string | The colour of the vehicle. |
+| ↳`Expiry` | string | The registration expiry date (DD/MM/YYYY format). |
+| ↳`VIN` | string\|null | The Vehicle Identification Number. May be null if not available. |
+| ↳`InsuranceCompany` | string | The name of the insurance company covering the vehicle. |
+| ↳`ImageUrl` | string | URL for a reference image of the vehicle make. |
+| ↳`State` | string | The state of registration. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | The vehicle registration was successfully verified and the vehicle details are returned. |
+| 400 | Bad Request. Missing or invalid registration number or state. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/verify/vehicle-registration \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "registration_number": "S306CPS",
+  "state": "SA"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "status": "Verification Result",
+  "data": {
+    "Description": "GREY KIA STATION WAGON",
+    "CarMake": "KIA",
+    "CarModel": null,
+    "RegistrationYear": null,
+    "BodyStyle": "STATION WAGON",
+    "Colour": "GREY",
+    "Expiry": "18/08/2026",
+    "VIN": null,
+    "InsuranceCompany": "YOUI",
+    "ImageUrl": "http://www.carregistrationapi.com/image.aspx/@S0lBIA==",
+    "State": "SA"
+  }
+}
+```
+
+</ResponseExample>

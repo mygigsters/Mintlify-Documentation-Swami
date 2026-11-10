@@ -1,0 +1,105 @@
+---
+title: "Create charge"
+description: "The Create Charge endpoint allows you to create a new payment for a customer."
+api: "POST /customer/create-charge"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Headers
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique UUID string used to prevent duplicate operations.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="amount" type="number" required>
+  The amount of the payment in decimal dollars (e.g. to charge $25.00 AUD, pass 25.00). Do not pass cents.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  The currency of the payment.
+</ParamField>
+
+<ParamField body="job_id" type="string">
+  The ID of the job for which the payout is being initiated. Either job ID or reference is required.
+</ParamField>
+
+<ParamField body="reference" type="string">
+  The reference for the payout request. Either job ID or reference is required.
+</ParamField>
+
+<ParamField body="customer_id" type="string" required>
+  The unique identifier of the customer for whom the payment is being created.
+</ParamField>
+
+<ParamField body="auto_capture" type="boolean">
+  A flag indicating whether the payment should be automatically captured after being created. If set to true, the payment will be captured immediately; if false, it may require manual capture later.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+<ResponseField name="status" type="number">
+  Indicates the status code of the payment creation request.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Provides any additional information related to the payment creation process.
+</ResponseField>
+
+<ResponseField name="payment_status" type="string">
+  Represents the status of the payment (e.g., `SUCCEEDED`, `REQUIRES_CAPTURE`, `FAILED`).
+</ResponseField>
+
+<ResponseField name="intent_id" type="string">
+  The unique identifier for the payment intent.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payment is created and the response includes the payment details and intent ID. |
+| 400 | Bad Request. Invalid parameters, card not linked, or duplicate job ID ('Job Id is already exists'). |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified customerId or jobId does not exist. |
+| 409 | Conflict. Duplicate idempotency key with mismatching parameters. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/create-charge \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: 7b80a149-16ff-4dc8-8eb1-f1f4cfd0d575" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "amount": 25,
+  "currency": "AUD",
+  "job_id": "89073",
+  "customer_id": "cus_hkdmn5lcqh5enc37sp6"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{   
+   "status": 200,
+   "message": "Payment successful!",
+   "payment_status": "SUCCEEDED",
+   "intent_id": "int_sgpvzkmwthn98399b2p"
+  }
+```
+
+</ResponseExample>

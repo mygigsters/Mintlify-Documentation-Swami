@@ -1,0 +1,137 @@
+---
+title: "Retrieve customer"
+description: "This endpoint makes an HTTP GET request to retrieve the details of a specific customer. Upon successful execution, the response returns a status code of 200 and a JSON object with the keys 'message' and 'customer'."
+api: "GET /customer/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="customer_id" type="string" required>
+  The unique identifier of the customer.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | A message related to the response. |
+| `customer`object | object | An object containing the details of the customer. |
+| ↳`id` | integer | The unique identifier of the customer. |
+| ↳`full_name` | string | The full name of the customer. |
+| ↳`email` | string | The email address of the customer. |
+| ↳`phone` | string | The phone number of the customer. |
+| ↳`abn` | string | The ABN (Australian Business Number) of the customer. |
+| ↳`address` | string | The address of the customer. |
+| ↳`type` | integer | The type of customer. |
+| ↳`company`object | object | Details of the company associated with the customer (or null). |
+| ↳`name` | string | Legal name of the company. |
+| ↳`abn` | string | Company Australian Business Number. |
+| ↳`address` | string | Registered company address. |
+| ↳`airwallex_id` | string | Airwallex ID mapped to the customer. |
+| ↳`cards`array | array | List of cards associated with the customer. |
+| ↳`is_default` | boolean | Indicates if this is the default payment card. |
+| ↳`card_id` | string | Unique identifier for the card. |
+| ↳`status` | string | Consent status (e.g. 'VERIFIED'). |
+| ↳`card`object | object | Card detail properties container. |
+| ↳`expiry_month` | string | Card expiry month (e.g. '04'). |
+| ↳`expiry_year` | string | Card expiry year (e.g. '2044'). |
+| ↳`name` | string | Cardholder name. |
+| ↳`bin` | string | Card BIN (Bank Identification Number). |
+| ↳`last4` | string | Last 4 digits of the card (e.g. '1003'). |
+| ↳`brand` | string | Card brand (e.g. 'visa'). |
+| ↳`issuer_country_code` | string | Issuer country code. |
+| ↳`card_type` | string | Card type (e.g. 'CREDIT'). |
+| ↳`fingerprint` | string | Unique card fingerprint signature. |
+| ↳`issuer_name` | string | Name of issuing financial institution. |
+| ↳`is_commercial` | boolean | Indicates if the card is commercial. |
+| ↳`number_type` | string | Number type of the card. |
+| ↳`save_card` | string | Secure link to add a card. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the details of the customer are returned. |
+| 401 | Unauthorized. Missing or invalid authentication token. |
+| 404 | Not Found. The requested customerId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/customer/cus_hkdmn5lcqh5enc37sp6 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Customer found",
+  "customer": {
+    "id": 42,
+    "full_name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "phone": "9888888888",
+    "abn": "12345678910",
+    "address": "123 Melbourne, NSW",
+    "type": 1,
+    "company": null,
+    "airwallex_id": "cus_hkdmrtdc7hbdmb7beq3",
+    "cards": [
+      {
+        "is_default": true,
+        "card_id": "cst_hkdmsjbmchaath106cq",
+        "status": "VERIFIED",
+        "card": {
+          "expiry_month": "04",
+          "expiry_year": "2044",
+          "name": "",
+          "bin": "40120003",
+          "last4": "1003",
+          "brand": "visa",
+          "issuer_country_code": "RU",
+          "card_type": "CREDIT",
+          "fingerprint": "bvM2E6aD50H35Unuisos6IYAEmw=",
+          "issuer_name": "VISA PRODUCTION SUPPORT CLIENT BID 1",
+          "is_commercial": false,
+          "number_type": "PAN"
+        }
+      },
+      {
+        "card_id": "cst_hkdmsjbmchaath106cp",
+        "status": "VERIFIED",
+        "card": {
+          "expiry_month": "04",
+          "expiry_year": "2044",
+          "name": "",
+          "bin": "40120003",
+          "last4": "1003",
+          "brand": "visa",
+          "issuer_country_code": "RU",
+          "card_type": "CREDIT",
+          "fingerprint": "bvM2E6aD50H35Unuisos6IYAEmw=",
+          "issuer_name": "VISA PRODUCTION SUPPORT CLIENT BID 1",
+          "is_commercial": false,
+          "number_type": "PAN"
+        }
+      }
+    ],
+    "save_card": "https://app-qa-payments.mygigsters.com.au/save-card/cus_hkdm99dbsh9iactpfvh/f2c1d9d2-c50d-460e-9e07-a1c58fa025f7"
+  }
+}
+```
+
+</ResponseExample>

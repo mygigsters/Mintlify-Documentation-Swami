@@ -1,6 +1,166 @@
 ---
 title: "Restricted keys"
-description: "TODO: migrate from the current docs."
+description: "Create API keys that can only reach the modules an integration needs."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+A restricted key is an API credential with module-level permissions. Use one for each application or integration so it can only reach the resources it needs, for example read access to Payments and no access to Customers.
+
+## Permissions
+
+Each permission pairs a `module` with a `permission_level`.
+
+| Field | Values seen in examples |
+|---|---|
+| `module` | `Customers`, `Cards`, `Payment Intents`, `Payments`, `Workers`, `Payouts`, `Invoices`, `Subscriptions` |
+| `permission_level` | `none`, `read` |
+
+{/* TODO: confirm the full list of permission levels (for example, whether a write level exists). */}
+
+## Create a restricted key
+
+`POST /api/v1/restricted-keys`
+
+<CodeGroup>
+```bash Request
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/restricted-keys \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "name": "My Limited Access Key",
+  "permissions": [
+    { "module": "Customers", "permission_level": "none" },
+    { "module": "Payments", "permission_level": "read" }
+  ]
+}'
+```
+
+```json Response
+{
+  "status": 201,
+  "message": "Restricted API key created successfully.",
+  "data": {
+    "id": 1,
+    "uuid": "810c5e37-b3f3-4a9f-bde9-1a95a5b2ce5d",
+    "name": "My Limited Access Key",
+    "secret_key": "NEW_SECRET_KEY"
+  }
+}
+```
+</CodeGroup>
+
+<Warning>
+  The `secret_key` is shown only once. Store it securely. It can't be retrieved or shown again.
+</Warning>
+
+## Retrieve a restricted key
+
+`GET /api/v1/restricted-keys/{id}`
+
+Returns the key's details and its permission for every module.
+
+<CodeGroup>
+```bash Request
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/restricted-keys/1 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2"
+```
+
+```json Response
+{
+  "status": 200,
+  "data": {
+    "id": 1,
+    "uuid": "810c5e37-b3f3-4a9f-bde9-1a95a5b2ce5d",
+    "name": "Updated Marketing Key",
+    "status": "Active",
+    "created_at": "2026-07-24T07:41:22.000Z",
+    "permissions": [
+      { "module": "Customers", "permission_level": "read" },
+      { "module": "Cards", "permission_level": "none" },
+      { "module": "Payment Intents", "permission_level": "none" },
+      { "module": "Payments", "permission_level": "none" },
+      { "module": "Workers", "permission_level": "none" },
+      { "module": "Payouts", "permission_level": "read" },
+      { "module": "Invoices", "permission_level": "none" },
+      { "module": "Subscriptions", "permission_level": "none" }
+    ]
+  }
+}
+```
+</CodeGroup>
+
+## Update a restricted key
+
+`PUT /api/v1/restricted-keys/{id}`
+
+Updates the name or module permissions.
+
+<CodeGroup>
+```bash Request
+curl -X PUT https://qa-payments.mygigsters.com.au/api/v1/restricted-keys/1 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "name": "Updated Marketing Key",
+  "permissions": [
+    { "module": "Customers", "permission_level": "read" },
+    { "module": "Payouts", "permission_level": "read" }
+  ]
+}'
+```
+
+```json Response
+{
+  "status": 200,
+  "message": "Restricted API key updated successfully."
+}
+```
+</CodeGroup>
+
+## List restricted keys
+
+`GET /api/v1/restricted-keys`
+
+<CodeGroup>
+```bash Request
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/restricted-keys \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2"
+```
+
+```json Response
+{
+  "status": 200,
+  "pagination": {
+    "current_page": 1,
+    "page_size": 10,
+    "total_count": 1,
+    "total_pages": 1
+  },
+  "keys": [
+    {
+      "id": 1,
+      "uuid": "810c5e37-b3f3-4a9f-bde9-1a95a5b2ce5d",
+      "name": "Updated Marketing Key",
+      "status": "Active",
+      "created_at": "2026-07-24T07:41:22.000Z",
+      "revoked_at": null
+    }
+  ]
+}
+```
+</CodeGroup>
+
+## Delete a restricted key
+
+`DELETE /api/v1/restricted-keys/{id}`
+
+Deletes the key immediately. Any request using it stops working straight away.
+
+```bash Request
+curl -X DELETE https://qa-payments.mygigsters.com.au/api/v1/restricted-keys/1 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2"
+```

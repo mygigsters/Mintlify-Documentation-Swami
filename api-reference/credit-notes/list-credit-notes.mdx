@@ -1,0 +1,119 @@
+---
+title: "List credit notes"
+description: "Returns a paginated list of credit notes with support for status filtering, text search, column sorting, and overall summary analytics."
+api: "GET /credit-notes"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="status" type="string">
+  Filter by status: `DRAFT`, `ISSUED`, `PARTIALLY_APPLIED`, `FULLY_APPLIED`, `VOIDED`, or `all`.
+</ParamField>
+
+<ParamField query="search" type="string">
+  Text search filter matching credit note number, customer name, or invoice number.
+</ParamField>
+
+<ParamField query="page" type="number">
+  Page number for pagination. Default is `1`.
+</ParamField>
+
+<ParamField query="limit" type="number">
+  Number of records per page. Default is `10`.
+</ParamField>
+
+<ParamField query="sort_by" type="string">
+  Sort attribute: `createdAt`, `totalAmount`, `remainingAmount`. Default is `createdAt`.
+</ParamField>
+
+<ParamField query="sort_order" type="string">
+  Sort direction: `ASC` or `DESC`. Default is `DESC`.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the request was successful.
+</ResponseField>
+
+<ResponseField name="totalItems" type="number">
+  Total count of matching credit notes across pages.
+</ResponseField>
+
+<ResponseField name="totalPages" type="number">
+  Total number of pages available.
+</ResponseField>
+
+<ResponseField name="currentPage" type="number">
+  Current active page index.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of credit note objects matching query parameters.
+</ResponseField>
+
+<ResponseField name="summary" type="object">
+  Summary metrics including `totalDraftAmount`, `totalIssued`, `totalRemaining`, and `totalApplied`.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Credit notes list retrieved successfully. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/credit-notes \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "total_items": 1,
+  "total_pages": 1,
+  "current_page": 1,
+  "page_size": 10,
+  "data": [
+    {
+      "id": 1,
+      "credit_note_number": "CN-0001",
+      "client_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+      "customer_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+      "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+      "invoice_number": "INV-4717",
+      "payment_id": null,
+      "total_amount": "50.00",
+      "remaining_amount": "50.00",
+      "applied_amount": "0.00",
+      "currency": "AUD",
+      "status": "ISSUED",
+      "reason": "Customer discount / Service dispute",
+      "description": "50 AUD credit issued for overbilled service hours",
+      "date": "2026-09-16T05:51:09.000Z",
+      "deleted_at": null,
+      "created_at": "2026-09-16T05:51:09.000Z",
+      "updated_at": "2026-09-16T05:51:09.000Z",
+      "allocations": []
+    }
+  ]
+}
+```
+
+</ResponseExample>

@@ -71,10 +71,10 @@ Use the Payments API when your marketplace sits between the people who pay for w
   <Card title="Onboard and pay a worker" icon="user-plus" href="/guides/onboard-and-pay-a-worker">
     Register a worker, collect their bank details, and send their first payout.
   </Card>
-  <Card title="Pay many workers at once" icon="users" href="/guides/bulk-payouts">
-    Send a batch of payouts in one request and track each one.
+  <Card title="Pay someone who isn't registered" icon="user-clock" href="/api-reference/payouts/talent-payouts">
+    Send a one-off payout with the bank details inline, without creating a worker first.
   </Card>
-  <Card title="Check wallet balances" icon="wallet" href="/guides/wallet-balances">
+  <Card title="Check wallet balances" icon="wallet" href="/api-reference/wallet/get-wallet">
     See available, pending, and reserved funds before you pay out.
   </Card>
   <Card title="Collect bank details securely" icon="building-columns" href="/sdks/beneficiary-sdk">
@@ -103,7 +103,7 @@ Use the Payments API when your marketplace sits between the people who pay for w
   <Card title="Document verification" icon="id-card" href="/guides/document-verification">
     Check ABNs, driver licences, passports, visas, vehicle registrations, and right to work.
   </Card>
-  <Card title="Police checks" icon="shield" href="/guides/document-verification#police-checks">
+  <Card title="Police checks" icon="shield" href="/api-reference/document-verification/initiate-police-check">
     Start a police check and poll for the result.
   </Card>
 </Columns>
@@ -115,10 +115,10 @@ Use the Payments API when your marketplace sits between the people who pay for w
 </Frame>
 
 <Columns cols={2}>
-  <Card title="Onboard connected accounts" icon="handshake" href="/platform/onboard-connected-accounts">
+  <Card title="Onboard connected accounts" icon="handshake" href="/platform/overview">
     Create accounts for the businesses you serve and track their verification status.
   </Card>
-  <Card title="Embed the KYC flow" icon="wand-magic-sparkles" href="/platform/kyc-magic-link">
+  <Card title="Embed the KYC flow" icon="wand-magic-sparkles" href="/api-reference/partner-account/partner-ca-magic-link">
     Hand off identity verification with a magic link instead of building the forms.
   </Card>
   <Card title="Receive webhooks" icon="bell" href="/security/webhooks">

@@ -1,6 +1,28 @@
 ---
-title: "Subscriptions"
-description: "TODO: migrate from the current docs."
+title: "Set up subscriptions"
+description: "Bill customers on a recurring schedule."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Bill a customer’s default card on a recurring schedule.
+
+<Steps>
+
+<Step title="Prerequisite: a customer with a default card">
+
+Subscriptions charge the customer’s saved default card — see [Charge a customer](/guides/charge-a-customer) for card setup.
+
+</Step>
+
+<Step title="Create the subscription">
+
+Call [Create Subscription](/api-reference/subscriptions/create-subscription) with the customer, amount, currency, frequency and start date.
+
+</Step>
+
+<Step title="Manage its lifecycle">
+
+[Update](/api-reference/subscriptions/update-subscription) to modify details, [Pause](/api-reference/subscriptions/pause-subscription) to temporarily stop billing, [Resume](/api-reference/subscriptions/resume-subscription) to continue, [Cancel](/api-reference/subscriptions/cancel-subscription) to end permanently. [List Subscriptions](/api-reference/subscriptions/list-subscriptions) shows everything on your account.
+
+</Step>
+
+</Steps>

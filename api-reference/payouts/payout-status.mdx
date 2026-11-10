@@ -1,0 +1,93 @@
+---
+title: "Payout status"
+description: "This endpoint is used to retrieve the payout status of a worker."
+api: "POST /worker-payout-status"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="transfer_id" type="string" required>
+  The unique identifier for the transfer.
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | The HTTP status code of the response. |
+| `message` | string | Provides information about the payout status retrieval result. |
+| `data`object | object | Contains the detailed payout information. |
+| ↳`amount` | number | The payout amount. |
+| ↳`currency` | string | The currency of the payout. |
+| ↳`beneficiary`object | object | Details about the payout beneficiary. |
+| ↳`entity_type` | string | The entity type of beneficiary (e.g. "PERSONAL"). |
+| ↳`bank_details`object | object | Beneficiary bank account details. |
+| ↳`account_currency` | string | The account currency code (e.g. "AUD"). |
+| ↳`account_name` | string | The name associated with the bank account. |
+| ↳`account_number` | string | The bank account number. |
+| ↳`account_routing_type1` | string | The routing type identifier (e.g. "bsb"). |
+| ↳`account_routing_value1` | string | The routing value (e.g. BSB number). |
+| ↳`bank_country_code` | string | The ISO country code of the bank (e.g. "AU"). |
+| ↳`bank_name` | string | The name of the issuing bank. |
+| ↳`local_clearing_system` | string | The clearing system (e.g. "BANK_TRANSFER"). |
+| ↳`entity_type` | string | The entity type (e.g. "INDIVIDUAL" or "COMPANY"). |
+| ↳`status` | string | The current status of the payout (e.g., "PENDING", "PROCESSING", "PAID", "FAILED", "CANCELLED"). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payout status is retrieved and the response includes detailed information about the transfer. |
+| 400 | Bad Request. Invalid or missing parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified transferId was not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/worker-payout-status \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "transfer_id": "d34bdd01-5bad-4a74-9511-0d58a11ca26c"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Payout status fetched successfully",
+  "data": {
+    "amount": 550,
+    "currency": "AUD",
+    "beneficiary": {
+      "bank_details": {
+        "account_currency": "AUD",
+        "account_name": "Jane Smith",
+        "account_number": "716978952",
+        "account_routing_type1": "bsb",
+        "account_routing_value1": "083064",
+        "bank_country_code": "AU",
+        "bank_name": "National Australia Bank Limited",
+        "local_clearing_system": "BANK_TRANSFER"
+      },
+      "entity_type": "PERSONAL"
+    },
+    "status": "CANCELLED"
+  }
+}
+```
+
+</ResponseExample>

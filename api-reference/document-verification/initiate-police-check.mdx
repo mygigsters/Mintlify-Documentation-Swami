@@ -1,0 +1,83 @@
+---
+title: "Initiate police check"
+description: "This endpoint initiates a new national police check application. It registers the applicant's basic details and returns a unique check ID along with a continuation URL where the applicant can complete the process."
+api: "POST /create/police-check"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="first_name" type="string" required>
+  The first name of the applicant.
+</ParamField>
+
+<ParamField body="last_name" type="string" required>
+  The last name of the applicant.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  The email address of the applicant.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  The type of check (e.g. "EMPLOYMENT").
+</ParamField>
+
+<ParamField body="reason" type="string" required>
+  The reason for the police check (e.g. "Driver").
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | A message describing the response status (e.g. "Verification Created, please follow the link to continue"). |
+| `data`object | object | The created police check details. |
+| ↳`id` | number | The unique identifier for the created police check. |
+| ↳`continueUrl` | string | URL for the applicant to continue or resume the police check process. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | The police check was successfully initiated. |
+| 400 | Bad Request. Missing or invalid required fields. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/create/police-check \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "first_name": "John",
+  "last_name": "Smith",
+  "email": "john.smith@example.com",
+  "type": "EMPLOYMENT",
+  "reason": "Driver"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Verification Created, please follow the link to continue",
+  "data": {
+    "id": 14005580,
+    "continueUrl": "https://app.nationalcrimecheck.com.au/api-test/fake-start-link/14005580/WTTPBZXP"
+  }
+}
+```
+
+</ResponseExample>

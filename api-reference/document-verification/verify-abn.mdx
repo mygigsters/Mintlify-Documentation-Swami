@@ -1,0 +1,87 @@
+---
+title: "Verify ABN"
+description: "This endpoint verifies an Australian Business Number (ABN) and returns detailed business registration information including entity name, status, address, and GST registration details."
+api: "POST /verify/abn"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="abn" type="string" required>
+  The Australian Business Number to verify. Can include spaces (e.g. "34 623 710 896").
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | A message describing the response status (e.g. "Verification Result"). |
+| `data`object | object | The ABN verification result data. |
+| ↳`Abn` | string | The ABN that was verified. |
+| ↳`AbnStatus` | string | The current status of the ABN (e.g. "Active", "Cancelled"). |
+| ↳`AbnStatusEffectiveFrom` | string | The date from which the ABN status is effective (YYYY-MM-DD). |
+| ↳`Acn` | string | The Australian Company Number associated with the ABN. |
+| ↳`AddressDate` | string | The date when the address was last updated (YYYY-MM-DD). |
+| ↳`AddressPostcode` | string | The postcode of the registered business address. |
+| ↳`AddressState` | string | The state of the registered business address (e.g. "VIC", "NSW"). |
+| ↳`BusinessName` | array | A list of business names registered under this ABN. |
+| ↳`EntityName` | string | The legal entity name associated with the ABN. |
+| ↳`EntityTypeCode` | string | The entity type code (e.g. "PRV" for private company). |
+| ↳`EntityTypeName` | string | The full entity type name (e.g. "Australian Private Company"). |
+| ↳`Gst` | string | The date from which the entity is registered for GST (YYYY-MM-DD). |
+| ↳`Message` | string | Additional message from the verification service (empty if no issues). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | The ABN was successfully verified and the business details are returned. |
+| 400 | Bad Request. The ABN format is invalid or missing. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/verify/abn \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "abn": "34 623 710 896"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Verification Result",
+  "data": {
+    "Abn": "34 623 710 896",
+    "AbnStatus": "Active",
+    "AbnStatusEffectiveFrom": "2018-01-08",
+    "Acn": "623710896",
+    "AddressDate": "2023-07-01",
+    "AddressPostcode": "3029",
+    "AddressState": "VIC",
+    "BusinessName": [
+      "MyGigsters"
+    ],
+    "EntityName": "MYGIGSTERS TECHNOLOGIES PTY LTD",
+    "EntityTypeCode": "PRV",
+    "EntityTypeName": "Australian Private Company",
+    "Gst": "2021-04-29",
+    "Message": ""
+  }
+}
+```
+
+</ResponseExample>

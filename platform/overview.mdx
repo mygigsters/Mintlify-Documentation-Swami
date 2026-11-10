@@ -1,6 +1,70 @@
 ---
-title: "Overview"
-description: "TODO: migrate from the current docs."
+title: "Partner accounts overview"
+description: "Onboard your own customers as connected accounts, check their balances, and run batch payouts on their behalf."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Partner accounts are for vertical SaaS providers and fintech companies that offer MyGigsters to their own customers. As a partner, you onboard each customer as a connected account, hand off identity verification, and move money on their behalf.
+
+## Key concepts
+
+<Columns cols={2}>
+  <Card title="Partner account" icon="building">
+    Your top-level organisation profile. You authenticate with your registered email and a private 64-character OAuth key to receive a short-lived JWT Bearer token.
+  </Card>
+  <Card title="Connected accounts" icon="sitemap">
+    The businesses, companies, or sole traders you onboard. Each gets a unique `account_id` and its own multi-currency wallet balances.
+  </Card>
+  <Card title="KYC magic links" icon="wand-magic-sparkles">
+    Pre-authenticated hosted onboarding links. Your customer uploads documents and completes identity verification without seeing your API credentials.
+  </Card>
+  <Card title="Sandbox simulation" icon="flask">
+    Instantly simulate a connected account's KYC approval in the demo environment, so you don't wait on manual verification while you build.
+  </Card>
+</Columns>
+
+## How a partner integration works
+
+<Steps>
+  <Step title="Authenticate">
+    Exchange your email and OAuth key for a JWT Bearer token that lasts five minutes. Rotate your OAuth key at any time.
+
+    [Authenticate partner](/api-reference/partner-account/partner-authenticate) · [Rotate auth key](/api-reference/partner-account/partner-rotate-auth-key)
+  </Step>
+  <Step title="Create a connected account and start KYC">
+    Register your customer to get their `account_id`, then generate a magic link so they can complete onboarding themselves.
+
+    [Create connected account](/api-reference/partner-account/partner-connected-account) · [Get KYC magic link](/api-reference/partner-account/partner-ca-magic-link)
+  </Step>
+  <Step title="Check verification status">
+    Check the account's live verification state. In the demo environment, fast-track a test account to `ACTIVE` with the simulation endpoint.
+
+    [Get connected account status](/api-reference/partner-account/partner-ca-status) · [Simulate account status](/api-reference/partner-account/partner-ca-simulate-status)
+  </Step>
+  <Step title="View balances and transactions">
+    Read the account's multi-currency wallet balances and its transaction ledger, with date filters and pagination.
+
+    [Get balances](/api-reference/partner-account/partner-ca-balance) · [Get transactions](/api-reference/partner-account/partner-ca-transactions)
+  </Step>
+  <Step title="Run batch payouts">
+    Submit high-volume batch payouts over NPP or standard bank transfer, then track each line item.
+
+    [Batch payout](/api-reference/partner-account/partner-batch-payout) · [Batch status](/api-reference/partner-account/partner-batch-status)
+  </Step>
+</Steps>
+
+## Stay in sync
+
+Subscribe to partner webhooks to hear about account and payout events as they happen.
+
+<Columns cols={2}>
+  <Card title="Get webhook events" icon="list" href="/api-reference/partner-webhooks/partner-webhook-events">
+    See the events you can subscribe to.
+  </Card>
+  <Card title="Subscribe to events" icon="bell" href="/api-reference/partner-webhooks/partner-webhook-subscribe">
+    Register an endpoint for the events you need.
+  </Card>
+</Columns>
+
+<Note>
+  Partner endpoints are available on API version 1.2.
+</Note>

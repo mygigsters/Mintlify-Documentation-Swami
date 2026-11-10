@@ -30,17 +30,35 @@ Content-Type: application/json
 
 <CodeGroup>
 ```bash cURL
-curl https://qa-payments.mygigsters.com.au/api/v1/customer \
+curl https://qa-payments.mygigsters.com.au/api/v1/customer/{customer_id} \
   -u "YOUR_UUID:YOUR_SECRET" \
-  -H "X-API-Version: 1.2" \
-  -H "Content-Type: application/json" \
-  -d '{ ... }'
+  -H "X-API-Version: 1.2"
+```
+
+```javascript Node.js
+const credentials = Buffer.from(`${process.env.MG_UUID}:${process.env.MG_SECRET}`).toString("base64");
+
+const res = await fetch(`https://qa-payments.mygigsters.com.au/api/v1/customer/${customerId}`, {
+  headers: {
+    Authorization: `Basic ${credentials}`,
+    "X-API-Version": "1.2",
+  },
+});
+```
+
+```python Python
+import os
+import requests
+
+res = requests.get(
+    f"https://qa-payments.mygigsters.com.au/api/v1/customer/{customer_id}",
+    auth=(os.environ["MG_UUID"], os.environ["MG_SECRET"]),
+    headers={"X-API-Version": "1.2"},
+)
 ```
 </CodeGroup>
 
-`curl -u` builds the Basic header for you. In other languages, use your HTTP client's Basic auth option.
-
-{/* TODO: add Node.js, Python, .NET and Ruby tabs to the CodeGroup above, matching the languages in the current reference. */}
+`curl -u` and the `auth` option build the Basic header for you.
 
 ## The version header is required
 
@@ -58,7 +76,7 @@ If the header is missing or set to an unsupported version, the request is reject
 ```
 </CodeGroup>
 
-{/* TODO: the current Versioning page says a missing header returns 401. Confirm which is correct and make both pages agree. */}
+{/* TODO: the errors page lists 401 for a missing version header, while this section of the original docs says 400. Confirm which is correct. */}
 
 ## Keys are environment-specific
 

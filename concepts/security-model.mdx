@@ -1,6 +1,18 @@
 ---
 title: "Security model"
-description: "TODO: migrate from the current docs."
+description: "How the API keeps credentials and card data safe."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Security is a core pillar of the MyGigsters Payments API. We employ modern cryptographic standards and architectural barriers to ensure keys, credentials, and financial details are kept strictly secure.
+
+## HTTPS Only
+
+All API communications are strictly encrypted over TLS (HTTPS). Unencrypted HTTP calls are rejected automatically to prevent packet sniffing and man-in-the-middle attacks.
+
+## Server-to-Server Calls
+
+API secret credentials must never be embedded in client-side applications (like mobile apps or web frontends). All authenticated API requests must be made from your secure backend servers.
+
+## PCI-DSS Compliance
+
+MyGigsters avoids storing raw credit card details on your platform. Card details are entered via secure, hosted Elements and SDK frames directly serving from MyGigsters, returning a secure card token for subsequent payments.

@@ -1,0 +1,127 @@
+---
+title: "Update worker"
+description: "This endpoint allows you to update an existing worker's personal, banking, and early pay details."
+api: "PUT /worker/{worker_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="worker_id" type="string" required>
+  The unique identifier of the worker to update.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="full_name" type="string">
+  The full name of the worker.
+</ParamField>
+
+<ParamField body="abn" type="string">
+  The Australian Business Number (11-digit identifier) for AU workers. Note: `abn` is not allowed with `ifsc_code`.
+</ParamField>
+
+<ParamField body="account_name" type="string">
+  The name of the worker's bank account.
+</ParamField>
+
+<ParamField body="bsb" type="string">
+  The Bank State Branch code (6 digits, formatted as XXX-XXX or XXXXXX) for AU bank accounts. Provide either `bsb` or `ifsc_code`, not both.
+</ParamField>
+
+<ParamField body="ifsc_code" type="string">
+  The Indian Financial System Code (IFSC, 11 characters) for Indian bank accounts. Provide either `ifsc_code` or `bsb`, not both.
+</ParamField>
+
+<ParamField body="upi_id" type="string">
+  The UPI ID (Virtual Payment Address, e.g., username@bank) for Indian workers.
+</ParamField>
+
+<ParamField body="account_number" type="string">
+  The account number of the worker's bank account.
+</ParamField>
+
+<ParamField body="email" type="string">
+  The email address of the worker.
+</ParamField>
+
+<ParamField body="phone" type="string">
+  The phone number of the worker.
+</ParamField>
+
+<ParamField body="gst_registered" type="boolean">
+  Indicates whether the worker is registered for GST (Goods and Services Tax).
+</ParamField>
+
+<ParamField body="is_early_pay_enabled" type="boolean">
+  Indicates whether early pay (on-demand pay) is enabled for the worker.
+</ParamField>
+
+<ParamField body="early_pay_rates" type="string">
+  The percentage rate (e.g. '2') charged for early pay transactions. Required if `is_early_pay_enabled` is `true`.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  Indicates the status code of the response.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message associated with the response.
+</ResponseField>
+
+<ResponseField name="worker_id" type="string">
+  The unique identifier of the updated worker.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Worker updated successfully. |
+| 400 | Bad Request. Invalid parameters or validation failure (e.g. invalid BSB format). |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified workerId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT https://qa-payments.mygigsters.com.au/api/v1/worker/a4983f8e-b466-45ba-bdb5-f4815aa29d99 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "full_name": "Sumit Chauhan",
+  "abn": "12345678900",
+  "account_name": "Sumit chauhan",
+  "bsb": "012385",
+  "upi_id": "dummyUPIII@yesbank",
+  "account_number": "1234568880",
+  "email": "sumit+jane.smith@example.com",
+  "phone": "9878888884",
+  "gst_registered": false,
+  "is_early_pay_enabled": true,
+  "early_pay_rates": "2"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Worker updated successfully",
+  "worker_id": "a4983f8e-b466-45ba-bdb5-f4815aa29d99"
+}
+```
+
+</ResponseExample>

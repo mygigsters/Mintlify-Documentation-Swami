@@ -1,6 +1,99 @@
 ---
 title: "Errors and conventions"
-description: "TODO: migrate from the current docs."
+description: "Error format, status codes, and conventions shared by every endpoint."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+MyGigsters Payments uses conventional HTTP response codes to indicate the success or failure of an API request. In general: codes in the `2xx` range indicate success, codes in the `4xx` range indicate an error caused by the provided information (e.g., missing required fields, invalid BSB, expired token), and codes in the `5xx` range indicate an error with MyGigsters or banking gateway servers.
+
+## Error response format
+
+When an error occurs, the server responds with an HTTP status code and a JSON payload detailing the error code, machine-readable type, and human-friendly explanation.
+
+```json
+{
+  "status": 400,
+  "error_code": "invalid_bsb",
+  "message": "BSB must be exactly 6 digits",
+  "errors": [
+    "BSB must be exactly 6 digits"
+  ]
+}
+```
+
+| Attribute | Type | Description |
+|---|---|---|
+| `status` | integer | The standard HTTP response code corresponding to the error (e.g. `400`, `401`, `422`). |
+| `error_code` | string | A machine-readable snake_case identifier indicating the specific root cause (e.g. `invalid_bsb`, `duplicate_payout`). Programmatic error handling should switch on this field. |
+| `message` | string | A human-readable message describing the error with actionable resolution guidance. |
+| `errors` | array optional | Optional list of specific field-level validation messages when multiple parameters fail inspection simultaneously. |
+
+## HTTP status codes
+
+| Status | Meaning | Description |
+|---|---|---|
+| `200 OK` | Success | The request succeeded. Common for successful GET and some PUT/POST requests. |
+| `201 Created` | Created | The resource was successfully created. Common for POST requests. |
+| `400 Bad Request` | Invalid Request | The request is missing required parameters, contains invalid parameter formats (e.g. non-numeric BSB), or has malformed JSON. |
+| `401 Unauthorized` | Auth Failure | No valid credentials provided, expired JWT token, or missing required `X-API-Version: 1.2` header. |
+| `402 Payment Required` | Payment / Balance | Insufficient platform wallet balance for payout, card declined, or card expired. |
+| `403 Forbidden` | Access Denied | API key lacks permissions/scopes for this action, or account is suspended pending compliance. |
+| `404 Not Found` | Resource Missing | The requested resource (e.g. `customer_id` or `intent_id`) does not exist. |
+| `409 Conflict` | State Conflict | Duplicate payout reference, duplicate `job_id`, or conflicting idempotency key payload. |
+| `422 Unprocessable` | Validation Error | Semantic validation failure, such as an Australian Business Number failing ATO checksum validation or document OCR rejection. |
+| `429 Too Many Requests` | Rate Limited | Too many requests sent within a 1-minute window (> 120 req/min). Inspect `Retry-After` header. |
+| `500 / 503 Server Error` | Server Failure | Internal server error or upstream banking gateway maintenance. Retry with exponential backoff and an Idempotency-Key. |
+
+## Error codes
+
+Every error code returned across the MyGigsters Payments platform, complete with HTTP status, common causes, and actionable resolution steps.
+
+| HTTP | Code | Type | Message | Common causes | How to fix |
+|---|---|---|---|---|---|
+| 400 | `invalid_bsb` | `validation_error` | BSB must be exactly 6 digits | BSB formatted with hyphens or spaces (e.g. '062-000'), non-numeric characters, or branch not found in the Australian clearing database. | Provide 6 digits with no spaces or dashes (e.g. '062000'). Verify BSB against AusPayNet list before submitting. |
+| 400 | `parameter_missing` | `validation_error` | A required parameter was not provided in the request body, query, or path. | Omitted mandatory fields such as 'amount', 'currency', 'worker_id', or 'customer_id' in the JSON payload. | Inspect the endpoint parameters table in this documentation and verify all required attributes are present. |
+| 400 | `invalid_amount` | `validation_error` | The amount provided is negative, zero, or exceeds maximum limit. | Non-numeric string, zero/negative float, or amount exceeding platform single transaction limit ($50,000 AUD). | Pass a positive numeric value with up to 2 decimal places (e.g. 150.00). Ensure amount is greater than zero. |
+| 400 | `invalid_currency` | `validation_error` | The currency code provided is not supported (only AUD, USD, and INR are supported). | Supplying an unsupported ISO-4217 currency code or lowercase letters. | Use uppercase 3-letter currency code: 'AUD' (default for Australia), 'USD', or 'INR'. |
+| 400 | `invalid_phone_number` | `validation_error` | Mobile phone number must be in E.164 format with country code. | Phone number missing leading '+' or country calling code (e.g. '0412345678' instead of '+61412345678'). | Format phone numbers using international E.164 standard (e.g. '+61412345678' for AU or '+919876543210' for IN). |
+| 400 | `invalid_json_body` | `validation_error` | Malformed JSON in request payload. | Unclosed quotes, trailing commas, or incorrect Content-Type header. | Validate JSON syntax and ensure 'Content-Type: application/json' header is sent. |
+| 401 | `authentication_failed` | `authentication_error` | Invalid or expired API credentials. | Malformed Authorization header, incorrect Client UUID / Secret, or credentials revoked. | Regenerate API key from dashboard. Construct Basic Auth as 'Basic ' + base64(UUID + ':' + SECRET). |
+| 401 | `invalid_secret_key` | `authentication_error` | Invalid secret key. | The 'X-API-Version' header was omitted or unrecognized, causing the server to evaluate against legacy tables, or secret was revoked. | Always include 'X-API-Version: 1.2' header and ensure client UUID and secret are active in dashboard. |
+| 401 | `token_expired` | `authentication_error` | The JWT token used for authentication has expired. Please refresh the token. | SDK session token or OAuth bearer token passed its TTL (typically 1 hour). | Call your backend token refresh endpoint or regenerate the ephemeral SDK session token. |
+| 401 | `token_version_mismatch` | `authentication_error` | Invalid token or session invalidated. | User rotated password or revoked active session tokens from the dashboard. | Re-authenticate using client credentials to obtain a fresh active token. |
+| 403 | `permission_denied` | `authorization_error` | The API key lacks necessary scope for this endpoint. | Attempting a write or payout operation with a restricted read-only API key. | Upgrade API key permissions or create a full-access key in the Partner Dashboard under API Keys. |
+| 403 | `account_suspended` | `authorization_error` | Connected partner account is suspended or pending compliance verification. | Connected account has incomplete KYC/AML verification or outstanding compliance actions. | Complete partner onboarding via KYC magic link or contact support@mygigsters.com.au. |
+| 402 | `insufficient_funds` | `payment_error` | Account balance insufficient. | Platform settlement wallet lacks cleared funds to execute payout, or customer card has insufficient balance. | Top up platform settlement account via bank transfer, or prompt customer for an alternative card. |
+| 402 | `balance_insufficient` | `payment_error` | Insufficient cleared funds in the platform wallet to complete the payout. Note that card captures settle on a T+1 to T+2 day lag. | Funds from recent customer payments are still in settlement hold and not yet available for immediate worker payout. | Check wallet balance via GET /wallet/balance and allow T+1 settlement lag before dispatching bulk payouts. |
+| 402 | `card_declined` | `card_error` | The payment card was declined by the issuing bank. | Bank fraud protection trigger, card frozen, daily spending cap reached, or 3D Secure authentication rejected. | Prompt customer to contact card-issuing bank or enter a different credit/debit card. |
+| 402 | `expired_card` | `card_error` | The card expiration date has passed. | Card expiry month/year is in the past. | Request an updated card with future expiration date from the customer. |
+| 404 | `worker_not_found` | `not_found_error` | No worker with the given ID exists. | Worker ID does not exist in your account, was soft-deleted, or querying production with a sandbox ID. | Check worker ID, ensure created via POST /worker/create, and verify correct environment. |
+| 404 | `customer_not_found` | `not_found_error` | No customer found with the given customer_id. | Customer UUID misspelled, deleted, or belonging to another client account. | Verify customer ID in dashboard or create customer via POST /customer/create. |
+| 404 | `intent_not_found` | `not_found_error` | Payment intent not found. | Intent ID does not match any existing payment intent record. | Check intent ID returned from initial creation or query GET /intent/retrieve/:intent_id. |
+| 404 | `beneficiary_not_found` | `not_found_error` | Beneficiary bank account record not found. | Beneficiary was deleted or ID does not belong to the target worker. | Retrieve worker beneficiaries via GET /beneficiary-list to confirm active beneficiary IDs. |
+| 404 | `credit_note_not_found` | `not_found_error` | Credit note not found. | Credit note ID or number does not exist for this account. | List credit notes via GET /credit-notes to verify ID. |
+| 404 | `resource_not_found` | `not_found_error` | The requested resource (customer_id, worker_id, intent_id) does not exist. | Endpoint URL contains a non-existent path identifier. | Double-check resource UUIDs against list endpoint responses. |
+| 409 | `duplicate_payout` | `conflict_error` | Payout with this reference exists. | A payout with this external reference or batch reference has already been created. | Use idempotency key or provide a new unique external reference string. |
+| 409 | `job_id_exists` | `conflict_error` | Job Id is already exists. | Attempting to create a payment intent with a job_id that is already assigned to an active transaction. | Generate a new unique job_id (max 64 characters) or retrieve the existing payment intent. |
+| 409 | `idempotency_conflict` | `conflict_error` | A request was sent with an idempotency key that was already processed with a different request payload. | Reusing an Idempotency-Key header with altered payload parameters (e.g. modified amount or currency). | Use identical payload to replay the original response, or generate a fresh UUID for a new operation. |
+| 409 | `intent_already_captured` | `conflict_error` | Payment intent has already been captured or cancelled. | Attempting to capture or cancel an intent that is already in terminal state ('SUCCEEDED' or 'CANCELLED'). | Check intent status via GET /intent/retrieve/:intent_id before submitting transition requests. |
+| 409 | `credit_note_already_applied` | `conflict_error` | Credit note balance has already been fully applied or voided. | Remaining credit note balance is $0.00. | Verify remaining_amount on credit note before attempting invoice allocation. |
+| 409 | `subscription_already_cancelled` | `conflict_error` | Subscription is already in cancelled state. | Attempting to pause or cancel a subscription that has already reached terminal status. | Create a new subscription via POST /subscription/create if recurring billing needs to restart. |
+| 422 | `invalid_abn` | `validation_error` | ABN fails ATO checksum validation. | The 11-digit Australian Business Number failed the official Australian Taxation Office modulus 89 check. | Verify ABN at abr.business.gov.au before submitting. |
+| 422 | `document_verification_failed` | `verification_error` | Uploaded identity document could not be validated. | Blurry image, expired license/passport, unreadable barcode/MRZ, or name mismatch. | Upload a crisp, uncropped, glare-free image of an unexpired government identity document. |
+| 422 | `payout_failed` | `payout_error` | The bank payout failed due to invalid bank details or routing issues. | Invalid account number, closed account, or invalid BSB branch. | Verify beneficiary account number and BSB with worker before re-triggering payout. |
+| 429 | `rate_limit_exceeded` | `rate_limit_error` | Too many requests. | Request rate exceeded 120 requests per minute limit per API key. | Back off, retry after header value (Retry-After), and implement exponential backoff with jitter. |
+| 500 | `internal_server_error` | `api_error` | An internal server error occurred. | Unexpected exception on MyGigsters server or downstream banking integration fault. | Retry request with an Idempotency-Key. If error persists, contact support@mygigsters.com.au with the request ID. |
+| 503 | `service_unavailable` | `api_error` | Banking gateway or service is temporarily offline. | Scheduled bank maintenance window or upstream clearing network outage. | Queue request for retry in 60-120 seconds. Check status page at status.mygigsters.com.au. |
+
+## Handling errors
+
+### Retry transient failures
+
+For `5xx` server errors and rate limits (`429`), your application should automatically retry the request. Always use **exponential backoff with jitter** to avoid stampeding the server. For example, wait 1s, then 2s, then 4s, adding a random variance (jitter) to each interval. Check the `Retry-After` HTTP header returned in 429 responses.
+
+### Retry safely with an idempotency key
+
+Whenever retrying state-changing requests (like creating a charge, refund, or payout), always pass the exact same `Idempotency-Key` header. This guarantees that if a network timeout occurs after the payment was processed, retrying the request will return the original saved result without performing a duplicate transaction.
+
+### Switch on the error code
+
+Always inspect the machine-readable `error_code` attribute rather than parsing the human-readable `message` string. Error messages may be clarified or localized over time, while `error_code` values remain strictly backwards-compatible.

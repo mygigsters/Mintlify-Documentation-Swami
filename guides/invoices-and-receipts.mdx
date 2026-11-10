@@ -1,6 +1,19 @@
 ---
-title: "Invoices and receipts"
-description: "TODO: migrate from the current docs."
+title: "Send invoices and receipts"
+description: "Create and email invoices with a payment link built in, and send receipts."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Create branded PDF invoices with optional embedded payment links, email them to customers, and send payment/payout receipts for completed transactions.
+
+## Invoices
+
+- [Create and Send Invoice](/api-reference/invoices/create-send-invoice) — builds the PDF, optionally emails the customer (`send_email`) and embeds a hosted payment link (`payment_link`). GST is calculated when `gst_applicable` is true.
+- [Get All Invoices](/api-reference/invoices/get-all-invoices) — list with search, date filters and pagination. Includes Xero sync status.
+- [Delete Invoice](/api-reference/invoices/delete-invoice) — remove an invoice by id.
+
+## Receipts (Coming Soon)
+
+Receipts are transactional emails for delivery-style jobs:
+
+- [Payment Receipt](/api-reference/invoices/payment-receipt) — emailed to the customer after they pay (delivery details, discounts, GST, card last digits).
+- [Payout Receipt](/api-reference/invoices/payout-receipt) — emailed to the worker/driver after a payout (earnings, bank details).

@@ -1,6 +1,22 @@
 ---
-title: "Refunds"
-description: "TODO: migrate from the current docs."
+title: "Issue refunds"
+description: "Refund a payment and track the refund."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Refund all or part of a captured payment using the original payment intent.
+
+<Steps>
+
+<Step title="Create the refund">
+
+Call [Create Refund](/api-reference/payments/create-refund) with the `payment_intent_id` and the `amount` to return. Partial refunds are supported by passing an amount smaller than the original payment.
+
+</Step>
+
+<Step title="Track it">
+
+Refunds progress through `RECEIVED` → `PROCESSING` → `COMPLETED` (or `FAILED`). Poll [Refund Status](/api-reference/payments/refund-status) with the `refund_id`, or use webhooks.
+
+</Step>
+
+</Steps>

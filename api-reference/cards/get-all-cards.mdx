@@ -1,0 +1,109 @@
+---
+title: "Get all cards"
+description: "This endpoint retrieves the card details associated with a specific customer ID. The customerId is passed as a path parameter in the URL."
+api: "GET /customer/cards/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="customer_id" type="string" required>
+  The unique identifier of the customer.
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="limit" type="number">
+  A limit on the number of cards to be returned. Default is 10. Max is 100.
+</ParamField>
+
+<ParamField query="starting_after" type="string">
+  A cursor for pagination: an object ID defining your place in the list.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | A string containing information about the request. |
+| `current_page` | number | The current page number. |
+| `total_pages` | number | The total number of pages. |
+| `total_items` | number | The total number of cards. |
+| `page_size` | number | The number of cards returned per page. |
+| `cards` | array | An array of card objects associated with the customer. |
+| ↳`card_id` | string | Unique identifier for the card. |
+| ↳`status` | string | Consent status (e.g. 'VERIFIED'). |
+| ↳`is_default` | boolean | Indicates if this is the default payment card. |
+| ↳`card` | object | Card details container. |
+| ↳`expiry_month` | string | Card expiry month (e.g. '04'). |
+| ↳`expiry_year` | string | Card expiry year (e.g. '2044'). |
+| ↳`last4` | string | Last 4 digits of the card (e.g. '1003'). |
+| ↳`brand` | string | Card brand (e.g. 'visa'). |
+| ↳`card_type` | string | Card type (e.g. 'CREDIT'). |
+| ↳`fingerprint` | string | Unique card signature fingerprint. |
+| ↳`issuer_name` | string | Name of the card issuer. |
+| ↳`is_commercial` | boolean | Indicates if the card is commercial. |
+| ↳`number_type` | string | Card number type (e.g. 'PAN'). |
+| ↳`isDefault` | boolean | Indicates if the card is default. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the card details associated with the customer are returned. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Customer ID not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/customer/cards/cus_hkdmn5lcqh5enc37sp6?limit=1&starting_after=cst_hkdm54ctjhaatgv0i7q \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Card details found",
+  "current_page": 1,
+  "total_pages": 1,
+  "total_items": 2,
+  "page_size": 10,
+  "cards": [
+    {
+      "card_id": "cst_hkdmgcfzjhhmn3g97t3",
+      "status": "VERIFIED",
+      "card": {
+        "expiry_month": "12",
+        "expiry_year": "2028",
+        "name": "",
+        "bin": "40355010",
+        "last4": "0008",
+        "brand": "visa",
+        "issuer_country_code": "US",
+        "card_type": "DEBIT",
+        "fingerprint": "ex6pgQ3YR8Gyn7Jae3K8WNinlhQ=",
+        "issuer_name": "SOCIETE GENERALE S.A.",
+        "is_commercial": false,
+        "number_type": "PAN"
+      },
+      "is_default": true
+    }
+  ]
+}
+```
+
+</ResponseExample>

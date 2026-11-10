@@ -1,0 +1,139 @@
+---
+title: "Payout receipt"
+description: "This endpoint enables you to generate and send a payout receipt for a business transaction. The receipt will be emailed to the address provided in the request."
+api: "POST /receipt/payout"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="worker_full_name" type="string" required>
+  Full name of the worker.
+</ParamField>
+
+<ParamField body="worker_contact_number" type="string" required>
+  Contact number of the worker.
+</ParamField>
+
+<ParamField body="worker_email" type="string" required>
+  Email address of the worker where the receipt will be sent.
+</ParamField>
+
+<ParamField body="invoice_date_time" type="string" required>
+  Date and time of the invoice (ISO 8601 format).
+</ParamField>
+
+<ParamField body="invoice_id" type="string" required>
+  Unique identifier for the invoice.
+</ParamField>
+
+<ParamField body="delivery_type" type="string" required>
+  Type of delivery (e.g., 'Express', 'Standard').
+</ParamField>
+
+<ParamField body="pick_up_address" type="string" required>
+  Address of the pickup location.
+</ParamField>
+
+<ParamField body="pick_up_date_time" type="string" required>
+  Date and time of the pickup (ISO 8601 format).
+</ParamField>
+
+<ParamField body="drop_off_address" type="string" required>
+  Address of the drop-off location.
+</ParamField>
+
+<ParamField body="drop_off_date_time" type="string" required>
+  Date and time of the drop-off (ISO 8601 format).
+</ParamField>
+
+<ParamField body="total_distance" type="number" required>
+  Total distance covered for the delivery.
+</ParamField>
+
+<ParamField body="total_earning_amount" type="number" required>
+  Total earning amount for the delivery.
+</ParamField>
+
+<ParamField body="payout_amount" type="number" required>
+  Payout amount transferred to the worker.
+</ParamField>
+
+<ParamField body="bank_account_name" type="string" required>
+  Name associated with the destination bank account.
+</ParamField>
+
+<ParamField body="bsb" type="string" required>
+  The BSB code (6 digits, formatted as XXX-XXX or XXXXXX) for AU bank accounts.
+</ParamField>
+
+<ParamField body="account_number" type="string" required>
+  Destination bank account number.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+<ResponseField name="status" type="number">
+  Indicates the status code of the response.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message indicating whether the receipt was sent successfully.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payout receipt is generated and sent to the provided email address. |
+| 400 | Bad Request. Invalid parameters or validation failure. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 409 | Conflict. Duplicate idempotency key or duplicate receipt ID. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/receipt/payout \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "worker_full_name": "John Doe",
+  "worker_contact_number": "+1234567890",
+  "worker_email": "jane.smith@example.com",
+  "invoice_date_time": "2024-03-28T14:30:00Z",
+  "invoice_id": "INV12345",
+  "delivery_type": "Express",
+  "pick_up_address": "123 Main St, City, Country",
+  "pick_up_date_time": "2024-03-28T15:00:00Z",
+  "drop_off_address": "456 Elm St, City, Country",
+  "drop_off_date_time": "2024-03-28T16:30:00Z",
+  "total_distance": 12.5,
+  "total_earning_amount": 5000,
+  "payout_amount": 4500,
+  "bank_account_name": "John Doe",
+  "bsb": "123-456",
+  "account_number": "987654321"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Receipt sent successfully"
+}
+```
+
+</ResponseExample>

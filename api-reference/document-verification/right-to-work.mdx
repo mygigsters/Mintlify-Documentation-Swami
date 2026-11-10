@@ -1,0 +1,109 @@
+---
+title: "Right to work"
+description: "This endpoint verifies a person's right to work in Australia using their passport details. It returns visa information, work entitlement status, and any conditions that apply to their employment."
+api: "POST /verify/right-to-work"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="birth_date" type="string" required>
+  Date of birth of the person. Format: YYYY-MM-DD.
+</ParamField>
+
+<ParamField body="given_name" type="string" required>
+  The first name(s) of the person (can include middle names).
+</ParamField>
+
+<ParamField body="family_name" type="string" required>
+  The last name of the person.
+</ParamField>
+
+<ParamField body="passport_number" type="string" required>
+  The passport number of the person.
+</ParamField>
+
+<ParamField body="passport_country" type="string" required>
+  The 3-letter ISO country code of the passport issuing country (e.g. "SGP", "GBR", "USA").
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | A message describing the response status (e.g. "Verification Result"). |
+| `data`object | object | The right to work verification result data. |
+| ↳`request` | object | Contains the given_names and family_name as submitted in the request. |
+| ↳`visa` | object | Visa details including class (e.g. "TU"), subclass (e.g. "500"), grant_date, and expiry_date. |
+| ↳`entitlement` | object | Work entitlement details. |
+| ↳`status` | string | The work entitlement status (e.g. "UNLIMITED", "LIMITED", "NONE"). |
+| ↳`summary` | string | A human-readable summary of the person's work rights in Australia. |
+| ↳`conditions` | array | A list of conditions attached to the work entitlement. Each condition includes a code and an html description of the restriction. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | The right to work check was successful and work entitlement details are returned. |
+| 400 | Bad Request. Missing or invalid parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/verify/right-to-work \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "birth_date": "1995-04-01",
+  "given_name": "Jason Creed",
+  "family_name": "Samson",
+  "passport_number": "PA2222222",
+  "passport_country": "SGP"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Verification Result",
+  "data": {
+    "request": {
+      "given_names": "JASON CREED",
+      "family_name": "SAMSON"
+    },
+    "visa": {
+      "class": "TU",
+      "subclass": "500",
+      "grant_date": "2022-01-01",
+      "expiry_date": ""
+    },
+    "entitlement": {
+      "status": "LIMITED",
+      "summary": "The above named can work in Australia under the following conditions until the visa cease date. If you wish to employ the above named their work rights must be checked after the visa cease date.",
+      "conditions": [
+        {
+          "code": "8104",
+          "html": "<p>This person <b>must not</b> work more than 40 hours a fortnight.</p>"
+        },
+        {
+          "code": "8105",
+          "html": "<p>This person <b>must not</b> work before course of study commences.</p>"
+        }
+      ]
+    }
+  }
+}
+```
+
+</ResponseExample>

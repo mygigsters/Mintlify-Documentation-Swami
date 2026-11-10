@@ -1,0 +1,69 @@
+---
+title: "Rotate auth key"
+description: "Immediately revokes the partner's current OAuth key and generates a brand-new 64-character secret key. All active sessions are invalidated, requiring the partner to re-authenticate with the new key."
+api: "POST /rotate-auth-key"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether key rotation succeeded (`true`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Informational notice: `OAuth key rotated successfully. Please log in again.`
+</ResponseField>
+
+<ResponseField name="data.partnerId" type="number">
+  Unique numeric identifier of the partner account.
+</ResponseField>
+
+<ResponseField name="data.oauthKey" type="string">
+  The newly generated 64-character hexadecimal OAuth key. Store this securely as prior keys are invalidated.
+</ResponseField>
+
+<ResponseField name="data.rotatedAt" type="string">
+  ISO 8601 UTC timestamp of key revocation and creation.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | OAuth key rotated successfully. A new secret key is issued. |
+| 401 | Unauthorized. Missing, expired, or invalid Bearer access token. |
+| 500 | Internal Server Error. An unexpected error occurred on the server. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/rotate-auth-key \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "OAuth key rotated successfully. Please log in again.",
+  "data": {
+    "partner_id": 4,
+    "oauth_key": "471fdf7eeb7c46d70fbb915bc6d0ead58d449ceae128b0b336b935d745449f5a",
+    "rotated_at": "2026-10-14T10:14:42.716Z"
+  }
+}
+```
+
+</ResponseExample>

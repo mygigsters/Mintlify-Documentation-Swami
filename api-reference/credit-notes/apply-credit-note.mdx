@@ -1,0 +1,136 @@
+---
+title: "Apply credit note"
+description: "Allocates credit note balance to reduce the outstanding amount on an invoice. Updates credit note status to PARTIALLY_APPLIED or FULLY_APPLIED and records an allocation audit entry."
+api: "POST /credit-notes/{id}/apply"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+<ParamField header="Idempotency-Key" type="string">
+  A unique key so a retried request is not processed twice.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique ID (UUID) of the credit note from which balance is allocated.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="amount" type="number" required>
+  The amount to allocate against the invoice. Cannot exceed `remainingAmount`.
+</ParamField>
+
+<ParamField body="invoice_id" type="string" required>
+  The unique ID (UUID) of the target invoice to apply the credit toward.
+</ParamField>
+
+<ParamField body="notes" type="string">
+  Optional remarks or memo describing this allocation.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  HTTP status code (200).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message (e.g. `Credit note applied successfully`).
+</ResponseField>
+
+<ResponseField name="data.appliedAmount" type="number">
+  Total cumulative amount credited across invoices.
+</ResponseField>
+
+<ResponseField name="data.remainingAmount" type="number">
+  Remaining credit balance available for future allocations.
+</ResponseField>
+
+<ResponseField name="data.status" type="string">
+  Updated state: `PARTIALLY_APPLIED` (if balance > 0) or `FULLY_APPLIED` (if balance = 0).
+</ResponseField>
+
+<ResponseField name="data.allocation" type="object">
+  Details of the newly created allocation record.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Credit note balance applied successfully. |
+| 400 | Bad Request. Amount exceeds remaining credit balance or invoice already paid. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Credit note or target invoice not found. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/apply \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: cn-req-apply-004" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "amount": 15,
+  "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+  "notes": "Applying partial credit to invoice INV-4717"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Credit note applied successfully",
+  "data": {
+    "allocation": {
+      "id": 2,
+      "credit_note_id": 1,
+      "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+      "amount": "15.00",
+      "notes": "Applying partial credit to invoice INV-4717",
+      "updated_at": "2026-09-16T06:12:17.504Z",
+      "created_at": "2026-09-16T06:12:17.504Z"
+    },
+    "credit_note": {
+      "id": 1,
+      "credit_note_number": "CN-0001",
+      "client_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+      "customer_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+      "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+      "invoice_number": "INV-4717",
+      "payment_id": null,
+      "total_amount": "50.00",
+      "remaining_amount": "10.00",
+      "applied_amount": "40.00",
+      "currency": "AUD",
+      "status": "PARTIALLY_APPLIED",
+      "reason": "Customer discount / Service dispute",
+      "description": "50 AUD credit issued for overbilled service hours",
+      "date": "2026-09-16T05:51:09.000Z",
+      "deleted_at": null,
+      "created_at": "2026-09-16T05:51:09.000Z",
+      "updated_at": "2026-09-16T06:12:17.626Z"
+    },
+    "invoice": {
+      "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+      "invoice_number": "INV-4717",
+      "total_amount": "330",
+      "currency": "AUD"
+    }
+  }
+}
+```
+
+</ResponseExample>

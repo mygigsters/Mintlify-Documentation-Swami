@@ -1,0 +1,231 @@
+---
+title: "Get payment link status"
+description: "This endpoint allows you to retrieve the status of a payment link using its unique identifier."
+api: "POST /get/payment-link-status"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="link_id" type="string" required>
+  The unique identifier for the payment link whose status is being queried.
+</ParamField>
+
+### Response Body
+
+The response for the Get Payment Link Status request is a JSON object with the following schema:
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | Indicates the HTTP status of the response (e.g., 200). |
+| `message` | string | A message providing additional information about the request status. |
+| `payment_status` | string | The current status of the payment associated with the link (e.g., `PAID`, `UNPAID`). |
+| `intent_id` | string | The unique identifier for the payment intent. |
+| `data`object | object | Details of the payment link. |
+| ↳`id` | string | The unique identifier of the payment link. |
+| ↳`url` | string | The hosted payment link URL. |
+| ↳`title` | string | Title or display name of the payment link. |
+| ↳`description` | string | Description of the payment link. |
+| ↳`amount` | number | Total amount requested. |
+| ↳`currency` | string | Currency code (e.g., `AUD`). |
+| ↳`status` | string | Status of the payment link (e.g., `PAID`, `ACTIVE`). |
+| ↳`active` | boolean | Whether the payment link is currently active. |
+| ↳`expires_at` | string | Expiration timestamp of the payment link. |
+| ↳`reference` | string | Custom reference string. |
+| ↳`reusable` | boolean | Whether the link can accept multiple payments. |
+| ↳`successful_payment_intent_count` | number | Number of successful payments made via this link. |
+| ↳`latest_successful_payment_intent_id` | string | ID of the most recent successful payment intent. |
+| ↳`created_at` | string | Creation timestamp of the payment link. |
+| ↳`updated_at` | string | Timestamp of the last update. |
+| `intent_data`object | object | Full payment intent details associated with the payment link. |
+| ↳`id` | string | The unique identifier of the payment intent. |
+| ↳`request_id` | string | The unique request identifier. |
+| ↳`amount` | number | Payment amount. |
+| ↳`currency` | string | Currency code (e.g., `AUD`). |
+| ↳`status` | string | Intent status (e.g., `SUCCEEDED`). |
+| ↳`captured_amount` | number | Captured payment amount. |
+| ↳`merchant_order_id` | string | Merchant reference or order ID. |
+| ↳`descriptor` | string | Statement descriptor for the transaction. |
+| ↳`payment_link_id` | string | ID of the associated payment link. |
+| ↳`return_url` | string | Success redirect URL. |
+| ↳`created_at` | string | Timestamp when the intent was created. |
+| ↳`updated_at` | string | Last updated timestamp. |
+| ↳`customer`object | object | Customer details. |
+| ↳`email` | string | Customer email address. |
+| ↳`name` | string | Customer name. |
+| ↳`latest_payment_attempt`object | object | Details of the most recent payment attempt. |
+| ↳`id` | string | Unique identifier of the payment attempt. |
+| ↳`amount` | number | Amount for this payment attempt. |
+| ↳`currency` | string | Currency of the attempt. |
+| ↳`status` | string | Status of the attempt (e.g., `PAID`). |
+| ↳`provider_transaction_id` | string | Provider transaction ID. |
+| ↳`authorization_code` | string | Authorization approval code. |
+| ↳`payment_method`object | object | Payment method details. |
+| ↳`type` | string | Payment method type (e.g., `card`). |
+| ↳`card`object | object | Card details. |
+| ↳`brand` | string | Card brand (e.g., `visa`). |
+| ↳`last4` | string | Last 4 digits of the card number. |
+| ↳`expiry_month` | string | Card expiration month. |
+| ↳`expiry_year` | string | Card expiration year. |
+| ↳`card_type` | string | Type of card (e.g., `DEBIT`). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payment link status is retrieved and the response includes the payment status and intent ID. |
+| 400 | Bad Request. Invalid or missing parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified payment linkId was not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/get/payment-link-status \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "link_id": "3181"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Payment link status fetched successfully",
+  "payment_status": "PAID",
+  "intent_id": "int_hkdmw7lbxhbykity4a6",
+  "data": {
+    "active": true,
+    "amount": 169,
+    "currency": "AUD",
+    "supported_currencies": [],
+    "url": "https://pay.sandbox.airwallex.com/sghkhbykhu19a4",
+    "description": "Payment for booking 68e8051525407bbaf92fe3f3",
+    "expires_at": "2026-12-31T23:59:59+0000",
+    "id": "3e0e6940-71b7-4eeb-9dc2-7894204d2bea",
+    "title": "Booking Payment 1",
+    "reference": "yyuuy",
+    "reusable": false,
+    "collectable_shopper_info": {
+      "shipping_address": false,
+      "billing_address": false,
+      "reference": false,
+      "phone_number": false,
+      "message": true
+    },
+    "metadata": {},
+    "status": "PAID",
+    "successful_payment_intent_count": 1,
+    "latest_successful_payment_intent_id": "int_hkdmw7lbxhbykity4a6",
+    "created_at": "2025-10-12T09:14:27+0000",
+    "updated_at": "2025-10-12T09:15:42+0000"
+  },
+  "intent_data": {
+    "latest_payment_attempt": {
+      "id": "att_hkdmw7lbxhbykj1q4jg_ity4a6",
+      "amount": 169,
+      "currency": "AUD",
+      "payment_method": {
+        "type": "card",
+        "card": {
+          "expiry_month": "12",
+          "expiry_year": "2034",
+          "name": "",
+          "bin": "40355010",
+          "last4": "0008",
+          "brand": "visa",
+          "issuer_country_code": "US",
+          "card_type": "DEBIT",
+          "fingerprint": "ex6pgQ3YR8Gyn7Jae3K8WNinlhQ=",
+          "cvc_check": "pass",
+          "issuer_name": "SOCIETE GENERALE S.A.",
+          "is_commercial": false,
+          "number_type": "PAN",
+          "card_updater_info": {
+            "number_updated": false,
+            "expiry_updated": false
+          }
+        }
+      },
+      "merchant_order_id": "Booking Payment 1",
+      "payment_intent_id": "int_hkdmw7lbxhbykity4a6",
+      "status": "PAID",
+      "provider_transaction_id": "0219741162496",
+      "payment_method_transaction_id": "962589965855381",
+      "provider_original_response_code": "00",
+      "provider_original_response_description": "Authorized successfully",
+      "authorization_code": "198381",
+      "captured_amount": 169,
+      "refunded_amount": 0,
+      "created_at": "2025-10-12T09:15:41+0000",
+      "updated_at": "2025-10-12T09:15:42+0000",
+      "settle_via": "airwallex",
+      "authentication_data": {
+        "ds_data": {
+          "retry_count_for_auth_decline": 0
+        },
+        "fraud_data": {
+          "action": "ACCEPT",
+          "score": "0",
+          "risk_factors": []
+        },
+        "avs_result": "U",
+        "cvc_result": "Y",
+        "cvc_code": "M"
+      },
+      "payment_method_options": {
+        "card": {
+          "authorization_type": "final_auth"
+        }
+      },
+      "device_data": {
+        "device_id": "aaa134b6-2780-4552-b565-3dc3ea4ed590",
+        "ip_address": "2409: 40c4:f9: 6cb:f91f: 525b: 7087:b8ce",
+        "screen_height": 768,
+        "screen_width": 1366,
+        "screen_color_depth": 24,
+        "language": "en-US",
+        "timezone": "+5: 30",
+        "browser": {
+          "java_enabled": false,
+          "javascript_enabled": true,
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+        }
+      }
+    },
+    "id": "int_hkdmw7lbxhbykity4a6",
+    "request_id": "de908f12-ba08-4b25-b4ee-9867e5dc375d",
+    "amount": 169,
+    "currency": "AUD",
+    "merchant_order_id": "Booking Payment 1",
+    "customer": {
+      "email": "jane.smith@example.com",
+      "name": "4035 5010 0000 0008"
+    },
+    "descriptor": "sdadas",
+    "status": "SUCCEEDED",
+    "captured_amount": 169,
+    "created_at": "2025-10-12T09:15:28+0000",
+    "updated_at": "2025-10-12T09:15:41+0000",
+    "payment_link_id": "3e0e6940-71b7-4eeb-9dc2-7894204d2bea",
+    "return_url": "https://pay-demo.airwallex.com/pay/hk/link/payment/success?paymentId=de908f12-ba08-4b25-b4ee-9867e5dc375d",
+    "mor_enabled": false,
+    "base_amount": 169,
+    "base_currency": "AUD"
+  }
+}
+```
+
+</ResponseExample>

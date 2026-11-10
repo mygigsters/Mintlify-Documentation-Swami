@@ -1,0 +1,105 @@
+---
+title: "Get allocations"
+description: "Returns the full audit log of invoice allocations made against this credit note, showing credited invoices, amounts, timestamps, and notes."
+api: "GET /credit-notes/{id}/allocations"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique ID (UUID) of the credit note whose allocation history to inspect.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="data[].id" type="string">
+  Unique identifier of the allocation event.
+</ResponseField>
+
+<ResponseField name="data[].creditNoteId" type="string">
+  Source credit note UUID.
+</ResponseField>
+
+<ResponseField name="data[].invoiceId" type="string">
+  Target invoice UUID credited.
+</ResponseField>
+
+<ResponseField name="data[].invoiceNumber" type="string">
+  Target invoice display number (e.g. `INV-0002`).
+</ResponseField>
+
+<ResponseField name="data[].amount" type="number">
+  Amount applied in this allocation event.
+</ResponseField>
+
+<ResponseField name="data[].notes" type="string">
+  Allocation remarks or transaction reference.
+</ResponseField>
+
+<ResponseField name="data[].appliedAt" type="string">
+  Timestamp when the credit was applied.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Allocation history retrieved successfully. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Credit note not found. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/credit-notes/1/allocations \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "credit_note_number": "CN-0001",
+    "total_amount": "50.00",
+    "remaining_amount": "10.00",
+    "applied_amount": "40.00",
+    "allocations": [
+      {
+        "id": 2,
+        "credit_note_id": 1,
+        "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+        "amount": "15.00",
+        "notes": "Applying partial credit to invoice INV-4717",
+        "deleted_at": null,
+        "created_at": "2026-09-16T06:12:17.000Z",
+        "updated_at": "2026-09-16T06:12:17.000Z"
+      },
+      {
+        "id": 1,
+        "credit_note_id": 1,
+        "invoice_id": "669dc683-4ad1-4971-a743-90d908788f01",
+        "amount": "25.00",
+        "notes": "Applying partial credit to invoice INV-4717",
+        "deleted_at": null,
+        "created_at": "2026-09-16T06:09:54.000Z",
+        "updated_at": "2026-09-16T06:09:54.000Z"
+      }
+    ]
+  }
+}
+```
+
+</ResponseExample>

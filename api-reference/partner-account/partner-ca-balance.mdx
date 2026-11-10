@@ -1,0 +1,128 @@
+---
+title: "Get connected account balances"
+description: "Returns the real-time multi-currency wallet balances (including available, pending, and reserved funds) for the specified connected account across supported currencies such as AUD, USD, SGD, GBP, and HKD."
+api: "GET /connected-account/{account_id}/balance"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="account_id" type="string" required>
+  The unique MyGigsters client UUID of the connected account (e.g. `f57ddb6d-c55d-44a6-a98a-2dbef12278a0`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the balance query succeeded (`true`).
+</ResponseField>
+
+<ResponseField name="balances" type="array of objects">
+  List of multi-currency balance entries supported for the connected account.
+</ResponseField>
+
+<ResponseField name="balances[].currency" type="string">
+  Three-letter ISO currency code (e.g. `AUD`, `USD`, `SGD`, `GBP`, `HKD`).
+</ResponseField>
+
+<ResponseField name="balances[].available_amount" type="number">
+  Cleared funds available for immediate payout or transfer.
+</ResponseField>
+
+<ResponseField name="balances[].pending_amount" type="number">
+  Incoming funds awaiting settlement.
+</ResponseField>
+
+<ResponseField name="balances[].reserved_amount" type="number">
+  Funds temporarily held for pending transactions or risk collateral.
+</ResponseField>
+
+<ResponseField name="balances[].total_amount" type="number">
+  Total aggregate account balance (available + pending + reserved).
+</ResponseField>
+
+<ResponseField name="balances[].account_type" type="string">
+  Wallet classification type, usually `cash`.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Multi-currency balances retrieved successfully. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 404 | Not Found. Connected account not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/connected-account/f57ddb6d-c55d-44a6-a98a-2dbef12278a0/balance \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "balances": [
+    {
+      "available_amount": 15420.50,
+      "currency": "AUD",
+      "pending_amount": 1200.00,
+      "reserved_amount": 0,
+      "total_amount": 16620.50,
+      "prepayment_amount": 0,
+      "account_type": "cash"
+    },
+    {
+      "available_amount": 8350.00,
+      "currency": "USD",
+      "pending_amount": 0,
+      "reserved_amount": 0,
+      "total_amount": 8350.00,
+      "prepayment_amount": 0,
+      "account_type": "cash"
+    },
+    {
+      "available_amount": 4200.75,
+      "currency": "SGD",
+      "pending_amount": 0,
+      "reserved_amount": 0,
+      "total_amount": 4200.75,
+      "prepayment_amount": 0,
+      "account_type": "cash"
+    },
+    {
+      "available_amount": 3100.20,
+      "currency": "GBP",
+      "pending_amount": 0,
+      "reserved_amount": 0,
+      "total_amount": 3100.20,
+      "prepayment_amount": 0,
+      "account_type": "cash"
+    },
+    {
+      "available_amount": 25000.00,
+      "currency": "HKD",
+      "pending_amount": 0,
+      "reserved_amount": 0,
+      "total_amount": 25000.00,
+      "prepayment_amount": 0,
+      "account_type": "cash"
+    }
+  ]
+}
+```
+
+</ResponseExample>

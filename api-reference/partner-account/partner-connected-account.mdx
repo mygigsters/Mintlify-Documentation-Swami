@@ -1,0 +1,118 @@
+---
+title: "Create connected account"
+description: "Onboards and registers a connected client account under the authenticated partner. Automatically generates a unique client UUID (account_id) and a secure, time-sensitive KYC magic link (kyc_magic_link) for direct customer verification."
+api: "POST /connected-account"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="legal_entity_type" type="string" required>
+  Legal entity type of the client. Allowed values: `BUSINESS`, `INDIVIDUAL`.
+</ParamField>
+
+<ParamField body="business_name" type="string">
+  Registered trade name or company name. Required if `legalEntityType` is `BUSINESS`.
+</ParamField>
+
+<ParamField body="full_name" type="string" required>
+  Full legal name of the primary contact person or authorized representative.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Primary contact and administrative email for the client connected account.
+</ParamField>
+
+<ParamField body="phone" type="string" required>
+  Primary contact phone number (e.g. `+61412340918`).
+</ParamField>
+
+<ParamField body="abn" type="string">
+  11-digit Australian Business Number (e.g. `99 687 807 763`). Required if entity is a registered Australian business.
+</ParamField>
+
+<ParamField body="addrline1" type="string" required>
+  Street address line 1 (e.g. `123 Collins St`).
+</ParamField>
+
+<ParamField body="suburb" type="string" required>
+  Suburb, locality, or town (e.g. `Melbourne`).
+</ParamField>
+
+<ParamField body="state" type="string" required>
+  State or territory code (e.g. `VIC`, `NSW`, `QLD`).
+</ParamField>
+
+<ParamField body="postcode" type="string" required>
+  Postal code (e.g. `3000`).
+</ParamField>
+
+<ParamField body="country_code" type="string" required>
+  Two-letter ISO 3166-1 alpha-2 country code (e.g. `AU`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="message" type="string">
+  Status message (e.g. `Signup successful`).
+</ResponseField>
+
+<ResponseField name="account_id" type="string">
+  The unique UUID identifier assigned to the connected account in MyGigsters.
+</ResponseField>
+
+<ResponseField name="kyc_magic_link" type="string">
+  Secure, pre-authenticated onboarding URL. Send or redirect your client to this magic link so they can complete identity verification and KYC checks.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 / 201 | Signup successful. Client created and KYC link generated. |
+| 400 | Bad Request. Missing required registration fields or invalid format. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 409 | Conflict. An account with this email or ABN already exists. |
+| 500 | Internal Server Error. An unexpected error occurred on the server. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/connected-account \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>" \
+  -d '{
+  "legal_entity_type": "BUSINESS",
+  "business_name": "Parle Business Pty Ltd",
+  "full_name": "Jane Client",
+  "email": "parle+1@example.com",
+  "phone": "+61412340918",
+  "abn": "99 687 807 763",
+  "addrline1": "123 Collins St",
+  "suburb": "Melbourne",
+  "state": "VIC",
+  "postcode": "3000",
+  "country_code": "AU"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Signup successful",
+  "account_id": "f57ddb6d-c55d-44a6-a98a-2dbef12278a0",
+  "kyc_magic_link": "http://localhost: 3000/client/kyc/eyJhbGciOiJSUzI1NiIs..."
+}
+```
+
+</ResponseExample>

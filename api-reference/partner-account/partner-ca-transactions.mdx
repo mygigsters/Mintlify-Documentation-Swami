@@ -1,0 +1,261 @@
+---
+title: "Get connected account transactions"
+description: "Retrieves a paginated ledger of financial transactions (both debits and credits) for a specific connected account within a given date range. Each transaction record includes amount, currency, counterparty merchant, settlement status,..."
+api: "GET /connected-account/{account_id}/transactions"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="account_id" type="string" required>
+  The unique client UUID of the connected account (e.g. `4407c3ba-10c9-4822-9f51-c2c96692f8d7`).
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="from_post_at" type="string">
+  ISO 8601 UTC timestamp to retrieve transactions posted on or after this date (e.g. `2026-10-02T00:00:00Z`).
+</ParamField>
+
+<ParamField query="to_post_at" type="string">
+  ISO 8601 UTC timestamp to retrieve transactions posted on or before this date (e.g. `2026-10-08T00:00:00Z`).
+</ParamField>
+
+<ParamField query="page_size" type="number">
+  Number of transaction records to return per page (default is `10`).
+</ParamField>
+
+<ParamField query="page" type="number">
+  Page number to retrieve for pagination (default is `1`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the transaction query succeeded (`true`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Descriptive message of the query outcome.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Wrapper object containing the array of transaction records.
+</ResponseField>
+
+<ResponseField name="data.transactions" type="array of objects">
+  Chronological list of financial transactions executed on the connected account.
+</ResponseField>
+
+<ResponseField name="data.transactions[].id" type="number">
+  Unique internal ID of the transaction record.
+</ResponseField>
+
+<ResponseField name="data.transactions[].direction" type="string">
+  Flow of funds: `credit` (incoming) or `debit` (outgoing).
+</ResponseField>
+
+<ResponseField name="data.transactions[].amount" type="string">
+  Formatted monetary amount of the transaction (e.g. `"-440.00"`, `"500000.00"`).
+</ResponseField>
+
+<ResponseField name="data.transactions[].type" type="string">
+  Transaction rail type: `TRANSFER`, `LOCAL`, `CARD_PAYMENT`, etc.
+</ResponseField>
+
+<ResponseField name="data.transactions[].currency" type="string">
+  Three-letter ISO currency code (e.g. `AUD`).
+</ResponseField>
+
+<ResponseField name="data.transactions[].merchant" type="string">
+  Name of the merchant, beneficiary, or counterparty entity.
+</ResponseField>
+
+<ResponseField name="data.transactions[].status" type="string">
+  Settlement status: `SETTLED`, `PROCESSING`, `REQUIRES_PAYMENT_METHOD`, etc.
+</ResponseField>
+
+<ResponseField name="data.transactions[].occurredAt" type="string">
+  ISO 8601 UTC timestamp when the transaction was initiated or processed.
+</ResponseField>
+
+<ResponseField name="data.transactions[].reference" type="string">
+  Reference note or remittance information attached to the transfer.
+</ResponseField>
+
+<ResponseField name="data.transactions[].raw" type="object">
+  Complete raw settlement payload including balance snapshots, fees, and provider routing details.
+</ResponseField>
+
+<ResponseField name="summary" type="object">
+  Aggregate transaction statistics across the entire filtered period.
+</ResponseField>
+
+<ResponseField name="summary.all" type="number">
+  Total number of transactions matching the date range.
+</ResponseField>
+
+<ResponseField name="summary.credit" type="number">
+  Total number of incoming credit transactions.
+</ResponseField>
+
+<ResponseField name="summary.debit" type="number">
+  Total number of outgoing debit transactions.
+</ResponseField>
+
+<ResponseField name="pagination" type="object">
+  Pagination metadata including `currentPage`, `pageSize`, `totalCount`, and `totalPages`.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Transactions retrieved successfully. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 404 | Not Found. Connected account with the provided myGigsterId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/connected-account/4407c3ba-10c9-4822-9f51-c2c96692f8d7/transactions?from_post_at=2026-10-02T00%3A00%3A00Z&to_post_at=2026-10-08T00%3A00%3A00Z&page_size=10 \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "X-API-Version: 1.2"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Transactions fetched successfully!",
+  "data": {
+    "transactions": [
+      {
+        "id": 10118,
+        "source": "airwallex",
+        "source_id": "DR_tr_hUv3yYgNM2O2mY-Qx54yYg",
+        "direction": "debit",
+        "amount": "-440.00",
+        "captured_amount": null,
+        "type": "TRANSFER",
+        "currency": "AUD",
+        "merchant": "ALLIED HEALTH",
+        "status": "SETTLED",
+        "occurred_at": "2026-10-14T05:07:00.000Z",
+        "reference": "Transfer from ALLIED HEALTH LOCUMS PTY LTD(acct_m2lZXceGPsqQBhUbVV_oPA)",
+        "raw": {
+          "id": "01a138ce-83a3-7187-83cd-1f1f6bca7220",
+          "fee": 0,
+          "amount": -440,
+          "source": "tr_hUv3yYgNM2O2mY-Qx54yYg",
+          "balance": 1673958.22,
+          "currency": "AUD",
+          "posted_at": "2026-10-14T13:07:00+0800",
+          "description": "Transfer from ALLIED HEALTH LOCUMS PTY LTD(acct_m2lZXceGPsqQBhUbVV_oPA)",
+          "source_type": "TRANSFER",
+          "account_type": "cash",
+          "transaction_type": "DC_DEBIT"
+        }
+      },
+      {
+        "id": 9779,
+        "source": "airwallex",
+        "source_id": "5bbc2c03-9794-459c-8e24-a3e3607cf00a",
+        "direction": "debit",
+        "amount": "500000.00",
+        "captured_amount": null,
+        "type": "LOCAL",
+        "currency": "AUD",
+        "merchant": "Jane Smith",
+        "status": "PROCESSING",
+        "occurred_at": "2026-10-09T11:38:28.000Z",
+        "reference": "test",
+        "raw": {
+          "id": "5bbc2c03-9794-459c-8e24-a3e3607cf00a",
+          "payer": {
+            "address": {
+              "city": "Melbourne",
+              "state": "VIC",
+              "postcode": "6001",
+              "country_code": "AU",
+              "street_address": "123, Melbourne"
+            },
+            "entity_type": "COMPANY",
+            "company_name": "MEGAMIND CREATIONS AUSTRALIA PTY LTD"
+          },
+          "status": "PROCESSING",
+          "funding": {
+            "status": "FUNDED"
+          },
+          "reference": "test",
+          "created_at": "2026-10-09T11:38:28+0000",
+          "beneficiary": {
+            "entity_type": "PERSONAL",
+            "bank_details": {
+              "bank_name": "Commonwealth Bank of Australia",
+              "account_name": "Jane Smith",
+              "account_number": "12345678",
+              "account_currency": "AUD",
+              "bank_country_code": "AU",
+              "account_routing_type1": "bsb",
+              "local_clearing_system": "BANK_TRANSFER",
+              "account_routing_value1": "065163"
+            }
+          },
+          "source_amount": 500000,
+          "source_currency": "AUD",
+          "transfer_amount": 500000,
+          "transfer_method": "LOCAL",
+          "transfer_currency": "AUD",
+          "amount_beneficiary_receives": 500000
+        }
+      },
+      {
+        "id": 9773,
+        "source": "airwallex",
+        "source_id": "int_sgpvtbx4fhn1p15nm2a_154yrh",
+        "direction": "credit",
+        "amount": "0.00",
+        "captured_amount": null,
+        "type": "CARD_PAYMENT",
+        "currency": "AUD",
+        "merchant": "cus_hkdmgcfzjhhmn1t6osi",
+        "status": "REQUIRES_PAYMENT_METHOD",
+        "occurred_at": "2026-10-09T09:20:44.000Z",
+        "reference": "fcd0378d-1716-4aee-81c8-75eb65ea50e8",
+        "raw": {
+          "id": "int_sgpvtbx4fhn1p15nm2a_154yrh",
+          "amount": 0,
+          "status": "REQUIRES_PAYMENT_METHOD",
+          "currency": "AUD",
+          "customer_id": "cus_hkdmgcfzjhhmn1t6osi",
+          "merchant_order_id": "fcd0378d-1716-4aee-81c8-75eb65ea50e8"
+        }
+      }
+    ]
+  },
+  "summary": {
+    "all": 357,
+    "credit": 328,
+    "debit": 29
+  },
+  "pagination": {
+    "current_page": 1,
+    "page_size": 10,
+    "total_count": 357,
+    "total_pages": 36
+  }
+}
+```
+
+</ResponseExample>
