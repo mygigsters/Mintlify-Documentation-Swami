@@ -1,0 +1,144 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "MyGigsters Payments API",
+  "description": "Collect payments from your customers and pay out your workers through one API, built for marketplaces.",
+  "colors": {
+    "primary": "#6253E5",
+    "light": "#8B80F0",
+    "dark": "#4F41C9"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:hello@mygigsters.com.au"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://payments.mygigsters.com.au"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get started",
+            "icon": "rocket",
+            "pages": [
+              "index",
+              "get-started/how-it-works",
+              "get-started/quickstart",
+              "get-started/authentication",
+              "get-started/environments"
+            ]
+          },
+          {
+            "group": "Collect payments",
+            "icon": "credit-card",
+            "pages": [
+              "guides/charge-a-customer",
+              "guides/payment-links",
+              "guides/subscriptions",
+              "guides/refunds"
+            ]
+          },
+          {
+            "group": "Pay workers",
+            "icon": "money-bill-transfer",
+            "pages": [
+              "guides/onboard-and-pay-a-worker",
+              "guides/bulk-payouts",
+              "guides/wallet-balances"
+            ]
+          },
+          {
+            "group": "Invoice and reconcile",
+            "icon": "file-invoice-dollar",
+            "pages": [
+              "guides/invoices-and-receipts",
+              "guides/credit-notes"
+            ]
+          },
+          {
+            "group": "Verify workers",
+            "icon": "id-card",
+            "pages": [
+              "guides/document-verification"
+            ]
+          },
+          {
+            "group": "Partner accounts",
+            "icon": "sitemap",
+            "pages": [
+              "platform/overview",
+              "platform/onboard-connected-accounts",
+              "platform/kyc-magic-link",
+              "platform/batch-payouts",
+              "platform/test-account-statuses"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "icon": "book-open",
+            "pages": [
+              "concepts/core-objects",
+              "concepts/payment-intent-lifecycle",
+              "concepts/security-model"
+            ]
+          },
+          {
+            "group": "Build securely",
+            "icon": "shield-halved",
+            "pages": [
+              "security/webhooks",
+              "security/api-keys-and-rotation",
+              "security/restricted-keys",
+              "security/idempotency",
+              "security/versioning"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/errors-and-conventions"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "SDKs",
+        "groups": [
+          {
+            "group": "Embedded components",
+            "pages": [
+              "sdks/card-sdk",
+              "sdks/beneficiary-sdk"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "Releases",
+            "pages": [
+              "changelog"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

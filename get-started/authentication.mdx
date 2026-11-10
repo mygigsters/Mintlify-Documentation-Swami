@@ -1,0 +1,76 @@
+---
+title: "Authentication"
+description: "Authenticate every request with an API key pair sent over HTTP Basic authentication, plus an API version header."
+---
+
+The API authenticates every request with an API key pair sent with HTTP Basic authentication, plus an API version header.
+
+## Generate an API key
+
+In the MyGigsters dashboard, go to **Settings → API Keys** and generate a key. You receive two values:
+
+| Value | Description |
+| --- | --- |
+| `uuid` | Your API key identifier (a UUID). Acts as the username. |
+| `randomPasswordShowOnce` | Your API secret. Acts as the password. Shown only once at creation, so store it securely. If you lose it, generate a new key. |
+
+<Warning>
+  Keep your secret safe. Never put API credentials in client-side code, mobile apps, or public repositories. Make all API calls from your server. You can delete and regenerate API keys at any time from the dashboard.
+</Warning>
+
+## Send credentials with every request
+
+Base64-encode `uuid:randomPasswordShowOnce` and send it in the `Authorization` header. Also send the API version header.
+
+```http Request headers
+Authorization: Basic {base64(uuid:randomPasswordShowOnce)}
+X-API-Version: 1.2
+Content-Type: application/json
+```
+
+<CodeGroup>
+```bash cURL
+curl https://qa-payments.mygigsters.com.au/api/v1/customer \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{ ... }'
+```
+</CodeGroup>
+
+`curl -u` builds the Basic header for you. In other languages, use your HTTP client's Basic auth option.
+
+{/* TODO: add Node.js, Python, .NET and Ruby tabs to the CodeGroup above, matching the languages in the current reference. */}
+
+## The version header is required
+
+Include `X-API-Version: 1.2` on every request. Supported versions are `1.1` and `1.2`.
+
+If the header is missing or set to an unsupported version, the request is rejected with `400 Bad Request`:
+
+<CodeGroup>
+```json Missing header
+{ "error": "Missing X-API-Version header. Supported versions are 1.1 and 1.2." }
+```
+
+```json Unsupported version
+{ "error": "Unsupported X-API-Version '1.3'. Supported versions are 1.1 and 1.2." }
+```
+</CodeGroup>
+
+{/* TODO: the current Versioning page says a missing header returns 401. Confirm which is correct and make both pages agree. */}
+
+## Keys are environment-specific
+
+A key generated in the demo (QA) dashboard does not work in production, and a production key does not work in demo. See [Environments](/get-started/environments).
+
+## Related
+
+<Columns cols={2}>
+  <Card title="API keys and rotation" icon="key" href="/security/api-keys-and-rotation">
+    Rotate keys with no downtime.
+  </Card>
+  <Card title="Restricted keys" icon="lock" href="/security/restricted-keys">
+    Give each integration only the access it needs.
+  </Card>
+</Columns>

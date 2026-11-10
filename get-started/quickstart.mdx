@@ -1,0 +1,78 @@
+---
+title: "Quickstart"
+sidebarTitle: "Quickstart"
+description: "Create a demo account, make your first authenticated request, and create a customer you can charge."
+---
+
+In this tutorial you create your first customer. By the end you'll have verified your credentials, made an authenticated call, and received a customer you can charge.
+
+## Before you begin
+
+Create an account in the demo (QA) environment to get your API credentials.
+
+<Card title="Create a QA account" icon="user-plus" href="https://app-qa-payments.mygigsters.com.au/signup" horizontal>
+  Sign up for the demo environment. No real money moves.
+</Card>
+
+<Steps>
+  <Step title="Complete the signup form">
+    After you submit, you're redirected to the login page.
+  </Step>
+  <Step title="Log in">
+    Use the email address you registered with. When asked for a one-time passcode, enter `123456`.
+  </Step>
+</Steps>
+
+<Note>
+  The fixed passcode `123456` works only in the demo (QA) environment.
+</Note>
+
+## Make your first request
+
+<Steps>
+  <Step title="Get your API key">
+    In the dashboard, go to **Settings → API Keys** and generate a key pair. Use a QA key for this tutorial. See [Authentication](/get-started/authentication) for details.
+  </Step>
+  <Step title="Create a customer">
+    Customers are the people or businesses you charge. Run this from your terminal, replacing the credentials:
+
+    ```bash cURL
+    curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer \
+      -u "YOUR_UUID:YOUR_SECRET" \
+      -H "X-API-Version: 1.2" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "first_name": "Jane",
+        "last_name": "Smith",
+        "email": "jane.smith@example.com",
+        "phone": "+61400000000"
+      }'
+    ```
+  </Step>
+  <Step title="Check the response">
+    A successful request returns `200` with the new customer. Keep the customer `id`. You use it for cards, intents, and charges.
+
+    {/* TODO: paste the example 200 response body from the Create Customer reference. */}
+  </Step>
+  <Step title="Fetch the customer back">
+    ```bash cURL
+    curl https://qa-payments.mygigsters.com.au/api/v1/customer/{customer_id} \
+      -u "YOUR_UUID:YOUR_SECRET" \
+      -H "X-API-Version: 1.2"
+    ```
+  </Step>
+</Steps>
+
+## Next steps
+
+<Columns cols={3}>
+  <Card title="Charge a customer" icon="credit-card" href="/guides/charge-a-customer">
+    Take a payment.
+  </Card>
+  <Card title="Onboard and pay a worker" icon="money-bill-transfer" href="/guides/onboard-and-pay-a-worker">
+    Pay a worker.
+  </Card>
+  <Card title="Receive webhooks" icon="bell" href="/security/webhooks">
+    Get notified about events.
+  </Card>
+</Columns>
