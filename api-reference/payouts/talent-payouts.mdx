@@ -55,7 +55,7 @@ api: "POST /payout-talent"
 </ParamField>
 
 <ParamField body="mode" type="string">
-  The payout mode defaults to `BANK_TRANSFER` for Australia and `IMPS` for India.AustraliaNPPBANK_TRANSFERIndiaIMPSNEFTRTGSUPIEnsure that the selected payout mode is supported in the recipient's country.
+  The payout mode defaults to `BANK_TRANSFER` for Australia and `IMPS` for India. Australia supports `NPP` and `BANK_TRANSFER`. India supports `IMPS`, `NEFT`, `RTGS`, and `UPI`. Make sure the mode you choose is supported in the recipient's country.
 </ParamField>
 
 ### Response Body
