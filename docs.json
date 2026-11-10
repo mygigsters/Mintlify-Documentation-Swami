@@ -140,5 +140,18 @@
         ]
       }
     ]
+  },
+  "contextual": {
+    "options": [
+      "assistant",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "copy",
+      "download-spec",
+      "cursor"
+    ],
+    "display": "header"
   }
 }
