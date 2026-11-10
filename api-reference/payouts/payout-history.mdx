@@ -1,0 +1,145 @@
+---
+title: "Payout history"
+description: "This endpoint is used to retrieve the paginated list of all payouts."
+api: "GET /payouts/all"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="page" type="number">
+  The page number for pagination. Default is 1.
+</ParamField>
+
+<ParamField query="limit" type="number">
+  The number of records per page. Default is 5.
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | The HTTP status code of the response. |
+| `data`array | array | List of payout records. |
+| ↳`worker_id` | string | The unique identifier for the worker. |
+| ↳`worker_name` | string | The full name of the worker. |
+| ↳`payout_id` | number | The unique ID of the payout. |
+| ↳`payout_amount` | string | The payout amount. |
+| ↳`currency` | string | The currency of the payout (e.g. "AUD"). |
+| ↳`reference` | string | The reference note associated with the payout. |
+| ↳`date` | string | The date and time of the payout in ISO 8601 format. |
+| ↳`message` | string | The payout status description or status message. |
+| ↳`status` | string | The current status of the payout (e.g., "Paid", "Pending", "Processing", "Failed", "Cancelled"). |
+| ↳`transfer_id` | string | The unique identifier for the processed transfer. |
+| `pagination`object | object | Pagination metadata. |
+| ↳`page` | number | The current page number. |
+| ↳`limit` | number | The limit of items per page. |
+| ↳`total_records` | number | The total number of payout records matching the request. |
+| ↳`total_pages` | number | The total number of pages. |
+| ↳`has_next_page` | boolean | Indicates if a next page of records exists. |
+| ↳`has_previous_page` | boolean | Indicates if a previous page of records exists. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the list of payouts and pagination metadata is retrieved. |
+| 400 | Bad Request. Invalid parameter format. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/payouts/all?page=1&limit=5 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "data": [
+    {
+      "worker_id": "ccaaf8cc-851c-4397-abd2-d586bcc25131",
+      "worker_name": "Jane Kumar",
+      "payout_id": 70,
+      "payout_amount": "148",
+      "currency": "AUD",
+      "reference": "New test payout",
+      "date": "2026-07-23T08:43:09.000Z",
+      "message": "Payout success",
+      "status": "Paid",
+      "transfer_id": "91c86837-6b52-446a-9602-68f5cd0a1826"
+    },
+    {
+      "worker_id": "ccaaf8cc-851c-4397-abd2-d586bcc25131",
+      "worker_name": "Jane Kumar",
+      "payout_id": 69,
+      "payout_amount": "148",
+      "currency": "AUD",
+      "reference": "New test payout",
+      "date": "2026-07-23T08:41:19.000Z",
+      "message": "Payout success",
+      "status": "Paid",
+      "transfer_id": "5566f458-7e83-4425-9550-2641df3f1b82"
+    },
+    {
+      "worker_id": "ccaaf8cc-851c-4397-abd2-d586bcc25131",
+      "worker_name": "Jane Kumar",
+      "payout_id": 68,
+      "payout_amount": "148",
+      "currency": "AUD",
+      "reference": "New test payout",
+      "date": "2026-07-23T08:39:16.000Z",
+      "message": "Payout success",
+      "status": "Paid",
+      "transfer_id": "034ff664-5976-408b-acb9-cc498e89e51a"
+    },
+    {
+      "worker_id": "ccaaf8cc-851c-4397-abd2-d586bcc25131",
+      "worker_name": "Jane Kumar",
+      "payout_id": 67,
+      "payout_amount": "148",
+      "currency": "AUD",
+      "reference": "New test payout",
+      "date": "2026-07-23T08:38:33.000Z",
+      "message": "Payout success",
+      "status": "Paid",
+      "transfer_id": "ab2afd3c-684b-4740-bdf9-4c0eff1f9d13"
+    },
+    {
+      "worker_id": "ccaaf8cc-851c-4397-abd2-d586bcc25131",
+      "worker_name": "Jane Kumar",
+      "payout_id": 66,
+      "payout_amount": "148",
+      "currency": "AUD",
+      "reference": "New test payout",
+      "date": "2026-07-23T08:36:21.000Z",
+      "message": "Payout success",
+      "status": "Paid",
+      "transfer_id": "c07edf4c-38b1-422b-98f2-ba2ce8e1b8cd"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 5,
+    "total_records": 12,
+    "total_pages": 3,
+    "has_next_page": true,
+    "has_previous_page": false
+  }
+}
+```
+
+</ResponseExample>

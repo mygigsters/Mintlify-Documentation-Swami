@@ -1,0 +1,107 @@
+---
+title: "Create intent"
+description: "The Create Intent endpoint allows you to create a new payment for a customer."
+api: "POST /customer/create-intent/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Headers
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique UUID string used to prevent duplicate operations.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="amount" type="number" required>
+  The amount of the payment. For example, to charge $10.00 AUD, pass 10.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  The currency of the payment.
+</ParamField>
+
+<ParamField body="job_id" type="string">
+  The ID of the job for which the payout is being initiated. Either job ID or reference is required.
+</ParamField>
+
+<ParamField body="reference" type="string">
+  The reference for the payout request. Either job ID or reference is required.
+</ParamField>
+
+<ParamField body="auto_capture" type="boolean">
+  Indicates whether the payment should be automatically captured. If set to true, the payment will be captured immediately; if false, it may require manual capture later. Note: Card statement descriptor is configured at the merchant account level and cannot be passed dynamically.
+</ParamField>
+
+### Response Body
+
+The response for the Create Intent request is a JSON object with the following schema:
+
+<ResponseField name="status" type="number">
+  The HTTP status code of the response envelope (e.g. `200`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Informational message (e.g. `"Payment intent created successfully"`).
+</ResponseField>
+
+<ResponseField name="intent_id" type="string">
+  The unique identifier for the payment intent (prefixed with `int_`).
+</ResponseField>
+
+<ResponseField name="amount" type="number">
+  The amount in decimal dollars.
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  The currency of the intent (e.g. `AUD`).
+</ResponseField>
+
+Note: To inspect the payment intent lifecycle status (e.g. `REQUIRES_CAPTURE`, `SUCCEEDED`), use the [Retrieve Intent](/api-reference/payment-intents/retrieve-intent) endpoint.
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payment intent is created and the response includes the intent details and ID. |
+| 400 | Bad Request. Missing required parameters ('amount is required, job_id is required'), duplicate job ID ('Job Id is already exists'), or invalid customer. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 409 | Conflict. Duplicate idempotency key with mismatching parameters. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/create-intent/cus_hkdmn5lcqh5enc37sp6 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: 7b80a149-16ff-4dc8-8eb1-f1f4cfd0d575" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "amount": 100,
+  "currency": "AUD",
+  "job_id": "89073",
+  "auto_capture": false
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+    "status": 200,
+    "message": "Payment intent created successfully",
+    "intent_id": "int_hkdmt2bxdh5envvjsa9",
+    "amount": 100.00,
+    "currency": "AUD"
+}
+```
+
+</ResponseExample>

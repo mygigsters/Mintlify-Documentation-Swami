@@ -1,0 +1,120 @@
+---
+title: "Batch status"
+description: "Retrieves the real-time processing and approval status for all individual payment line items in a previously submitted payout batch."
+api: "GET /payouts/batch/{batchId}"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="batch_id" type="string" required>
+  The batch ID returned from the batch creation request (e.g. `bat_1d9248bb02add09754f4b9d527c88661`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  HTTP status code (200).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Status confirmation: `Batch payout status fetched successfully`.
+</ResponseField>
+
+<ResponseField name="batchId" type="string">
+  The unique identifier of the queried batch.
+</ResponseField>
+
+<ResponseField name="batch" type="array of objects">
+  List of individual payout line items and their respective execution statuses.
+</ResponseField>
+
+<ResponseField name="batch[].status" type="string">
+  Current payment lifecycle state (e.g. `PENDING`, `COMPLETED`, `FAILED`).
+</ResponseField>
+
+<ResponseField name="batch[].approvalstatus" type="string">
+  Internal approval workflow state (e.g. `PENDING`, `APPROVED`).
+</ResponseField>
+
+<ResponseField name="batch[].clearing_system" type="string">
+  Clearing system used (`NPP` or `BANK_TRANSFER`).
+</ResponseField>
+
+<ResponseField name="batch[].amount" type="string">
+  Payment line item amount.
+</ResponseField>
+
+<ResponseField name="batch[].createdAt" type="string">
+  ISO 8601 timestamp when this payout entry was registered.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Batch payout status retrieved successfully. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 404 | Not Found. Batch with the specified batchId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/payouts/batch/bat_1d9248bb02add09754f4b9d527c88661 \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Batch payout status fetched successfully",
+  "batch_id": "bat_1d9248bb02add09754f4b9d527c88661",
+  "batch": [
+    {
+      "bsb_number": "065163",
+      "account_number": "12345678",
+      "account_name": "Jane",
+      "entity_type": "PERSONAL",
+      "clearing_system": "NPP",
+      "currency": "AUD",
+      "amount": "250.50",
+      "remarks": "October payment",
+      "reference": "PAY-001",
+      "status": "PENDING",
+      "approvalstatus": "PENDING",
+      "airwallex_response": null,
+      "created_at": "2026-10-14T12:10:09.000Z"
+    },
+    {
+      "bsb_number": "065163",
+      "account_number": "12345678",
+      "account_name": "Jane",
+      "entity_type": "PERSONAL",
+      "clearing_system": "BANK_TRANSFER",
+      "currency": "AUD",
+      "amount": "10.00",
+      "remarks": "October payment",
+      "reference": "PAY-002",
+      "status": "PENDING",
+      "approvalstatus": "PENDING",
+      "airwallex_response": null,
+      "created_at": "2026-10-14T12:10:09.000Z"
+    }
+  ]
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,99 @@
+---
+title: "Update intent"
+description: "The Update Customer Intent endpoint is used to update the intent for a customer. You can only update the amount using this endpoint."
+api: "POST /customer/update-intent/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Headers
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique UUID string used to prevent duplicate operations.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="intent_id" type="string" required>
+  The ID of the intent to be updated.
+</ParamField>
+
+<ParamField body="amount" type="number" required>
+  The updated amount for the payment intent in decimal dollars (e.g. 100.00). Do not pass cents.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  The currency of the payment.
+</ParamField>
+
+### Response Body
+
+The response for the Update Intent request is a JSON object with the following schema:
+
+<ResponseField name="status" type="number">
+  The HTTP status code of the response envelope (e.g. `200`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Provides information related to the intent update process (e.g. `"Payment intent updated successfully"`).
+</ResponseField>
+
+<ResponseField name="intent_id" type="string">
+  The unique identifier for the updated payment intent.
+</ResponseField>
+
+<ResponseField name="amount" type="number">
+  The updated amount in decimal dollars.
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  The currency of the updated payment intent (e.g. `AUD`).
+</ResponseField>
+
+Note: To inspect the payment intent lifecycle status (e.g. `REQUIRES_CAPTURE`, `SUCCEEDED`), use the [Retrieve Intent](/api-reference/payment-intents/retrieve-intent) endpoint.
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payment intent is updated and the response includes the updated intent details. |
+| 400 | Bad Request. Missing required parameters ('amount is required, intent_id is required') or invalid customer ID. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified customerId or intentId does not exist. |
+| 409 | Conflict. The intent cannot be updated because of its current status. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/update-intent/cus_hkdmn5lcqh5enc37sp6 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: 7b80a149-16ff-4dc8-8eb1-f1f4cfd0d576" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "amount": 20,
+  "currency": "AUD",
+  "intent_id": "int_hkdmt2bxdh5envvjsa9"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Payment intent updated successfully",
+  "intent_id": "int_hkdmt2bxdh5enz29l9f",
+  "amount": 20.00,
+  "currency": "AUD"
+}
+```
+
+</ResponseExample>

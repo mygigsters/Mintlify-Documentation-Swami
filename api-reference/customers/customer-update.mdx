@@ -1,0 +1,115 @@
+---
+title: "Update customer"
+description: "This endpoint allows you to update an existing customer's information."
+api: "PUT /customer/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="customer_id" type="string" required>
+  The unique identifier of the customer to update (prefixed with `cus_`).
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="first_name" type="string">
+  The updated first name of the customer.
+</ParamField>
+
+<ParamField body="last_name" type="string">
+  The updated last name of the customer.
+</ParamField>
+
+<ParamField body="abn" type="string">
+  The ABN (Australian Business Number) of the customer. Must be exactly 11 digits.
+</ParamField>
+
+<ParamField body="address" type="string">
+  The updated address of the customer.
+</ParamField>
+
+<ParamField body="email" type="string">
+  The updated email address of the customer.
+</ParamField>
+
+<ParamField body="phone" type="string">
+  The updated phone number of the customer.
+</ParamField>
+
+<ParamField body="type" type="number">
+  The type of customer (e.g. `1` for Individual, `2` for Company). Defaults to `1` (INDIVIDUAL) if not provided.
+</ParamField>
+
+<ParamField body="gst_registered" type="boolean">
+  Indicates whether GST is registered for the customer.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+<ResponseField name="status" type="number">
+  The HTTP status code of the response.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message description.
+</ResponseField>
+
+<ResponseField name="account_id" type="string">
+  The unique identifier for the user account / organization.
+</ResponseField>
+
+<ResponseField name="customer_id" type="string">
+  The unique identifier of the customer (prefixed with `cus_`).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Customer updated successfully. |
+| 400 | Bad Request. Missing required parameters or invalid formatting. |
+| 401 | Unauthorized. Invalid or missing credentials. |
+| 404 | Not Found. The specified customerId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT https://qa-payments.mygigsters.com.au/api/v1/customer/cus_sgpv6gphmhlf6kmqz6l \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "first_name": "aashii",
+  "last_name": "aroraa",
+  "abn": "12345678918",
+  "address": "123 Melbourne, NSW",
+  "email": "jane.smith@example.com",
+  "phone": "7888886589",
+  "type": 1,
+  "gst_registered": false
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Customer updated successfully",
+  "account_id": "fd07f72e-c0f9-4953-b7ed-79693ef29ff0",
+  "customer_id": "cus_sgpv6gphmhlf6kmqz6l"
+}
+```
+
+</ResponseExample>

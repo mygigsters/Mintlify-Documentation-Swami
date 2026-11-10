@@ -1,0 +1,68 @@
+---
+title: "Remove card"
+description: "This endpoint allows you to remove a payment card associated with a specific customer. "
+api: "DELETE /customer/cards/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+ It is particularly useful for managing customer payment methods and ensuring that outdated or unwanted cards are removed from the system.
+
+ If the card removed is the default card, the last previous card (if available) automatically becomes the default card.
+
+### Request Body Parameters
+
+<ParamField body="card_id" type="string" required>
+  The unique identifier of the card to remove.
+</ParamField>
+
+### Response Body
+
+Upon successful execution, the API will return a JSON response with the following structure:
+
+<ResponseField name="message" type="string">
+  A message indicating the result of the operation.
+</ResponseField>
+
+<ResponseField name="card_id" type="string">
+  The identifier of the card that was removed.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | The card has been successfully removed from the customer's profile. |
+| 400 | Bad Request. Invalid parameters or invalid request payload. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Customer or card not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://qa-payments.mygigsters.com.au/api/v1/customer/cards/cus_hkdmn5lcqh5enc37sp6 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "card_id": "cst_hkdm54ctjhaatgv0i7q"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Card removed successfully.",
+  "card_id": "cst_hkdm54ctjhaatgv0i7q"
+}
+```
+
+</ResponseExample>

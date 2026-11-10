@@ -1,0 +1,82 @@
+---
+title: "Retrieve worker"
+description: "This endpoint allows you to get details of a worker using their unique worker ID."
+api: "GET /worker/{worker_id}/details"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="worker_id" type="string" required>
+  The unique identifier of the worker.
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | Indicates the status code of the response. |
+| `message` | string | A message related to the worker details request. |
+| `worker`object | object | The worker object containing detailed information. |
+| ↳`id` | string | Unique identifier for the worker. |
+| ↳`full_name` | string | The full name of the worker. |
+| ↳`email` | string | The email address of the worker. |
+| ↳`phone` | string | The phone number of the worker. |
+| ↳`abn` | string | The Australian Business Number of the worker. |
+| ↳`bsb` | string | The BSB number of the worker (AU bank accounts). |
+| ↳`account_number` | string | The bank account number of the worker. |
+| ↳`account_name` | string | The name associated with the bank account of the worker. |
+| ↳`ifsc_code` | string | The IFSC code of the worker (Indian bank accounts). |
+| ↳`upi_id` | string | The UPI ID of the worker (Indian bank accounts). |
+| ↳`is_early_pay_enabled` | boolean | Indicates whether early pay is enabled for the worker. |
+| ↳`early_pay_rates` | number | The early pay rate/percentage for the worker. Returned only when early pay is enabled. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the details of the worker are returned. |
+| 400 | Bad Request. Invalid format or parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified workerId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/worker/afd629c6-8e3d-4701-b168-dec8608130a5/details \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+   "message": "Worker found",
+  "worker": {
+    "id": 15,
+    "full_name": "Jane Kumar",
+    "email": "jane.smith@example.com",
+    "phone": "9888888882",
+    "abn": "12345678910",
+    "bsb": "123456", // Applicable for Australian bank accounts
+    "ifsc_code": "HDFC0001234", // Applicable for Indian bank accounts
+    "account_number": "7482742424",
+    "account_name": "Jane Smith"
+    "is_early_pay_enabled": true, // Optional, default is false
+    "early_pay_rates": "3" // percentage, required if isEarlyPayEnabled is true
+  }
+}
+```
+
+</ResponseExample>

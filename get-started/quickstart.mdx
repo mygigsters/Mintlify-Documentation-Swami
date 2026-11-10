@@ -50,9 +50,19 @@ Create an account in the demo (QA) environment to get your API credentials.
     ```
   </Step>
   <Step title="Check the response">
-    A successful request returns `200` with the new customer. Keep the customer `id`. You use it for cards, intents, and charges.
+    A successful request returns `201` with the new customer. Keep the `customer_id`. You use it for cards, intents, and charges.
 
-    {/* TODO: paste the example 200 response body from the Create Customer reference. */}
+    ```json Response
+    {
+      "status": 201,
+      "message": "Customer created successfully",
+      "my_gigster_id": "3e36d8a3-e013-4b0d-a72d-9b03c4ccb02e",
+      "customer_id": "cus_hkdm99dbsh9iactpfvh",
+      "save_card": "https://app-qa-payments.mygigsters.com.au/save-card/cus_hkdm99dbsh9iactpfvh/f2c1d9d2-c50d-460e-9e07-a1c58fa025f7"
+    }
+    ```
+
+    The `save_card` link is where the customer can securely save a card.
   </Step>
   <Step title="Fetch the customer back">
     ```bash cURL

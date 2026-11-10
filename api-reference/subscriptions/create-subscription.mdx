@@ -1,0 +1,108 @@
+---
+title: "Create subscription"
+description: "The Create Subscription endpoint is used to create a new recurring subscription for a customer."
+api: "POST /create/subscription"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="customer_id" type="string" required>
+  The unique identifier of the customer to create the subscription for.
+</ParamField>
+
+<ParamField body="amount" type="number" required>
+  The recurring amount of the subscription. For example, pass 10 for $10.00 AUD.
+</ParamField>
+
+<ParamField body="frequency" type="string" required>
+  The frequency of the subscription billing cycles. One of: `daily`, `weekly`, `monthly`.
+</ParamField>
+
+<ParamField body="start_date" type="string" required>
+  The start date of the subscription in ISO 8601 or YYYY-MM-DD format.
+</ParamField>
+
+<ParamField body="end_date" type="string">
+  The end date of the subscription in ISO 8601 or YYYY-MM-DD format (e.g. `2026-12-20T00:00:00.000Z`).
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  Three-letter ISO currency code. Currently supports `AUD`.
+</ParamField>
+
+### Response Body
+
+The response for the Create Subscription request is a JSON object with the following schema:
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | Indicates the status code of the subscription request. |
+| `message` | string | Success message. |
+| `data`object | object | The details of the created subscription. |
+| ↳`id` | string | Unique subscription ID (prefixed with `sub_`). |
+| ↳`customer_id` | string | Customer identifier. |
+| ↳`amount` | number | Subscription amount. |
+| ↳`frequency` | string | Frequency (e.g. `daily`). |
+| ↳`status` | string | Current status of subscription: `ACTIVE`, `PAUSED`, `CANCELLED`, `INCOMPLETE`, `PAST_DUE`. |
+| ↳`start_date` | string | Timestamp of subscription start. |
+| ↳`end_date` | string | Timestamp of subscription end date. |
+| ↳`currency` | string | Currency (e.g. `AUD`). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 201 | Created. The subscription has been successfully created. |
+| 400 | Bad Request. Invalid parameter format, negative/zero amount, or invalid frequency. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified customerId does not exist. |
+| 409 | Conflict. Duplicate idempotency key or overlapping subscription. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/create/subscription \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "customer_id": "cus_hkdmgcfzjhhmn1t6osi",
+  "amount": 20.5,
+  "frequency": "weekly",
+  "start_date": "2026-07-20T00:00:00.000Z",
+  "end_date": "2026-12-20T00:00:00.000Z",
+  "currency": "AUD"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "status": 201,
+  "message": "Subscription created successfully",
+  "data": {
+    "id": 1,
+    "client_id": "1",
+    "customer_id": "cus_hkdmgcfzjhhmn1t6osi",
+    "amount": 20.50,
+    "frequency": "weekly",
+    "start_date": "2026-07-20T00:00:00.000Z",
+    "end_date": "2026-12-20T00:00:00.000Z",
+    "next_charge_date": "2026-07-20T00:00:00.000Z",
+    "status": "active",
+    "currency": "AUD"
+  }
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,119 @@
+---
+title: "Default card details"
+description: "This endpoint allows you to retrieve detailed information about the customer's default card (payment consented)."
+api: "GET /customer/default-card/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="customer_id" type="string" required>
+  The unique identifier of the customer.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | Status message of the operation (e.g. "Card found successfully"). |
+| `card_details`object | object | Detailed information about the customer's saved card consent. |
+| ↳`id` | string | Consent record ID (e.g. "cst_hkdmt2bxdh5enk6uxs0"). |
+| ↳`request_id` | string | Unique request identifier for the consent creation call. |
+| ↳`customer_id` | string | Airwallex customer ID linked to this consent. |
+| ↳`payment_method`object | object | The payment method associated with this consent. |
+| ↳`type` | string | Payment method type (always "card"). |
+| ↳`id` | string | Payment method identifier (e.g. "mtd_hkdmn5lcqh5enk7388n"). |
+| ↳`card`object | object | Card details associated with the payment method. |
+| ↳`expiry_month` | string | Card expiry month (e.g. "12"). |
+| ↳`expiry_year` | string | Card expiry year (e.g. "2026"). |
+| ↳`name` | string | Cardholder name as entered during registration (may be empty). |
+| ↳`bin` | string | Bank Identification Number — first 6–8 digits of the card. |
+| ↳`last4` | string | Last 4 digits of the card number (e.g. "1003"). |
+| ↳`brand` | string | Card network brand (e.g. "visa", "mastercard"). |
+| ↳`issuer_country_code` | string | ISO 3166-1 alpha-2 country code of the card-issuing bank (e.g. "RU"). |
+| ↳`card_type` | string | Card product type (e.g. "CREDIT", "DEBIT"). |
+| ↳`fingerprint` | string | Unique fingerprint hash of the card used to detect duplicates. |
+| ↳`issuer_name` | string | Full name of the card-issuing financial institution. |
+| ↳`is_commercial` | boolean | Indicates whether the card is a commercial/corporate card. |
+| ↳`number_type` | string | Type of card number used (e.g. "PAN"). |
+| ↳`initial_payment_intent_id` | string | ID of the initial payment intent used to verify and save the card. |
+| ↳`next_triggered_by` | string | Indicates who initiates the next charge — "merchant" or "customer". |
+| ↳`merchant_trigger_reason` | string | Reason for merchant-triggered subsequent charges (e.g. "unscheduled", "recurring"). |
+| ↳`status` | string | Consent status (e.g. "VERIFIED", "PENDING", "EXPIRED"). |
+| ↳`created_at` | string | ISO 8601 timestamp when the consent record was created. |
+| ↳`updated_at` | string | ISO 8601 timestamp when the consent record was last updated. |
+| ↳`client_secret` | string | Signed JWT client secret used to perform client-side operations on this consent. |
+| ↳`mandate`object | object | Mandate settings for this card consent. |
+| ↳`payment_amount_type` | string | Whether the charge amount is fixed or variable (e.g. "VARIABLE", "FIXED"). |
+| ↳`purpose` | string | Consent purpose (e.g. "recurring"). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the detailed card information is returned. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Default card not found for the specified customerId. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/customer/default-card/cus_hkdmn5lcqh5enc37sp6 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Card found successfully",
+  "card_details": {
+    "id": "cst_hkdmt2bxdh5enk6uxs0",
+    "request_id": "5ff52ab4-1f6c-4dd3-9f43-4ee0a20f0f24",
+    "customer_id": "cus_hkdmn5lcqh5enc37sp6",
+    "payment_method": {
+      "type": "card",
+      "id": "mtd_hkdmn5lcqh5enk7388n",
+      "card": {
+        "expiry_month": "12",
+        "expiry_year": "2026",
+        "name": "",
+        "bin": "40120003",
+        "last4": "1003",
+        "brand": "visa",
+        "issuer_country_code": "RU",
+        "card_type": "CREDIT",
+        "fingerprint": "4yOwItYXF79ScJEtmG+qW42QuU0=",
+        "issuer_name": "VISA PRODUCTION SUPPORT CLIENT BID 1",
+        "is_commercial": false,
+        "number_type": "PAN"
+      }
+    },
+    "initial_payment_intent_id": "int_hkdmn5lcqh5enk76z9u_k6uxs0",
+    "next_triggered_by": "merchant",
+    "merchant_trigger_reason": "unscheduled",
+    "status": "VERIFIED",
+    "created_at": "2025-03-12T09:53:18+0000",
+    "updated_at": "2025-03-12T09:53:20+0000",
+    "client_secret": "eyJhbGciOiJIUzI1NiJ9.eyJhbGciOiJSUzI1NiIs...",
+    "mandate": {
+      "payment_amount_type": "VARIABLE"
+    },
+    "purpose": "recurring"
+  }
+}
+```
+
+</ResponseExample>

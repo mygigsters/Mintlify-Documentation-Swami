@@ -1,0 +1,95 @@
+---
+title: "Add bank details"
+description: "This endpoint allows you to add bank details for a worker."
+api: "POST /worker-bank-details"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Headers
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique UUID string used to prevent duplicate operations.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="bsb" type="string">
+  065163 for Sandbox Environment.
+</ParamField>
+
+<ParamField body="ifsc_code" type="string">
+  Applicable for Indian bank accounts.
+</ParamField>
+
+<ParamField body="upi_id" type="string">
+  Applicable for Indian bank accounts.
+</ParamField>
+
+<ParamField body="account_number" type="string" required>
+  12345678 for Sandbox Environment.
+</ParamField>
+
+<ParamField body="account_name" type="string" required>
+  The name associated with the bank account.
+</ParamField>
+
+<ParamField body="worker_id" type="string" required>
+  The unique ID of the worker.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  Indicates the status of the request. A value of 200 indicates success.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message related to the status of the request.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the bank details are added/updated and the response includes the status message. |
+| 400 | Bad Request. Invalid or missing parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified workerId does not exist. |
+| 409 | Conflict. Duplicate idempotency key with mismatching parameters. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/worker-bank-details \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: cb174dc0-281b-4cd3-847e-d3791a84f3ab" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "bsb": "065163",
+  "ifsc_code": "HDFC0001234",
+  "upi_id": "dummyUPI@yesbank",
+  "account_number": "12345678",
+  "account_name": "Jane Smith",
+  "worker_id": "afd629c6-8e3d-4701-b168-dec8608130a5"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Account details updated"
+}
+```
+
+</ResponseExample>

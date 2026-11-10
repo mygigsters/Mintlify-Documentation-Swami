@@ -1,0 +1,63 @@
+---
+title: "Get connected account status"
+description: "Fetches the current verification and operational status of a connected account under your partner umbrella, including its active state and mapped clearing account identifier."
+api: "GET /connected-account/{account_id}"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="account_id" type="string" required>
+  The unique MyGigsters client UUID of the connected account (e.g. `6aa5a268-249f-40bd-a62c-8437ebc5741d`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the status request was successful (`true`).
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  The verification and operational state of the connected account (e.g. `ACTIVE`, `PENDING`, `RESTRICTED`).
+</ResponseField>
+
+<ResponseField name="accountId" type="string">
+  The underlying clearing/banking account ID assigned to this connected entity (e.g. `acct_Q6Lsoq5_PSG6c_W-qpNizA`).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Connected account status retrieved successfully. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 404 | Not Found. Connected account with the specified ID does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/connected-account/6aa5a268-249f-40bd-a62c-8437ebc5741d \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "status": "ACTIVE",
+  "airwallex_id": "acct_Q6Lsoq5_PSG6c_W-qpNizA"
+}
+```
+
+</ResponseExample>

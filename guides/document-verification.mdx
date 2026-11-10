@@ -1,6 +1,48 @@
 ---
 title: "Document verification"
-description: "TODO: migrate from the current docs."
+description: "Verify ABNs, licences, passports, visas, vehicle registrations, police checks, and right to work."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Verify identities, documents, and business registrations through a single unified API. Each verification endpoint accepts specific details and returns a structured result so you can confirm authenticity before onboarding workers or processing transactions.
+
+<Steps>
+
+<Step title="Verify ABN">
+
+Start by verifying the Australian Business Number (ABN) of the business or contractor. This confirms whether the ABN is active and returns details like the entity name, type, address, and GST registration status. Use [Verify ABN](/api-reference/document-verification/verify-abn) to check.
+
+</Step>
+
+<Step title="Verify identity documents">
+
+Confirm the person's identity using one or more of the following document verification endpoints. Each one performs a field-by-field comparison against official government records and returns match results:
+
+- [Verify Driving License](/api-reference/document-verification/verify-driving-license) — Verify an Australian driving licence using the licence number, card number, name, date of birth, and state of issue.
+- [Verify Visa](/api-reference/document-verification/verify-visa) — Verify a visa by providing passport details and the country of issue.
+- [Verify Passport](/api-reference/document-verification/verify-passport) — Verify an Australian passport using the travel document number, name, date of birth, and gender.
+
+</Step>
+
+<Step title="Check vehicle registration">
+
+If the worker will be using a vehicle, verify their vehicle registration to confirm it is valid and retrieve details such as the make, colour, body style, expiry date, and insurance company. Use [Vehicle Registration Check](/api-reference/document-verification/verify-vehicle) to look up a registration plate.
+
+</Step>
+
+<Step title="Run a police check">
+
+Initiate and check the status of a national police check. First, use [Initiate Police Check](/api-reference/document-verification/initiate-police-check) to create a new application and retrieve a continuation URL for the applicant. Then, monitor the check using [Police Check Status](/api-reference/document-verification/police-check-status), which returns the current processing status, applicant details, and the ACIC result. Results can be "CLEAR", "DISCLOSABLE", or "UNKNOWN" while the check is pending.
+
+</Step>
+
+<Step title="Verify right to work">
+
+Confirm that the person has the legal right to work in Australia. The [Right to Work](/api-reference/document-verification/right-to-work) endpoint checks visa entitlements and returns the work status (unlimited, limited, or none) along with any conditions such as working hour restrictions.
+
+</Step>
+
+</Steps>
+
+<Note>
+  **Note:** All verification endpoints are available on API Version 1.2 only. Each endpoint returns a structured response with the verification result — check the individual endpoint documentation below for request formats and example responses.
+</Note>

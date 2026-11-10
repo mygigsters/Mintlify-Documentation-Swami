@@ -1,0 +1,90 @@
+---
+title: "Create refund"
+description: "The Refund Customer endpoint is used to initiate a refund for a customer."
+api: "POST /customer/refund"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Headers
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique UUID string used to prevent duplicate operations.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="amount" type="number" required>
+  The amount to be refunded in decimal dollars (e.g. 50.00). Do not pass cents.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  The currency of the payment.
+</ParamField>
+
+<ParamField body="payment_intent_id" type="string" required>
+  The ID of the payment intent associated with the refund.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  The HTTP status code of the response.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Provides information about the refund initiation result.
+</ResponseField>
+
+<ResponseField name="refund_status" type="string">
+  The current status of the refund request (e.g., "RECEIVED", "PROCESSING", "COMPLETED").
+</ResponseField>
+
+<ResponseField name="refund_id" type="string">
+  The unique identifier for the refund transaction.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the refund is initiated and the response includes the refund details and status. |
+| 400 | Bad Request. Missing required parameters (returns 'amount is required, payment_intent_id is required') or invalid amount format. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified payment intent does not exist. |
+| 409 | Conflict. Duplicate idempotency key with mismatching parameters or refund already requested. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/refund \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: f92cd86b-a25e-4c7b-b0b2-eb9c537da4b7" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "amount": 50,
+  "currency": "AUD",
+  "payment_intent_id": "int_hkdmn5lcqh5eo1jfsg7"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Refund initiated successfully",
+  "refund_status": "RECEIVED",
+  "refund_id": "rfd_hkdmngfmqh5w5s87hdp_1jfsg7"
+}
+```
+
+</ResponseExample>

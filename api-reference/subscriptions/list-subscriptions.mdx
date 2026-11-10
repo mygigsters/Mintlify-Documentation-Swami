@@ -1,0 +1,103 @@
+---
+title: "List subscriptions"
+description: "The List Subscriptions endpoint is used to retrieve a list of all subscriptions."
+api: "GET /subscriptions"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="limit" type="number">
+  A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
+</ParamField>
+
+<ParamField query="starting_after" type="string">
+  A cursor for pagination. An object ID defining your place in the list. For instance, if you get a list of subscriptions and need the next page, pass the last subscription ID here.
+</ParamField>
+
+### Response Body
+
+The response for the Subscriptions List request is a JSON object with the following schema:
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | Indicates the status code of the subscriptions list request. |
+| `message` | string | Success message. |
+| `current_page` | number | The current page number. |
+| `total_pages` | number | The total number of pages. |
+| `total_items` | number | The total number of subscriptions. |
+| `page_size` | number | The number of subscriptions returned per page. |
+| `data`array | array | A list of subscription objects. |
+| ↳`id` | string | Unique subscription ID (prefixed with `sub_`). |
+| ↳`customer_id` | string | Customer identifier. |
+| ↳`amount` | number | Subscription amount. |
+| ↳`frequency` | string | Frequency (e.g. `WEEKLY`). |
+| ↳`status` | string | Current status: `ACTIVE`, `PAUSED`, `CANCELLED`, `INCOMPLETE`, `PAST_DUE`. |
+| ↳`retry_count` | number | Number of retry attempts. |
+| ↳`max_retries` | number | Maximum number of retry attempts. |
+| ↳`remarks` | string | Remarks about the subscription. |
+| ↳`deleted_at` | ISO string | Deleted timestamp. |
+| ↳`created_at` | ISO string | Created timestamp. |
+| ↳`updated_at` | ISO string | Created timestamp. |
+| ↳`start_date` | string | Timestamp of subscription start. |
+| ↳`currency` | string | Currency (e.g. `AUD`). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, returns a list of subscriptions matching the pagination filters. |
+| 400 | Bad Request. Invalid query parameter values. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/subscriptions?limit=10&starting_after=sub_hkdm54ctjhaatgv0i7q \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Subscription list fetched successfully",
+  "current_page": 1,
+  "total_pages": 1,
+  "total_items": 1,
+  "page_size": 10,
+  "data": [
+    {
+      "id": 2,
+      "client_id": "1",
+      "customer_id": "cus_hkdmgcfzjhhmn1t6osi",
+      "amount": "20.50",
+      "frequency": "monthly",
+      "start_date": "2026-05-13T00:00:00.000Z",
+      "next_charge_date": "2026-06-13T00:00:00.000Z",
+      "last_charge_date": "2026-05-13T11:55:32.000Z",
+      "status": "active",
+      "retry_count": 0,
+      "max_retries": 3,
+      "currency": "AUD",
+      "remarks": null,
+      "deleted_at": null,
+      "created_at": "2026-05-13T11:53:32.000Z",
+      "updated_at": "2026-05-13T11:55:32.000Z"
+    }
+  ]
+}
+```
+
+</ResponseExample>

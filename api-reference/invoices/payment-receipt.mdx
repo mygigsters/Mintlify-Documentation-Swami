@@ -1,0 +1,157 @@
+---
+title: "Payment receipt"
+description: "This endpoint enables you to generate and send a payment receipt for a business transaction. The receipt will be emailed to the address provided in the request."
+api: "POST /receipt/payment"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="logo" type="string" required>
+  URL of the company logo to be included in the receipt.
+</ParamField>
+
+<ParamField body="customer_full_name" type="string" required>
+  Full name of the customer.
+</ParamField>
+
+<ParamField body="customer_first_name" type="string" required>
+  First name of the customer.
+</ParamField>
+
+<ParamField body="customer_contact_number" type="string" required>
+  Contact number of the customer.
+</ParamField>
+
+<ParamField body="customer_email" type="string" required>
+  Email address of the customer where the receipt will be sent.
+</ParamField>
+
+<ParamField body="receipt_date_time" type="string" required>
+  Date and time when the receipt was generated (ISO 8601 format).
+</ParamField>
+
+<ParamField body="receipt_id" type="string" required>
+  Unique identifier for the receipt.
+</ParamField>
+
+<ParamField body="delivery_type" type="string" required>
+  Type of delivery (e.g., 'Express', 'Standard').
+</ParamField>
+
+<ParamField body="pick_up_address" type="string" required>
+  Address where the item was picked up from.
+</ParamField>
+
+<ParamField body="pick_up_date_time" type="string" required>
+  Date and time of pickup (ISO 8601 format).
+</ParamField>
+
+<ParamField body="drop_off_address" type="string" required>
+  Address where the item was dropped off.
+</ParamField>
+
+<ParamField body="drop_off_date_time" type="string" required>
+  Date and time of drop-off (ISO 8601 format).
+</ParamField>
+
+<ParamField body="total_distance" type="number" required>
+  Total distance covered for the delivery.
+</ParamField>
+
+<ParamField body="delivery_base_amount" type="number" required>
+  Base amount for the delivery service.
+</ParamField>
+
+<ParamField body="discount_voucher_percentage" type="number">
+  Percentage of discount applied via voucher.
+</ParamField>
+
+<ParamField body="discount_voucher_amount" type="number">
+  Amount of discount applied via voucher.
+</ParamField>
+
+<ParamField body="gst_amount" type="number" required>
+  GST amount applied to the transaction.
+</ParamField>
+
+<ParamField body="total_paid_amount" type="number" required>
+  Total amount paid by the customer.
+</ParamField>
+
+<ParamField body="card_last_digits" type="string" required>
+  Last digits of the payment card used.
+</ParamField>
+
+<ParamField body="payment_date_time" type="string" required>
+  Date and time when the payment was processed (ISO 8601 format).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  Indicates the status code of the response.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message indicating whether the receipt was sent successfully.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payment receipt is generated and sent to the customer's email address. |
+| 400 | Bad Request. Invalid parameters or validation failure. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 409 | Conflict. Duplicate idempotency key or duplicate receipt ID. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/receipt/payment \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "logo": "https://example.com/logo.png",
+  "customer_full_name": "John Doe",
+  "customer_first_name": "John",
+  "customer_contact_number": "+1234567890",
+  "customer_email": "jane.smith@example.com",
+  "receipt_date_time": "2024-03-28T14:30:00Z",
+  "receipt_id": "REC12345",
+  "delivery_type": "Express",
+  "pick_up_address": "123 Main St, City, Country",
+  "pick_up_date_time": "2024-03-28T15:00:00Z",
+  "drop_off_address": "456 Elm St, City, Country",
+  "drop_off_date_time": "2024-03-28T16:30:00Z",
+  "total_distance": 12.5,
+  "delivery_base_amount": 2000,
+  "discount_voucher_percentage": 30,
+  "discount_voucher_amount": 500,
+  "gst_amount": 250,
+  "total_paid_amount": 1750,
+  "card_last_digits": "1234",
+  "payment_date_time": "2024-03-28T14:45:00Z"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Receipt sent successfully"
+}
+```
+
+</ResponseExample>

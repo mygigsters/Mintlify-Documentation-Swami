@@ -1,0 +1,93 @@
+---
+title: "Update webhook"
+description: "Updates the callback destination URL and subscribed event topics for an existing webhook subscription."
+api: "PUT /partner/webhooks/update/{id}"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="number" required>
+  Unique numeric identifier of the webhook subscription to update (e.g. `2`).
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="url" type="string" required>
+  Updated destination HTTPS callback URL where webhook events will be delivered.
+</ParamField>
+
+<ParamField body="events" type="array of numbers" required>
+  Updated array of numeric event IDs to subscribe to (e.g. `[13]`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the webhook configuration was updated successfully (`true`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Descriptive outcome message (e.g. `Webhook updated successfully`).
+</ResponseField>
+
+<ResponseField name="id" type="number">
+  Unique identifier of the updated webhook subscription.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  The updated destination HTTPS callback URL.
+</ResponseField>
+
+<ResponseField name="eventIds" type="array of numbers">
+  List of active event IDs subscribed to this webhook endpoint following the update.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Webhook subscription updated successfully. |
+| 400 | Bad Request. Invalid destination URL or event IDs. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 404 | Not Found. Webhook subscription with the specified ID was not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT https://qa-payments.mygigsters.com.au/api/v1/partner/webhooks/update/2 \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>" \
+  -d '{
+  "url": "https://example.com/webhook",
+  "events": [
+    13
+  ]
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Webhook updated successfully",
+  "id": 2,
+  "url": "https://example.com/webhook",
+  "event_ids": [
+    13
+  ]
+}
+```
+
+</ResponseExample>

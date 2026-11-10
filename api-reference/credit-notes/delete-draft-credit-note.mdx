@@ -1,0 +1,59 @@
+---
+title: "Delete draft credit note"
+description: "Permanently deletes an unissued draft credit note. Only credit notes in DRAFT status can be deleted. Issued credit notes must be voided instead."
+api: "DELETE /credit-notes/{id}/draft"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique ID (UUID) of the draft credit note to delete.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  HTTP status code (200).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message (e.g. `Draft credit note deleted successfully`).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Draft credit note deleted successfully. |
+| 400 | Bad Request. Cannot delete a credit note that has already been ISSUED. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Draft credit note ID does not exist. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://qa-payments.mygigsters.com.au/api/v1/credit-notes/3/draft \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Draft credit note deleted successfully"
+}
+```
+
+</ResponseExample>

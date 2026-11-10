@@ -1,0 +1,195 @@
+---
+title: "Retrieve intent"
+description: "The Retrieve Customer Intent endpoint is used to retrieve the intent details for a customer."
+api: "GET /customer/retrieve-intent/{intent_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="intent_id" type="string" required>
+  The unique identifier of the payment intent to retrieve.
+</ParamField>
+
+### Response Body
+
+The response for the Retrieve Intent request is a JSON object with the following schema:
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | HTTP status code envelope (e.g., `200`). Note: The payment lifecycle status of the intent is located in `response.intent_status` and `data.status`. |
+| `message` | string | A message describing the result of the intent retrieval. |
+| `response`object | object | Summary intent details. |
+| ↳`id` | string | The unique identifier of the payment intent. |
+| ↳`amount` | number | The amount associated with the intent. |
+| ↳`currency` | string | The currency of the intent (e.g., `AUD`). |
+| ↳`refund` | number | The refunded amount, if any. |
+| ↳`intent_status` | string | The status of the intent (e.g., `SUCCEEDED`, `REQUIRES_PAYMENT_METHOD`). |
+| `data`object | object | Detailed payment intent object containing transaction information. |
+| ↳`id` | string | The unique identifier of the payment intent. |
+| ↳`request_id` | string | The unique request identifier. |
+| ↳`amount` | number | The total intent amount. |
+| ↳`currency` | string | The three-letter ISO currency code (e.g., `AUD`). |
+| ↳`merchant_order_id` | string | Merchant order reference or booking ID. |
+| ↳`descriptor` | string | Statement descriptor for the transaction. |
+| ↳`status` | string | The status of the payment intent (e.g., `SUCCEEDED`). |
+| ↳`captured_amount` | number | Total amount captured. |
+| ↳`payment_link_id` | string | ID of the associated payment link, if applicable. |
+| ↳`return_url` | string | Redirect return URL after payment completion. |
+| ↳`created_at` | string | Timestamp when the intent was created. |
+| ↳`updated_at` | string | Timestamp when the intent was last updated. |
+| ↳`customer`object | object | Customer information associated with the intent. |
+| ↳`email` | string | Customer email address. |
+| ↳`name` | string | Customer name. |
+| ↳`latest_payment_attempt`object | object | Details of the most recent payment attempt. |
+| ↳`id` | string | Unique identifier of the payment attempt. |
+| ↳`amount` | number | Amount for this payment attempt. |
+| ↳`currency` | string | Currency code of the attempt. |
+| ↳`status` | string | Status of the attempt (e.g., `PAID`). |
+| ↳`provider_transaction_id` | string | Provider transaction identifier. |
+| ↳`authorization_code` | string | Authorization approval code. |
+| ↳`payment_method`object | object | Payment method details used. |
+| ↳`type` | string | Payment method type (e.g., `card`). |
+| ↳`card`object | object | Card details. |
+| ↳`brand` | string | Card brand (e.g., `visa`, `mastercard`). |
+| ↳`last4` | string | Last 4 digits of the card number. |
+| ↳`expiry_month` | string | Two-digit card expiration month. |
+| ↳`expiry_year` | string | Four-digit card expiration year. |
+| ↳`card_type` | string | Type of card (e.g., `DEBIT`, `CREDIT`). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the intent details are retrieved and the response includes the complete intent information. |
+| 400 | Bad Request. Invalid parameters or format. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified intentId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/customer/retrieve-intent/int_hkdmn5lcqh5eo1jfsg7 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Payment intent retrieved successfully",
+  "response": {
+    "id": "int_hkdmw7lbxhbykity4a6",
+    "amount": 169.00,
+    "currency": "AUD",
+    "refund": 0,
+    "intent_status": "SUCCEEDED"
+  },
+    "data": {
+        "latest_payment_attempt": {
+            "id": "att_hkdmw7lbxhbykj1q4jg_ity4a6",
+            "amount": 169,
+            "currency": "AUD",
+            "payment_method": {
+                "type": "card",
+                "card": {
+                    "expiry_month": "12",
+                    "expiry_year": "2034",
+                    "name": "",
+                    "bin": "40355010",
+                    "last4": "0008",
+                    "brand": "visa",
+                    "issuer_country_code": "US",
+                    "card_type": "DEBIT",
+                    "fingerprint": "ex6pgQ3YR8Gyn7Jae3K8WNinlhQ=",
+                    "cvc_check": "pass",
+                    "issuer_name": "SOCIETE GENERALE S.A.",
+                    "is_commercial": false,
+                    "number_type": "PAN",
+                    "card_updater_info": {
+                        "number_updated": false,
+                        "expiry_updated": false
+                    }
+                }
+            },
+            "merchant_order_id": "Booking Payment 1",
+            "payment_intent_id": "int_hkdmw7lbxhbykity4a6",
+            "status": "PAID",
+            "provider_transaction_id": "0219741162496",
+            "payment_method_transaction_id": "962589965855381",
+            "provider_original_response_code": "00",
+            "provider_original_response_description": "Authorized successfully",
+            "authorization_code": "198381",
+            "captured_amount": 169,
+            "refunded_amount": 0,
+            "created_at": "2025-10-12T09:15:41+0000",
+            "updated_at": "2025-10-12T09:15:42+0000",
+            "settle_via": "airwallex",
+            "authentication_data": {
+                "ds_data": {
+                    "retry_count_for_auth_decline": 0
+                },
+                "fraud_data": {
+                    "action": "ACCEPT",
+                    "score": "0",
+                    "risk_factors": []
+                },
+                "avs_result": "U",
+                "cvc_result": "Y",
+                "cvc_code": "M"
+            },
+            "payment_method_options": {
+                "card": {
+                    "authorization_type": "final_auth"
+                }
+            },
+            "device_data": {
+                "device_id": "aaa134b6-2780-4552-b565-3dc3ea4ed590",
+                "ip_address": "2409: 40c4:f9: 6cb:f91f: 525b: 7087:b8ce",
+                "screen_height": 768,
+                "screen_width": 1366,
+                "screen_color_depth": 24,
+                "language": "en-US",
+                "timezone": "+5: 30",
+                "browser": {
+                    "java_enabled": false,
+                    "javascript_enabled": true,
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+                }
+            }
+        },
+        "id": "int_hkdmw7lbxhbykity4a6",
+        "request_id": "de908f12-ba08-4b25-b4ee-9867e5dc375d",
+        "amount": 169,
+        "currency": "AUD",
+        "merchant_order_id": "Booking Payment 1",
+        "customer": {
+            "email": "jane.smith@example.com",
+            "name": "4035 5010 0000 0008"
+        },
+        "descriptor": "sdadas",
+        "status": "SUCCEEDED",
+        "captured_amount": 169,
+        "created_at": "2025-10-12T09:15:28+0000",
+        "updated_at": "2025-10-12T09:15:41+0000",
+        "payment_link_id": "3e0e6940-71b7-4eeb-9dc2-7894204d2bea",
+        "return_url": "https://pay-demo.airwallex.com/pay/hk/link/payment/success?paymentId=de908f12-ba08-4b25-b4ee-9867e5dc375d",
+        "mor_enabled": false,
+        "base_amount": 169,
+        "base_currency": "AUD"
+    }
+}
+```
+
+</ResponseExample>

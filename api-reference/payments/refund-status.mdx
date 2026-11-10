@@ -1,0 +1,82 @@
+---
+title: "Refund status"
+description: "The refund-status endpoint allows you to retrieve the status of a refund for a customer."
+api: "POST /customer/refund-status"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="refund_id" type="string" required>
+  The ID of the refund for which the status is being retrieved.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  The HTTP status code of the response.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Provides information about the refund status retrieval result.
+</ResponseField>
+
+<ResponseField name="refund_id" type="string">
+  The unique identifier for the refund transaction.
+</ResponseField>
+
+<ResponseField name="amount" type="number">
+  The amount of the refund.
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  The currency of the refund.
+</ResponseField>
+
+<ResponseField name="refund_status" type="string">
+  The current status of the refund (e.g., "ACCEPTED", "PROCESSING", "COMPLETED", "FAILED").
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the refund status is retrieved and the response includes detailed information about the refund. |
+| 400 | Bad Request. Invalid or missing parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified refundId was not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/refund-status \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "refund_id": "rfd_hkdmngfmqh5w5s87hdp_1jfsg7"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Refund status fetched successfully",
+  "refund_id": "rfd_hkdmngfmqh5w5s87hdp_1jfsg7",
+  "amount": 100,
+  "currency": "AUD",
+  "refund_status": "ACCEPTED"
+}
+```
+
+</ResponseExample>

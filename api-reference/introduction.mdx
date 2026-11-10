@@ -1,6 +1,53 @@
 ---
-title: "Introduction"
-description: "TODO: migrate from the current docs."
+title: "API reference"
+description: "Base URLs, authentication, and conventions for the MyGigsters Payments API."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+The MyGigsters Payments API is a REST API. It accepts and returns JSON, and uses standard HTTP status codes.
+
+## Base URLs
+
+| Environment | Base URL |
+|---|---|
+| Demo (QA) | `https://qa-payments.mygigsters.com.au/api/v1` |
+| Production | `https://prod-payments.mygigsters.com.au/api/v1` |
+
+The examples and the interactive playground in this reference use the demo environment. See [Environments](/get-started/environments).
+
+## Authentication
+
+Send your API key pair with HTTP Basic authentication, and include the version header on every request.
+
+```bash
+curl https://qa-payments.mygigsters.com.au/api/v1/customer/{customer_id} \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2"
+```
+
+Partner endpoints use a Bearer token instead. Get one from [Authenticate partner](/api-reference/partner-account/partner-authenticate).
+
+See [Authentication](/get-started/authentication) for details.
+
+## Conventions
+
+- **Versioning:** send `X-API-Version: 1.2`. See [API versioning](/security/versioning).
+- **Field names:** version 1.2 uses snake_case for request and response fields.
+- **Idempotency:** send an `idempotency-Key` header on `POST` and `PUT` requests. See [Idempotency](/security/idempotency).
+- **Errors:** every error returns the same JSON format. See [Errors and conventions](/api-reference/errors-and-conventions).
+
+## Resources
+
+<Columns cols={3}>
+  <Card title="Customers" icon="user" href="/api-reference/customers/customer-create" />
+  <Card title="Cards" icon="credit-card" href="/api-reference/cards/get-all-cards" />
+  <Card title="Payment intents" icon="money-check-dollar" href="/api-reference/payment-intents/create-intent" />
+  <Card title="Payments" icon="link" href="/api-reference/payments/generate-payment-link" />
+  <Card title="Wallet" icon="wallet" href="/api-reference/wallet/get-wallet" />
+  <Card title="Workers" icon="users" href="/api-reference/workers/worker-create" />
+  <Card title="Payouts" icon="money-bill-transfer" href="/api-reference/payouts/payout-worker" />
+  <Card title="Invoices" icon="file-invoice-dollar" href="/api-reference/invoices/create-send-invoice" />
+  <Card title="Credit notes" icon="file-circle-minus" href="/api-reference/credit-notes/create-draft-credit-note" />
+  <Card title="Subscriptions" icon="repeat" href="/api-reference/subscriptions/create-subscription" />
+  <Card title="Document verification" icon="id-card" href="/api-reference/document-verification/verify-abn" />
+  <Card title="Partner account" icon="sitemap" href="/api-reference/partner-account/partner-authenticate" />
+</Columns>

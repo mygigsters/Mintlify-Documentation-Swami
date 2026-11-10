@@ -1,0 +1,79 @@
+---
+title: "Confirm intent"
+description: "The Confirm Customer Intent endpoint is used to confirm a customer's intent."
+api: "POST /customer/confirm-intent/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Headers
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique UUID string used to prevent duplicate operations.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="intent_id" type="string" required>
+  The ID of the intent to be confirmed.
+</ParamField>
+
+<ParamField body="auto_capture" type="boolean">
+  A flag indicating whether to automatically capture the intent immediately upon confirmation.
+</ParamField>
+
+### Response Body
+
+The response for the Confirm Intent request is a JSON object with the following schema:
+
+<ResponseField name="status" type="number">
+  The HTTP status code of the response envelope (e.g. `200`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Status message of the confirmation (e.g. `"Payment successful!"`).
+</ResponseField>
+
+Note: To inspect the payment intent lifecycle status (e.g. `REQUIRES_CAPTURE`, `SUCCEEDED`), use the [Retrieve Intent](/api-reference/payment-intents/retrieve-intent) endpoint.
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the intent is confirmed and the response includes the confirmation details. |
+| 400 | Bad Request. Missing required parameters or mismatching types. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified customerId or intentId does not exist. |
+| 409 | Conflict. The intent cannot be confirmed from its current state. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/confirm-intent/cus_hkdmtq9nsh6nmfeoppn \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: 7b80a149-16ff-4dc8-8eb1-f1f4cfd0d577" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "intent_id": "int_hkdmzwzw6h6nmtxbe2u",
+  "auto_capture": false
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Payment successful!"
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,122 @@
+---
+title: "Create worker"
+description: "This endpoint allows you to create a new worker with their personal and banking details."
+api: "POST /worker-create"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="full_name" type="string" required>
+  The full name of the worker.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  The email address of the worker.
+</ParamField>
+
+<ParamField body="phone" type="string" required>
+  The phone number of the worker.
+</ParamField>
+
+<ParamField body="abn" type="string">
+  The Australian Business Number (11-digit identifier) for AU workers.
+</ParamField>
+
+<ParamField body="account_name" type="string">
+  The name of the worker's bank account.
+</ParamField>
+
+<ParamField body="bsb" type="string">
+  The Bank State Branch code (6 digits, 065163) for Sandbox Environment .
+</ParamField>
+
+<ParamField body="account_number" type="string">
+  The account number of the SandBox Environment is 12345678.
+</ParamField>
+
+<ParamField body="ifsc_code" type="string">
+  The Indian Financial System Code (IFSC, 11 characters) for Indian bank accounts.
+</ParamField>
+
+<ParamField body="upi_id" type="string">
+  The UPI ID (Virtual Payment Address, e.g., username@bank) for Indian workers.
+</ParamField>
+
+<ParamField body="gst_registered" type="boolean">
+  Indicates whether the worker is registered for GST (Goods and Services Tax).
+</ParamField>
+
+<ParamField body="is_early_pay_enabled" type="boolean" required>
+  Indicates whether early pay (on-demand pay) is enabled for the worker.
+</ParamField>
+
+<ParamField body="early_pay_rates" type="number">
+  The percentage rate (e.g. 1.5) charged for early pay transactions, required if is_early_pay_enabled is true.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  Indicates the status of the request.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message associated with the response.
+</ResponseField>
+
+<ResponseField name="worker_id" type="string">
+  The ID of the newly created worker (prefixed with `wor_`).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 201 | Created. The worker was successfully created. |
+| 400 | Bad Request. Invalid parameters or validation failure (e.g. invalid BSB format). |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 409 | Conflict. Duplicate idempotency key or worker already exists with the email/phone. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/worker-create \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "full_name": "Jane Kumar",
+  "abn": "12345678910",
+  "account_name": "Jane Smith",
+  "bsb": "065163",
+  "ifsc_code": "HDFC0001234",
+  "upi_id": "dummyUPI@yesbank",
+  "account_number": "12345678",
+  "email": "jane.smith@example.com",
+  "phone": "9888888882",
+  "gst_registered": false,
+  "is_early_pay_enabled": true,
+  "early_pay_rates": "3"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "status": 201,
+  "message": "Worker created successfully",
+  "worker_id": "afd629c6-8e3d-4701-b168-dec8608130a5"
+}
+```
+
+</ResponseExample>

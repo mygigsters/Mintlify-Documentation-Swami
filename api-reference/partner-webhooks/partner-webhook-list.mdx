@@ -1,0 +1,162 @@
+---
+title: "Get subscribed webhooks"
+description: "Retrieves a paginated list of all active webhook subscriptions configured for the authenticated partner account."
+api: "GET /partner/webhooks"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="page" type="number">
+  Page number to retrieve for pagination (defaults to `1`).
+</ParamField>
+
+<ParamField query="limit" type="number">
+  Number of webhook records per page (defaults to `10`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="pagination" type="object">
+  Pagination information including `currentPage`, `pageSize`, `totalCount`, and `totalPages`.
+</ResponseField>
+
+<ResponseField name="webhooks" type="array of objects">
+  List of active webhook subscriptions configured for this partner.
+</ResponseField>
+
+<ResponseField name="webhooks[].id" type="number">
+  Unique identifier of the webhook subscription.
+</ResponseField>
+
+<ResponseField name="webhooks[].url" type="string">
+  Registered destination HTTPS endpoint URL.
+</ResponseField>
+
+<ResponseField name="webhooks[].secretKey" type="string">
+  Secret key used to verify HMAC signatures of delivered payloads.
+</ResponseField>
+
+<ResponseField name="webhooks[].eventIds" type="array of numbers">
+  Array of event IDs subscribed to this endpoint.
+</ResponseField>
+
+<ResponseField name="webhooks[].events" type="object">
+  Full metadata for all subscribed event definitions grouped by domain category (e.g. `payout`).
+</ResponseField>
+
+<ResponseField name="webhooks[].createdAt" type="string">
+  ISO 8601 timestamp when the webhook was registered.
+</ResponseField>
+
+<ResponseField name="webhooks[].updatedAt" type="string">
+  ISO 8601 timestamp of last modification.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Subscribed webhooks retrieved successfully. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/partner/webhooks \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "pagination": {
+    "current_page": 1,
+    "page_size": 10,
+    "total_count": 2,
+    "total_pages": 1
+  },
+  "webhooks": [
+    {
+      "id": 2,
+      "url": "https://example.com/webhook",
+      "secret_key": "LptaMacK*9o$HZEAkY0H",
+      "event_ids": [
+        13,
+        14,
+        15
+      ],
+      "events": {
+        "payout": [
+          {
+            "id": 13,
+            "event_name": "Batch submitted",
+            "code": "batch_payout.created",
+            "type": "payout",
+            "description": "Batch submitted"
+          },
+          {
+            "id": 14,
+            "event_name": "Batch items paid successfully",
+            "code": "batch_payout.completed",
+            "type": "payout",
+            "description": "Batch items paid successfully"
+          },
+          {
+            "id": 15,
+            "event_name": "Some batch items failed",
+            "code": "batch_payout.partial",
+            "type": "payout",
+            "description": "Some batch items failed"
+          }
+        ]
+      },
+      "created_at": "2026-10-15T07:06:37.000Z",
+      "updated_at": "2026-10-15T07:06:37.000Z"
+    },
+    {
+      "id": 1,
+      "url": "https://example.com/webhook",
+      "secret_key": "Vp8OQjuHpwvqih^RR&3H",
+      "event_ids": [
+        13,
+        14
+      ],
+      "events": {
+        "payout": [
+          {
+            "id": 13,
+            "event_name": "Batch submitted",
+            "code": "batch_payout.created",
+            "type": "payout",
+            "description": "Batch submitted"
+          },
+          {
+            "id": 14,
+            "event_name": "Batch items paid successfully",
+            "code": "batch_payout.completed",
+            "type": "payout",
+            "description": "Batch items paid successfully"
+          }
+        ]
+      },
+      "created_at": "2026-10-15T06:55:29.000Z",
+      "updated_at": "2026-10-15T06:55:29.000Z"
+    }
+  ]
+}
+```
+
+</ResponseExample>

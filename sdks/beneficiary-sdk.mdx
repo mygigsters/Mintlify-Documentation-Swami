@@ -1,6 +1,243 @@
 ---
-title: "Beneficiary sdk"
-description: "TODO: migrate from the current docs."
+title: "Embed the Beneficiary SDK"
+description: "Collect worker bank details with a hosted form."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+{/* TODO: this page passes apiSecret to the SDK in browser code, which conflicts with the rule elsewhere in these docs to never put API credentials in client-side code. Confirm the intended pattern (the Card SDK uses a pre-fetched token instead) and update. */}
+
+The MyGigsters Beneficiary SDK lets you embed a fully-featured beneficiary onboarding form directly into any website. Workers can securely submit their bank details through a pre-built, styled UI — no backend integration required on your side.
+
+## Installation
+
+Choose the method that best fits your project — load via a `<script>` tag for plain HTML sites, or install via **npm** for React, Vue, Angular, or any bundler-based app.
+
+Add the SDK script tag to your HTML page. No build step required.
+
+```html
+<!-- Load SDK -->
+<script src="https://qa-payments.mygigsters.com.au/beneficiary-sdk-entry.js"></script>
+```
+
+### Full HTML Example
+
+```html
+<!DOCTYPE html>
+<html>
+<body>
+  <!-- Container for the form -->
+  <div id="beneficiary-form"></div>
+
+  <!-- Load SDK -->
+  <script src="https://qa-payments.mygigsters.com.au/beneficiary-sdk-entry.js"></script>
+
+  <!-- Initialize -->
+  <script>
+    MygigstersBeneficiary.init({
+      apiKey: "your_api_key",
+      apiSecret: "your_secret_key",
+      env: "demo",              // "demo" or "prod"
+      containerId: "beneficiary-form",
+      mode: "light",            // "light" or "dark"
+      onSuccess: (data) => console.log("Success:", data),
+      onError: (err) => console.error("Error:", err),
+      onClose: () => console.log("Closed")
+    });
+  </script>
+</body>
+</html>
+```
+
+### Auto-Initialize via Script Attribute
+
+You can pass configuration directly on the `<script>` tag — no extra JavaScript needed (callbacks not available with this method):
+
+```html
+<div id="beneficiary-form"></div>
+
+<script
+  src="https://qa-payments.mygigsters.com.au/beneficiary-sdk-entry.js"
+  data-mygigsters-config='{
+    "apiKey":      "your_api_key",
+    "apiSecret":   "your_secret_key",
+    "env":         "demo",
+    "containerId": "beneficiary-form",
+    "mode":        "light"
+  }'
+></script>
+```
+
+## How It Works
+
+### 1. Add the SDK to Your Project
+
+Either include the `<script>` tag for CDN usage (exposes `window.MygigstersBeneficiary`), or install via `npm install @mygigsters/beneficiary-sdk` and import `MygigstersBeneficiarySDK` in your code.
+
+### 2. Create a Container Element
+
+Add an empty `<div>` with a unique `id` (e.g. `<div id="beneficiary-form"></div>`). The SDK will mount its UI inside this element using Shadow DOM for full style isolation.
+
+### 3. Initialize with Credentials
+
+Call `.init(config)` with your API key and secret. The SDK authenticates against the MyGigsters backend, then renders the beneficiary form inside the container.
+
+### 4. Handle Callbacks
+
+Use the `onSuccess`, `onError`, and `onClose` callbacks to react to form events in your application — for example, displaying a confirmation message or redirecting the user.
+
+## Configuration Options
+
+Pass these options to `init()`:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `apiKey` (required) | string | Your UUID-style API key generated from the MyGigsters dashboard (API Keys section). |
+| `apiSecret` (required) | string | The one-time secret / random password shown when the API key was created. |
+| `containerId` (required) | string | The `id` of the DOM element where the form will be mounted (e.g. `"beneficiary-form"`). |
+| `env` (optional) | string | Environment to connect to. Use `"demo"` for testing (QA) or `"prod"` for live. Defaults to `"prod"`. |
+| `mode` (optional) | string | UI theme — `"light"` or `"dark"`. Defaults to `"light"`. |
+| `talentId` (optional) | string | Optional talent / worker ID to associate the beneficiary with a specific worker in your system. |
+| `onSuccess` (optional) | function | Callback fired when the beneficiary is saved successfully. Receives the result data object as an argument. |
+| `onError` (optional) | function | Callback fired when an error occurs. Receives the error object as an argument. |
+| `onClose` (optional) | function | Callback fired when the user closes the form. |
+
+## SDK Methods
+
+After initialization, you can control the form programmatically:
+
+| Method | Returns | Description |
+|---|---|---|
+| `init(config)` | Promise | Initialize and render the beneficiary form. Authenticates with the backend and mounts the UI into the specified container. |
+| `show()` | void | Show the beneficiary form if it has been hidden. |
+| `hide()` | void | Hide the beneficiary form without destroying it. Form state is preserved. |
+| `destroy()` | void | Completely remove the form from the DOM and clean up all resources. Call this when navigating away or unmounting. |
+| `setTheme(mode)` | void | Switch the UI theme at runtime. Pass `"light"` or `"dark"`. |
+| `getInstance()` (CDN only) | object | Returns the underlying SDK instance for advanced use (only available when using the CDN/script tag approach). |
+
+## Important Notes
+
+<Note>
+  **CDN vs npm — Global Name Difference:** When using the **CDN / script tag**, the global object is `MygigstersBeneficiary`. When using the **npm package**, import the named export `MygigstersBeneficiarySDK`. The API methods are identical for both.
+</Note>
+
+## Environment URLs
+
+| Environment | SDK script URL and `env` value | Use for |
+|---|---|---|
+| Demo (QA) | Script: `https://qa-payments.mygigsters.com.au/beneficiary-sdk-entry.js`, env: `"demo"` | For testing and development. |
+| Production | Script: `https://prod-payments.mygigsters.com.au/beneficiary-sdk-entry.js`, env: `"prod"` | For live / production usage. |
+
+## Error Handling
+
+Wrap `init()` in a `try/catch` to handle initialization errors:
+
+```javascript
+try {
+  const sdk = new MygigstersBeneficiarySDK();
+  await sdk.init({
+    apiKey: 'your_api_key',
+    apiSecret: 'your_api_secret',
+    env: 'demo',
+    containerId: 'beneficiary-form',
+  });
+} catch (err) {
+  // Common errors:
+  // "apiKey is required"
+  // "Container element with ID '...' not found"
+  // "Invalid API credentials: Please check your apiKey and apiSecret."
+  // "Authentication failed: ..."
+  console.error('SDK failed to initialize:', err.message);
+}
+```
+
+Runtime errors (network failures, server rejections) are surfaced via the `onError` callback and displayed inline in the form.
+
+## Security & Notes
+
+### Shadow DOM Isolation
+
+The SDK renders inside a closed Shadow DOM, ensuring your page styles never conflict with the form's styles and vice versa.
+
+### Secure Authentication
+
+The SDK uses HTTP Basic Authentication (Base64-encoded `apiKey:apiSecret`) under the hood to obtain a Bearer token. Credentials are never stored in localStorage or sessionStorage — the auth token lives in memory only.
+
+### PKCE Flow for Bank Details
+
+For international (Airwallex) beneficiary forms, the SDK uses a PKCE (Proof Key for Code Exchange) authorization flow with native `crypto.subtle` — no third-party crypto library is used.
+
+### India & International Support
+
+The SDK automatically detects the entity type based on your account configuration and renders the appropriate form — IFSC-based for India or Airwallex-powered for international beneficiaries.
+
+### HTTPS Required
+
+The SDK requires `window.crypto.subtle` which is only available over **HTTPS** (or `localhost` for development). All modern browsers (Chrome 80+, Firefox 78+, Safari 14+, Edge 80+) are supported.
+
+## Troubleshooting
+
+### Container element not found
+
+Make sure the target `<div>` exists in the DOM before calling `init()`. In React, call it inside `useEffect`; in Vue, use `mounted()`.
+
+### Invalid API credentials
+
+Double-check that `apiKey` and `apiSecret` match the values in your MyGigsters dashboard. The secret is shown only once — if lost, generate a new one.
+
+### Airwallex form doesn't load
+
+Ensure your page is served over **HTTPS**. `crypto.subtle` is unavailable on plain HTTP. Also verify your account has Airwallex integration enabled.
+
+Need your API key? Head to the **Generate API Key** section of the MyGigsters Settings to generate one, then start embedding the Beneficiary Form on your website.
+
+## Quick reference
+
+**Script tag**
+
+```html
+<!-- 1. Add container -->
+<div id="beneficiary-form"></div>
+
+<!-- 2. Load SDK -->
+<script src="https://qa-payments.mygigsters.com.au/beneficiary-sdk-entry.js"></script>$2
+
+<!-- 3. Initialize -->
+<script>
+  MygigstersBeneficiary.init({
+    apiKey: "your_api_key",
+    apiSecret: "your_secret_key",
+    env: "demo",
+    containerId: "beneficiary-form",
+    mode: "light",
+    onSuccess: (data) => console.log("Success:", data),
+    onError: (err) => console.error("Error:", err),
+    onClose: () => console.log("Closed")
+  });
+</script>
+```
+
+**npm**
+
+```javascript
+// npm install @mygigsters/beneficiary-sdk$2
+
+import { MygigstersBeneficiarySDK }
+  from '@mygigsters/beneficiary-sdk';
+
+const sdk = new MygigstersBeneficiarySDK();
+await sdk.init({
+  apiKey:      "your_api_key",
+  apiSecret:   "your_api_secret",
+  env:         "demo",
+  containerId: "beneficiary-form",
+  mode:        "light",
+  onSuccess: (data) => {
+    console.log("Beneficiary added:", data);
+  },
+  onError: (err) => {
+    console.error("Error:", err.message);
+  },
+  onClose: () => {
+    console.log("Modal closed");
+  },
+});
+```

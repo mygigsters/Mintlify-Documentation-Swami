@@ -1,6 +1,34 @@
 ---
 title: "Idempotency"
-description: "TODO: migrate from the current docs."
+description: "Retry a request safely without creating a second payment, refund, or payout."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+Network failures happen. If a request times out, you can't tell whether it was processed. An idempotency key lets you retry without the risk of doing the same thing twice.
+
+## Send an idempotency key
+
+Add an `idempotency-Key` header to any `POST` or `PUT` request. The header is optional. Use a unique value for each operation, such as a UUID.
+
+```bash
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/create-intent/{customer_id} \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: 7b80a149-16ff-4dc8-8eb1-f1f4cfd0d577" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 150.00, "job_id": "job_8842", "auto_capture": false }'
+```
+
+## How it works
+
+- If you send the same key again within 24 hours, you get the saved response from the first request. The operation isn't run a second time.
+- If you reuse a key with a different request body, the request fails with `409` and the error code `idempotency_conflict`. Send the identical body to replay the original response, or use a new key for a new operation.
+
+## When to use it
+
+Send an idempotency key whenever you retry a request that changes state, such as creating a charge, refund, or payout. Use the same key for every retry of the same operation.
+
+For `429` and `5xx` responses, retry with exponential backoff. See [Errors and conventions](/api-reference/errors-and-conventions#handling-errors).
+
+<Note>
+  Idempotency keys are available on API version 1.2.
+</Note>

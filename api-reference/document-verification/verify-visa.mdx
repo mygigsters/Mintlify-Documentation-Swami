@@ -1,0 +1,103 @@
+---
+title: "Verify visa"
+description: "This endpoint verifies a visa against official records using the holder's personal details and passport information. It returns field-by-field match results for each submitted detail."
+api: "POST /verify/visa"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="birth_date" type="string" required>
+  Date of birth of the visa holder. Format: YYYY-MM-DD.
+</ParamField>
+
+<ParamField body="given_name" type="string" required>
+  The first name of the visa holder.
+</ParamField>
+
+<ParamField body="family_name" type="string" required>
+  The last name of the visa holder.
+</ParamField>
+
+<ParamField body="passport_number" type="string" required>
+  The passport number associated with the visa.
+</ParamField>
+
+<ParamField body="country_of_issue" type="string" required>
+  The 3-letter ISO country code where the passport was issued (e.g. "CAN", "GBR", "USA").
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | A message describing the response status (e.g. "Verification Result"). |
+| `data`object | object | The visa verification result data. |
+| ↳`documentResult` | object | Contains the overall verification result including ActivityId, OriginatingAgencyCode, VerificationRequestNumber, and VerificationResultCode ("Y" for verified, "N" for not verified). |
+| ↳`documentDetails` | object | Field-by-field match results. Each field (GivenName, FamilyName, BirthDate, PassportNumber, CountryOfIssue, etc.) will have a value of "Full Match", "Partial Match", or "No Match". |
+| ↳`status` | string | Overall verification status. "Y" indicates the visa is verified, "N" indicates it is not verified. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | The visa was successfully verified and the match results are returned. |
+| 400 | Bad Request. Missing or invalid parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/verify/visa \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "birth_date": "1992-06-18",
+  "given_name": "John",
+  "family_name": "Smith",
+  "passport_number": "DW126813",
+  "country_of_issue": "CAN"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Verification Result",
+  "data": {
+    "documentResult": {
+      "attributes": {
+        "i:type": "VisaResponse"
+      },
+      "ActivityId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+      "OriginatingAgencyCode": "XXXX",
+      "VerificationRequestNumber": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+      "VerificationResultCode": "Y"
+    },
+    "documentDetails": {
+      "BirthDate": "Full Match",
+      "BirthDay": "Full Match",
+      "BirthMonth": "Full Match",
+      "BirthYear": "Full Match",
+      "GivenName": "Full Match",
+      "FamilyName": "Full Match",
+      "PassportNumber": "Full Match",
+      "CountryOfIssue": "Full Match",
+      "RegistrationState": "Full Match"
+    },
+    "status": "Y"
+  }
+}
+```
+
+</ResponseExample>

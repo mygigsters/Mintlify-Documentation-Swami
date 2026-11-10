@@ -1,0 +1,91 @@
+---
+title: "Get single card"
+description: "This endpoint retrieves the card details associated with a single card ID for a specific customer ID. The customerId and cardId is passed as a path parameter in the URL."
+api: "GET /customer/cards/{customer_id}/{card_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="customer_id" type="string" required>
+  The unique identifier of the customer.
+</ParamField>
+
+<ParamField path="card_id" type="string" required>
+  The unique identifier of the card to retrieve.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+| Field | Type | Description |
+|---|---|---|
+| `message` | string | A message describing the response state. |
+| `card` | object | The card object details. |
+| ↳`card_id` | string | Unique identifier for the card. |
+| ↳`status` | string | Consent status (e.g. 'VERIFIED'). |
+| ↳`is_default` | boolean | Indicates if this is the default payment card. |
+| ↳`card` | object | Card detail properties. |
+| ↳`expiry_month` | string | Card expiry month (e.g. '04'). |
+| ↳`expiry_year` | string | Card expiry year (e.g. '2044'). |
+| ↳`last4` | string | Last 4 digits of the card (e.g. '1003'). |
+| ↳`brand` | string | Card brand (e.g. 'visa'). |
+| ↳`card_type` | string | Card type (e.g. 'CREDIT'). |
+| ↳`fingerprint` | string | Unique card fingerprint signature. |
+| ↳`issuer_name` | string | Name of the card issuer. |
+| ↳`is_commercial` | boolean | Indicates if the card is commercial. |
+| ↳`number_type` | string | Card number type (e.g. 'PAN'). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the card details are returned. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Customer or card not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/customer/cards/{customer_id}/{card_id} \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Card details found",
+  "card": {
+      "card_id": "cst_hkdmsjbmchaath106cp",
+      "status": "VERIFIED",
+      "card": {
+        "expiry_month": "04",
+        "expiry_year": "2044",
+        "name": "",
+        "bin": "40120003",
+        "last4": "1003",
+        "brand": "visa",
+        "issuer_country_code": "RU",
+        "card_type": "CREDIT",
+        "fingerprint": "bvM2E6aD50H35Unuisos6IYAEmw=",
+        "issuer_name": "VISA PRODUCTION SUPPORT CLIENT BID 1",
+        "is_commercial": false,
+        "number_type": "PAN"
+      }
+  }
+}
+```
+
+</ResponseExample>

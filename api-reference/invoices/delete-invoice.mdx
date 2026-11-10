@@ -1,0 +1,59 @@
+---
+title: "Delete invoice"
+description: "This endpoint deletes an invoice from the system by its unique ID."
+api: "DELETE /invoices/{invoice_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="invoice_id" type="string" required>
+  The unique identifier of the invoice to delete.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  Indicates the status code of the delete request.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message confirming deletion.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Invoice deleted successfully. |
+| 400 | Bad Request. Invalid format or parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified invoiceId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://qa-payments.mygigsters.com.au/api/v1/invoices/9d6f0541-c1b1-4f7f-9275-e2361f22d176 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Invoice deleted successfully"
+}
+```
+
+</ResponseExample>

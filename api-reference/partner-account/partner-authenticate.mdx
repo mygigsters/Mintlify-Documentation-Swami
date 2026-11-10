@@ -1,0 +1,83 @@
+---
+title: "Authenticate partner"
+description: "Authenticates a partner using their registered email and secret OAuth key. Returns a scoped JWT Bearer access token used to authorize subsequent partner operations such as rotating keys or onboarding connected accounts."
+api: "POST /authenticate-partner"
+authMethod: "none"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="email" type="string" required>
+  The registered email address for the partner account.
+</ParamField>
+
+<ParamField body="oauth_key" type="string" required>
+  The 64-character hexadecimal OAuth secret key assigned to the partner.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether partner login succeeded (`true`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Informational status message (e.g. `Login successful`).
+</ResponseField>
+
+<ResponseField name="data.accessToken" type="string">
+  A signed RS256 JWT access token carrying partner scopes and identity. Used in the `Authorization: Bearer <accessToken>` header for subsequent partner API requests.
+</ResponseField>
+
+<ResponseField name="data.tokenType" type="string">
+  Authentication scheme type, typically `Bearer`.
+</ResponseField>
+
+<ResponseField name="data.expiresIn" type="string">
+  Token lifespan duration (e.g. `5m` for 5 minutes).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Login successful. Access token returned. |
+| 400 | Bad Request. Missing email or oauthKey in request body. |
+| 401 | Unauthorized. Invalid partner credentials or inactive account. |
+| 500 | Internal Server Error. An unexpected error occurred on the server. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/authenticate-partner \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -d '{
+  "email": "partner@example.com",
+  "oauth_key": "ef1ff6dcaecf1c6710bd41e5e6f76548d8ba0e3fc7aa68bd3996cbfe85885e43"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "access_token": "eyJhbGciOiJSUzI1NiIs...",
+    "token_type": "Bearer",
+    "expires_in": "5m"
+  }
+}
+```
+
+</ResponseExample>

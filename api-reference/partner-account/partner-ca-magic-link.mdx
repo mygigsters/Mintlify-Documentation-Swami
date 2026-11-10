@@ -1,0 +1,68 @@
+---
+title: "Get KYC magic link"
+description: "Generates a secure, pre-authenticated hosted KYC onboarding link for a connected account. Partners can send this link to their clients or talent so they can complete identity checks, business verification, and banking details directly..."
+api: "GET /connected-account/{account_id}/magic-link"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="account_id" type="string" required>
+  The unique client UUID of the connected account (e.g. `4407c3ba-10c9-4822-9f51-c2c96692f8d7`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the magic link generation succeeded (`true`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message (e.g. `"Magic link generated successfully"`).
+</ResponseField>
+
+<ResponseField name="account_id" type="string">
+  The unique client UUID of the connected account.
+</ResponseField>
+
+<ResponseField name="kyc_magic_link" type="string">
+  A pre-authenticated, secure hosted onboarding URL for the connected account holder to complete their identity, business details, and KYC verification seamlessly.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Magic link generated successfully. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 404 | Not Found. Connected account with the provided myGigsterId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/connected-account/4407c3ba-10c9-4822-9f51-c2c96692f8d7/magic-link \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "X-API-Version: 1.2"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Magic link generated successfully",
+  "account_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+  "kyc_magic_link": "https://payments.mygigsters.com.au/client/kyc/eyJhbGciOiJSUzI1NiIs......"
+}
+```
+
+</ResponseExample>

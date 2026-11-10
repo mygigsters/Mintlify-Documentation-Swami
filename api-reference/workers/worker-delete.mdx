@@ -1,0 +1,46 @@
+---
+title: "Delete worker"
+description: "This endpoint allows you to delete an existing worker using their unique ID."
+api: "DELETE /worker/{worker_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="worker_id" type="string" required>
+  The unique identifier of the worker to delete.
+</ParamField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 204 | No Content. If the request is successful, the worker is deleted. |
+| 400 | Bad Request. Invalid UUID format. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified workerId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://qa-payments.mygigsters.com.au/api/v1/worker/140f5ad9-5411-4551-9b2a-ddca81511e14 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```text Response
+
+```
+
+</ResponseExample>

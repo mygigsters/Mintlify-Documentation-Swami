@@ -1,0 +1,104 @@
+---
+title: "Get wallet balances"
+description: "Returns the real-time multi-currency wallet balances (including available, pending, and reserved funds across AUD, SGD, USD, etc.) along with the associated settlement banking and clearing details."
+api: "GET /wallet"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version header (e.g. `1.2`).
+</ParamField>
+
+### Response Body
+
+The response for the Get Wallet Balances request is a JSON object with the following schema:
+
+| Field | Type | Description |
+|---|---|---|
+| `success` | boolean | Indicates whether the request was successful (e.g. `true`). |
+| `balances`array | array of objects | List of multi-currency wallet balance figures. |
+| ↳`available_amount` | number | Cleared funds available for immediate payout or transfer. |
+| ↳`currency` | string | Three-letter ISO currency code (e.g. `AUD`, `SGD`, `USD`). |
+| ↳`pending_amount` | number | Incoming funds currently awaiting settlement. |
+| ↳`reserved_amount` | number | Funds temporarily held or reserved for pending transactions / collateral. |
+| ↳`total_amount` | number | Total aggregate account balance (`available_amount + pending_amount + reserved_amount`). |
+| ↳`prepayment_amount` | number | Prepayment credit balance, if any. |
+| ↳`account_type` | string | Wallet classification type (e.g. `cash`). |
+| `account_object`object | object | Depository and settlement banking details associated with the primary account. |
+| ↳`account_name` | string | Registered bank account holder name. |
+| ↳`account_number` | string | Settlement bank account number. |
+| ↳`account_type` | string | Bank account classification (e.g. `Checking`, `Current`, `Cash`). |
+| ↳`account_provider` | string | Banking infrastructure provider (e.g. `AIRWALLEX`). |
+| ↳`bank_name` | string | Name of the depository institution (e.g. `Australia and New Zealand Banking Group Limited`). |
+| ↳`bank_address` | string | Depository institution physical branch address. |
+| ↳`bank_code` | string | SWIFT/BIC or bank identifier code (e.g. `CMFGUS33`). |
+| ↳`bsb` | string | Routing number or Australian BSB code (e.g. `013943`). |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Wallet balances and account details retrieved successfully. |
+| 401 | Unauthorized. Missing or invalid API key credentials. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/wallet \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "balances": [
+    {
+      "available_amount": 1596750.06,
+      "currency": "AUD",
+      "pending_amount": 0,
+      "reserved_amount": 33.35,
+      "total_amount": 1596783.41,
+      "prepayment_amount": 0,
+      "account_type": "cash"
+    },
+    {
+      "available_amount": 349394.08,
+      "currency": "SGD",
+      "pending_amount": 0,
+      "reserved_amount": 0,
+      "total_amount": 349394.08,
+      "prepayment_amount": 0,
+      "account_type": "cash"
+    },
+    {
+      "available_amount": 566186.86,
+      "currency": "USD",
+      "pending_amount": 0,
+      "reserved_amount": 0,
+      "total_amount": 566186.86,
+      "prepayment_amount": 0,
+      "account_type": "cash"
+    }
+  ],
+  "account_object": {
+    "account_name": "MEGAMIND CREATIONS AUSTRALIA PTY LTD",
+    "account_number": "613090253",
+    "account_type": "Current",
+    "account_provider": "AIRWALLEX",
+    "bank_name": "Australia and New Zealand Banking Group Limited",
+    "bank_address": "833 Collins Street, Melbourne, Victoria, 3000",
+    "bank_code": "N.A.",
+    "bsb": "013943"
+  }
+}
+```
+
+</ResponseExample>

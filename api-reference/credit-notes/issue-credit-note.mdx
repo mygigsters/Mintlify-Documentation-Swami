@@ -1,0 +1,100 @@
+---
+title: "Issue credit note"
+description: "Transitions a credit note from DRAFT to ISSUED. Assigns a formal credit note reference number, locks draft modification, and activates the credit balance for invoice allocation."
+api: "POST /credit-notes/{id}/issue"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+<ParamField header="Idempotency-Key" type="string">
+  A unique key so a retried request is not processed twice.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique ID (UUID) of the draft credit note to issue.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  HTTP status code (200).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message (e.g. `Credit note issued successfully`).
+</ResponseField>
+
+<ResponseField name="data.id" type="string">
+  Credit note UUID.
+</ResponseField>
+
+<ResponseField name="data.creditNoteNumber" type="string">
+  Official unique identifier generated on issuance (e.g. `CN-2026-0089`).
+</ResponseField>
+
+<ResponseField name="data.status" type="string">
+  Updated status, transitioned to `ISSUED`.
+</ResponseField>
+
+<ResponseField name="data.remainingAmount" type="number">
+  Total credit available to be allocated against invoices.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Credit note issued and finalized successfully. |
+| 400 | Bad Request. Credit note is not in DRAFT state. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Credit note ID not found. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/credit-notes/3/issue \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: cn-req-issue-003" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Credit note issued successfully",
+  "data": {
+    "id": 3,
+    "credit_note_number": "CN-0003",
+    "client_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "customer_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "invoice_id": "24de1b2b-6875-4cca-927d-2ad3c4d564b5",
+    "invoice_number": "INV-0023",
+    "payment_id": null,
+    "total_amount": "150.00",
+    "remaining_amount": "150.00",
+    "applied_amount": "0.00",
+    "currency": "AUD",
+    "status": "ISSUED",
+    "reason": "Customer discount / Service dispute",
+    "description": "150 AUD credit issued for overbilled service hours",
+    "date": "2026-09-17T10:58:30.694Z",
+    "deleted_at": null,
+    "created_at": "2026-09-17T10:45:02.000Z",
+    "updated_at": "2026-09-17T10:58:30.696Z"
+  }
+}
+```
+
+</ResponseExample>

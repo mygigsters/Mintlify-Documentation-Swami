@@ -1,6 +1,391 @@
 ---
-title: "Card sdk"
-description: "TODO: migrate from the current docs."
+title: "Embed the Card SDK"
+description: "Collect card details with hosted fields."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+The MyGigsters Card SDK lets you embed a fully-featured, single-step card saving form directly into any website. Customers can securely tokenize their payment card through a pre-built, styled UI powered by **Airwallex Payment Elements** — no backend card-handling required on your side.
+
+## Installation
+
+Choose the method that best fits your project — load via a `<script>` tag for plain HTML sites, or install via **npm** for React, Vue, Angular, or any bundler-based app.
+
+Add the SDK script tag to your HTML page. No build step required.
+
+```html
+<!-- Load SDK -->
+<script src="https://qa-payments.mygigsters.com.au/card-sdk-entry.js"></script>
+```
+
+### Full HTML Example
+
+```html
+<!DOCTYPE html>
+<html>
+<body>
+  <!-- Container for the card form -->
+  <div id="mygigsters-card"></div>
+
+  <!-- Load SDK -->
+  <script src="https://qa-payments.mygigsters.com.au/card-sdk-entry.js"></script>
+
+  <!-- Initialize -->
+  <script>
+    MygigstersCard.init({
+      token: "your_jwt_token",          // from GET /api/v1/client/me
+      customerId: "cus_hkdmcdjshhknkk4lc2t",
+      myGigsterId: "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+      containerId: "mygigsters-card",
+      env: "demo",              // "dev", "demo", or "prod"
+      mode: "dark",             // "light" or "dark"
+      onSuccess: (res) => console.log("Card saved:", res),
+      onError: (err) => console.error("Error:", err),
+      onClose: () => console.log("Closed")
+    });
+  </script>
+</body>
+</html>
+```
+
+### Production CDN URL
+
+Switch the script `src` to the production URL and set `env: "prod"` when going live:
+
+```html
+<script src="https://prod-payments.mygigsters.com.au/card-sdk-entry.js"></script>
+```
+
+## Get Client Info (API)
+
+Before initializing the Card SDK, you need your `myGigsterId` and the customer's `customerId`. Call the `GET /api/v1/client/me` endpoint using your API credentials (HTTP Basic Auth `uuid:randomPasswordShowOnce`) to retrieve your client profile and `myGigsterId`. To obtain the `customerId`, create a customer using the [Customer Create API](/api-reference/customers/customer-create) (`POST /api/v1/customer`).
+
+`GET /api/v1/client/me`
+
+### Request Headers
+
+```http
+Content-Type: application/json
+x-api-version: 1.2
+Authorization: Basic {base64_encoded_combination of uuid:randomPasswordShowOnce}
+```
+
+### cURL Request Example
+
+```bash
+curl --location 'https://qa-payments.mygigsters.com.au/api/v1/client/me' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-version: 1.2' \
+  --header 'Authorization: Basic MGI3YjFiMTctOTJhZC00Yjc4LWFhN2ItNjI2ODBhOWUzOGExOkt1aFNEa3NCVmFXQFNPQyhZQCFh'
+```
+
+### Example Response (200 OK)
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "data": {
+    "id": 1,
+    "myGigsterId": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "token": "eyJhbGciOiJSUzI1NiIs......",
+    "fullName": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "businessName": "Example Marketplace Pty Ltd",
+    "address": null,
+    "acn": "123456789",
+    "phone": "9876543210"
+  }
+}
+```
+
+### Response Fields for Card SDK
+
+| Field | Type | Description |
+|---|---|---|
+| `token` (required) | string | JWT Bearer token required by the SDK. Pass this as `token` to `sdk.init()`. |
+| `myGigsterId` (required) | string | Your unique client identifier in MyGigsters. Pass this as `myGigsterId` to `sdk.init()`. |
+| `fullName` | string | Client full name. |
+| `email` | string | Client registered email address. |
+| `businessName` | string | Registered business name. |
+| `acn` | string | Australian Company Number (if applicable). |
+| `phone` | string | Contact phone number. |
+
+## How It Works
+
+### 1. Add the SDK to Your Project
+
+Either include the `<script>` tag for CDN usage (exposes `window.MygigstersCard`), or install via `npm install @mygigsters/card-sdk` and import `MygigstersCardSDK` in your code.
+
+### 2. Create a Container Element
+
+Add an empty `<div>` with a unique `id` (e.g. `<div id="mygigsters-card"></div>`). The SDK mounts its Airwallex-powered UI inside this element using a closed Shadow DOM for full style isolation.
+
+### 3. Initialize with Token
+
+Call `GET /api/v1/client/me` on your backend/app using HTTP Basic Auth (`apiKey:apiSecret`) to retrieve your `token` and `myGigsterId`. Then call `.init(config)` passing `token`, `myGigsterId`, and `customerId` (from `POST /api/v1/customer`). The SDK initializes Airwallex and renders the single-step card details modal. API credentials are never passed to the SDK.
+
+### 4. Receive the Payment Consent ID
+
+On success, your `onSuccess` callback receives a `paymentConsentId`. Pass this to the MyGigsters backend when creating a charge — no raw card data ever touches your server.
+
+## Configuration Options
+
+Pass these options to `init()`:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `token` (required) | string | The JWT Bearer token obtained by calling `GET /api/v1/client/me` with Basic Auth credentials. |
+| `customerId` (required) | string | The MyGigsters customer ID for whom the card will be saved (returned when creating a customer via `POST /api/v1/customer`, e.g. `"cus_hkdmcdjshhknkk4lc2t"`). |
+| `myGigsterId` (required) | string | The unique identifier for the client account (retrieved via `GET /api/v1/client/me`). |
+| `containerId` (required) | string | The `id` of the DOM element where the form will be mounted. |
+| `env` (optional) | string | Environment: `"demo"` for QA or `"prod"` for live. Defaults to `"demo"`. |
+| `baseUrl` (optional) | string | Custom base URL override for self-hosted deployments. |
+| `mode` (optional) | string | UI theme — `"light"` or `"dark"`. Defaults to `"dark"`. |
+| `onSuccess` (optional) | function | Callback fired when the card is saved successfully. Receives a `CardSuccessResponse` with `paymentConsentId`, `customerId`, `myGigsterId`, and `timestamp`. |
+| `onError` (optional) | function | Callback fired on any error — authentication, network, or Airwallex element errors. |
+| `onClose` (optional) | function | Callback fired when the user closes the modal (×, backdrop click, or Escape key). |
+| `webhookUrl` (optional) | string | Optional URL. The SDK will POST the success payload to this endpoint after a card is saved. |
+| `onWebhook` (optional) | function | Optional JS callback for receiving the webhook payload in real-time. |
+
+## SDK Methods
+
+After initialization, you can control the card modal programmatically:
+
+| Method | Returns | Description |
+|---|---|---|
+| `init(config)` | Promise | Validates config, authenticates, initializes Airwallex, and renders the card modal. |
+| `show()` | void | Show the card modal. Throws if called before `init()`. |
+| `hide()` | void | Hide the card modal without destroying it. Airwallex element state is preserved. |
+| `destroy()` | void | Remove the modal from the DOM and clean up all resources. Call this on unmount. |
+| `setTheme(mode)` | void | Switch the UI theme at runtime. Pass `"light"` or `"dark"`. |
+| `getInstance()` (CDN only) | object | Returns the underlying SDK instance for advanced use via `MygigstersCard.getInstance()`. |
+
+## Success Response
+
+The `onSuccess` callback receives a `CardSuccessResponse` object:
+
+```javascript
+onSuccess: (res) => {
+  // res.paymentConsentId  — Airwallex payment consent identifier
+  //                         Pass this when creating a charge via the API
+  // res.customerId        — Customer ID associated with this consent
+  // res.myGigsterId       — MyGigster ID associated with this consent
+  // res.timestamp         — ISO-8601 timestamp of the save
+  // res.event             — 'card.saved'
+
+  console.log('Payment Consent ID:', res.paymentConsentId);
+  // Store this to charge the customer later via the Payment Intents API
+}
+```
+
+## Important Notes
+
+<Note>
+  **CDN vs npm — Global Name Difference:** When using the **CDN / script tag**, the global object is `MygigstersCard`. When using the **npm package**, import the named export `MygigstersCardSDK`. The API methods are identical for both.
+</Note>
+
+<Note>
+  **myGigsterId & customerId Requirements:** `myGigsterId` is required to associate the payment consent with the correct account in the MyGigsters system (retrieved via `GET /api/v1/client/me`). `customerId` is obtained when creating a customer via `POST /api/v1/customer`.
+</Note>
+
+## Environment URLs
+
+| Environment | SDK script URL and `env` value | Use for |
+|---|---|---|
+| Demo (QA) | Script: `https://qa-payments.mygigsters.com.au/card-sdk-entry.js`, env: `"demo"` | For testing and development. |
+| Production | Script: `https://prod-payments.mygigsters.com.au/card-sdk-entry.js`, env: `"prod"` | For live / production usage. |
+
+## Error Handling
+
+Wrap `init()` in a `try/catch` to handle initialization errors:
+
+```javascript
+try {
+  const sdk = new MygigstersCardSDK();
+  await sdk.init({
+    token:       'your_jwt_token',      // from GET /api/v1/client/me
+    customerId:  'cus_...',
+    myGigsterId: '4407c3ba-...',
+    containerId: 'mygigsters-card',
+    env:         'demo',
+  });
+} catch (err) {
+  // Common errors:
+  // "token is required. Call GET /api/v1/client/me first to get the token..."
+  // "customerId is required"
+  // "myGigsterId is required"
+  // "Container element with ID '...' not found"
+  console.error('SDK failed to initialize:', err.message);
+}
+```
+
+Runtime errors are surfaced via the `onError` callback and displayed inline in the modal.
+
+## TypeScript
+
+Type definitions are included at `dist/index.d.ts`:
+
+```javascript
+import { MygigstersCardSDK, MygigstersCardConfig } from '@mygigsters/card-sdk';
+
+const config: MygigstersCardConfig = {
+  token:       process.env.MYGIGSTERS_JWT_TOKEN!, // Bearer token from GET /client/me
+  customerId:  'cus_hkdmcdjshhknkk4lc2t',
+  myGigsterId: '4407c3ba-10c9-4822-9f51-c2c96692f8d7',
+  containerId: 'mygigsters-card',
+  env:         'prod',
+  mode:        'dark',
+  onSuccess: (res) => {
+    // res is fully typed as CardSuccessResponse
+    console.log('Consent ID:', res.paymentConsentId);
+  },
+};
+
+const sdk = new MygigstersCardSDK();
+await sdk.init(config);
+```
+
+## Direct API Card Capture (Custom UI)
+
+If you prefer to build a custom, bespoke card collection interface rather than using the pre-built Card SDK modal, you can embed Airwallex Elements directly and bind them using MyGigsters card tokenization endpoints:
+
+### 1. Generate Customer Client Secret
+
+Call `POST /api/v1/customer/client-secret` to generate an ephemeral Airwallex client secret for the customer.
+
+<Note>
+  **Key requirement:** Request body fields must use camelCase. Note that `accountId` must be your platform's `myGigsterId` (UUID), not the customer's ID.
+</Note>
+
+```bash
+curl --location 'https://qa-payments.mygigsters.com.au/api/v1/customer/client-secret' \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "customerId": "cus_hkdm99dbsh9iactpfvh",
+    "accountId": "f2c1d9d2-c50d-460e-9e07-a1c58fa025f7"
+  }'
+```
+
+### 2. Save Payment Consent
+
+Once Airwallex Elements tokenizes the card and returns a `payment_consent_id`, register it with MyGigsters by calling `POST /api/v1/customer/save-consent` so future charges and subscriptions can bill this card.
+
+```bash
+curl --location 'https://qa-payments.mygigsters.com.au/api/v1/customer/save-consent' \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "customerId": "cus_hkdm99dbsh9iactpfvh",
+    "paymentConsentId": "cst_hkdm99dbsh9iactpfvh"
+  }'
+```
+
+### Airwallex Elements Implementation Gotchas
+
+#### Element Name: expiry (Not cardExpiry)
+
+When mounting split card inputs (e.g., number, expiry, cvc separately), you must name the expiration element `expiry`. Specifying `cardExpiry` is unsupported and will fail to mount.
+
+#### No CSS Variables in Iframe Styles
+
+Airwallex elements are hosted inside secure sandboxed iframes. Because CSS variables (`var(--...)`) cannot pierce the iframe boundary, styles passed in the configuration object must use raw CSS color literals (such as `#111827`, `rgb(17, 24, 39)`, or standard font names).
+
+#### Tab Key Event Trapping
+
+The iframe elements intercept and manage the Tab key internally to cycle focus smoothly across card number, expiry, and CVC. Custom global keydown listeners attached on the host `window` will not receive keyboard events when focus is inside the card inputs.
+
+## Security & Notes
+
+### Shadow DOM Isolation
+
+The SDK renders inside a closed Shadow DOM — your page styles never conflict with the card form and host-page scripts cannot reach into the SDK's DOM.
+
+### Pre-fetched Token Authentication
+
+Client applications call `GET /api/v1/client/me` with Basic Auth (`apiKey:apiSecret`) to obtain a Bearer JWT token. The token is then passed to the SDK. API keys and secrets are never passed directly to or exposed within the SDK.
+
+### PCI-Compliant Card Tokenization
+
+Raw card data is handled exclusively by Airwallex's PCI-compliant payment elements. Your application only receives the `paymentConsentId` — never raw card numbers or CVVs.
+
+### HTTPS Required
+
+The SDK must be served over **HTTPS** (or `localhost` for development). Airwallex payment elements require a secure context. Supported browsers: Chrome 80+, Firefox 78+, Safari 14+, Edge 80+.
+
+## Troubleshooting
+
+### Container element not found
+
+Make sure the target `<div>` exists in the DOM before calling `init()`. In React, call it inside `useEffect`; in Vue, use `mounted()`.
+
+### Token is required error
+
+Ensure you have called `GET /api/v1/client/me` using your Basic Auth credentials (`apiKey:apiSecret`) to retrieve the `token` before initializing the SDK.
+
+### Airwallex card element fails to load
+
+Ensure your page is served over **HTTPS**. Also verify that your Airwallex account has card tokenization enabled, and that the `env` setting matches your account's environment.
+
+### Card modal appears behind other elements
+
+The modal is mounted on `<body>` with `z-index: 2147483647`. If another element has a higher stacking context, adjust accordingly.
+
+Need your API key? Head to the **Generate API Key** section of the MyGigsters Settings to generate one, then start embedding the Card SDK on your website.
+
+## Quick reference
+
+**Script tag**
+
+```html
+<!-- 1. Add container -->
+<div id="mygigsters-card"></div>
+
+<!-- 2. Load SDK -->
+<script src="https://qa-payments.mygigsters.com.au/card-sdk-entry.js"></script>$2
+
+<!-- 3. Initialize with token from GET /api/v1/client/me -->
+<script>
+  MygigstersCard.init({
+    token: "eyJhbGciOiJSUzI1Ni...", // Pre-fetched token from GET /api/v1/client/me$2
+    customerId: "cus_hkdmcdjshhknkk4lc2t",
+    myGigsterId: "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    containerId: "mygigsters-card",
+    env: "demo",
+    mode: "dark",
+    onSuccess: (res) => console.log("Saved:", res.paymentConsentId),
+    onError: (err) => console.error("Error:", err),
+    onClose: () => console.log("Closed")
+  });
+</script>
+```
+
+**npm**
+
+```javascript
+// npm install @mygigsters/card-sdk$2
+
+import { MygigstersCardSDK }
+  from '@mygigsters/card-sdk';
+
+const sdk = new MygigstersCardSDK();
+await sdk.init({
+  token:       "eyJhbGciOiJSUzI1Ni...", // Pre-fetched token from GET /api/v1/client/me$2
+  customerId:  "cus_hkdmcdjshhknkk4lc2t",
+  myGigsterId: "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+  containerId: "mygigsters-card",
+  env:         "demo",
+  mode:        "dark",
+  onSuccess: (res) => {
+    // res.paymentConsentId — use to charge the customer$2
+    console.log("Card saved:", res.paymentConsentId);
+  },
+  onError: (err) => {
+    console.error("Error:", err.message);
+  },
+  onClose: () => {
+    console.log("Modal closed");
+  },
+});
+```

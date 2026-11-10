@@ -1,0 +1,58 @@
+---
+title: "Simulate account status"
+description: "Sandbox development simulation endpoint that instantly transitions a newly provisioned connected account to active status (KYC activated). This enables platform partners to test end-to-end multi-currency wallet queries, ledger..."
+api: "POST /simulation/accounts/{account_id}/update_status"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="my_gigster_id" type="string" required>
+  The unique client UUID of the connected account to simulate (e.g. `b1ab5285-c510-4dcb-836e-278c6737dc3b`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the sandbox simulation succeeded (`true`).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message (e.g. `"KYC activated"`).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Account KYC status simulated and activated successfully. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 404 | Not Found. Connected account with the specified myGigsterId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/simulation/accounts/b1ab5285-c510-4dcb-836e-278c6737dc3b/update_status \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "X-API-Version: 1.2"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "KYC activated"
+}
+```
+
+</ResponseExample>

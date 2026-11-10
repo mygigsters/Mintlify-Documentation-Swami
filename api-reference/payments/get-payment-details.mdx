@@ -1,0 +1,75 @@
+---
+title: "Get payment details"
+description: "This endpoint is used to retrieve payment details for a customer using the payment intent ID."
+api: "POST /customer/payment/details"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="intent_id" type="string" required>
+  The ID of the payment intent for which details are being requested.
+</ParamField>
+
+### Response Body
+
+The response for the Get Payment Details request is a JSON object with the following schema:
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | The status of the response indicating success or failure. |
+| `message` | string | A message related to the response status. |
+| `data`object | object | The data object containing detailed payment information. |
+| ↳`total_amount` | string | The total amount of the payment formatted as a decimal string (e.g. `"1000.00"`). |
+| ↳`fee` | string | The fee structure label associated with the payment (e.g. `"3.5% + $0.30"`). |
+| ↳`fee_value` | string | The calculated fee amount returned as a string with the currency suffix (e.g. `"35.30 AUD"`). |
+| ↳`amount_received` | string | The net amount received after fees returned as a string with the currency suffix (e.g. `"964.70 AUD"`). |
+| ↳`payment_method` | string | The payment method brand and masked card number (e.g. `"Visa****1003"`). |
+| `response`object | object | The full underlying provider payment intent object containing raw processor details. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payment details are retrieved and returned in the response data object. |
+| 400 | Bad Request. Invalid or missing parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified payment intent was not found. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/payment/details \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "intent_id": "int_hkdmn5lcqh5eo1jfsg7"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Payment details fetched successfully",
+  "data": {
+    "total_amount": "1000.00",
+    "fee": "3.5% + $0.30",
+    "fee_value": "35.30 AUD",
+    "amount_received": "964.70 AUD",
+    "payment_method": "Visa****1003"
+  }
+}
+```
+
+</ResponseExample>

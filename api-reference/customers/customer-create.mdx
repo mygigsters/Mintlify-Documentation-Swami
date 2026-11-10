@@ -1,0 +1,114 @@
+---
+title: "Create customer"
+description: "This endpoint allows you to create a new customer."
+api: "POST /customer"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="first_name" type="string" required>
+  The first name of the customer.
+</ParamField>
+
+<ParamField body="last_name" type="string" required>
+  The last name of the customer.
+</ParamField>
+
+<ParamField body="abn" type="string">
+  The ABN (Australian Business Number) of the customer. Must be exactly 11 digits.
+</ParamField>
+
+<ParamField body="address" type="string">
+  The address of the customer.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  The email address of the customer.
+</ParamField>
+
+<ParamField body="phone" type="string" required>
+  The phone number of the customer.
+</ParamField>
+
+<ParamField body="type" type="integer">
+  The type of customer (e.g. `1` for Individual, `2` for Company). Defaults to `1` (INDIVIDUAL) if not provided.
+</ParamField>
+
+<ParamField body="gst_registered" type="boolean">
+  Indicates whether GST is registered for the customer.
+</ParamField>
+
+### Response Body
+
+The response is in JSON format and contains:
+
+<ResponseField name="status" type="number">
+  The HTTP status code of the response.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message description.
+</ResponseField>
+
+<ResponseField name="my_gigster_id" type="string">
+  Internal MyGigsters unique identifier for the customer (UUID format).
+</ResponseField>
+
+<ResponseField name="customer_id" type="string">
+  The unique identifier of the customer (prefixed with `cus_`).
+</ResponseField>
+
+<ResponseField name="save_card" type="string">
+  URL to capture payment consent and save card details securely.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 201 | Customer created successfully. |
+| 400 | Bad Request. Missing required parameters or invalid formatting. |
+| 401 | Unauthorized. Invalid or missing credentials. |
+| 409 | Conflict. A resource conflict occurred. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "first_name": "Jane",
+  "last_name": "Smith",
+  "abn": "12345678910",
+  "address": "123 Melbourne, NSW",
+  "email": "jane.smith@example.com",
+  "phone": "9888888888",
+  "type": 1,
+  "gst_registered": true
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "status": 201,
+  "message": "Customer created successfully",
+  "my_gigster_id": "3e36d8a3-e013-4b0d-a72d-9b03c4ccb02e",
+  "customer_id": "cus_hkdm99dbsh9iactpfvh",
+  "save_card": "https://app-qa-payments.mygigsters.com.au/save-card/cus_hkdm99dbsh9iactpfvh/f2c1d9d2-c50d-460e-9e07-a1c58fa025f7"
+}
+```
+
+</ResponseExample>

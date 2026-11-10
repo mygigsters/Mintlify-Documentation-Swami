@@ -1,0 +1,45 @@
+---
+title: "Delete customer"
+description: "This endpoint allows programmatically deleting a specific customer by ID."
+api: "DELETE /customer/{customer_id}"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="customer_id" type="string" required>
+  The unique identifier of the customer to delete.
+</ParamField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 204 | No Content. The customer was successfully deleted. |
+| 401 | Unauthorized. Missing or invalid authentication token. |
+| 404 | Not Found. The specified customerId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://qa-payments.mygigsters.com.au/api/v1/customer/cus_hkdmrtdc7hbdmb7bea1 \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```text Response
+
+```
+
+</ResponseExample>

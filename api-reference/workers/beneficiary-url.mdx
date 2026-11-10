@@ -1,0 +1,72 @@
+---
+title: "Beneficiary URL"
+description: "This endpoint allows you to generate a unique onboarding/form URL for a beneficiary/worker."
+api: "POST /beneficiary-url"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="worker_id" type="string" required>
+  The unique identifier of the worker.
+</ParamField>
+
+<ParamField body="return_url" type="string" required>
+  The URL to which the user will be redirected after completing the form.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  Indicates the status code of the request.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  A message related to the status of the request.
+</ResponseField>
+
+<ResponseField name="beneficiaryUrl" type="string">
+  The URL to the beneficiary form.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the beneficiary URL is generated and returned. |
+| 400 | Bad Request. Invalid request payload or missing parameters. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. The specified workerId does not exist. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/beneficiary-url \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "worker_id": "afd629c6-8e3d-4701-b168-dec8608130a5",
+  "return_url": "https://example.com"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Beneficiary url generated successfully",
+  "beneficiary_url": "https://payments.mygigsters.com.au/api/add-beneficiary/identifier?returnUrl=https://example.com"
+}
+```
+
+</ResponseExample>

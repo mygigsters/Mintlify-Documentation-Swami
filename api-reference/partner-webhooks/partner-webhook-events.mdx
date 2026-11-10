@@ -1,0 +1,135 @@
+---
+title: "Get webhook events"
+description: "Retrieves the catalog of all supported webhook events that your application can subscribe to, including event codes, IDs, and payload structures."
+api: "GET /partner/webhook/events"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="payout" type="array of objects">
+  List of supported webhook event definitions available in the payout category.
+</ResponseField>
+
+<ResponseField name="payout[].id" type="number">
+  Unique numeric identifier for the event definition (e.g. `13`, `14`, `15`). Use these IDs when subscribing.
+</ResponseField>
+
+<ResponseField name="payout[].eventName" type="string">
+  Human-readable label of the event (e.g. `Batch submitted`, `Batch items paid successfully`).
+</ResponseField>
+
+<ResponseField name="payout[].code" type="string">
+  Dot-notated system code for the event (e.g. `batch_payout.created`, `batch_payout.completed`, `batch_payout.partial`).
+</ResponseField>
+
+<ResponseField name="payout[].description" type="string">
+  Detailed summary describing the conditions under which this webhook event is triggered.
+</ResponseField>
+
+<ResponseField name="payout[].type" type="string">
+  Event domain category (e.g. `payout`).
+</ResponseField>
+
+<ResponseField name="payout[].payload" type="object">
+  Template of the JSON payload dispatched to the partner webhook URL when this event occurs.
+</ResponseField>
+
+<ResponseField name="payout[].payload.code" type="string">
+  Event code matching the trigger.
+</ResponseField>
+
+<ResponseField name="payout[].payload.data" type="object">
+  Payload data object containing `batchId`, `platformId`, `totalPayouts`, and `failedPayouts` (if applicable).
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Webhook events catalog retrieved successfully. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://qa-payments.mygigsters.com.au/api/v1/partner/webhook/events \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "payout": [
+    {
+      "id": 13,
+      "event_name": "Batch submitted",
+      "code": "batch_payout.created",
+      "description": "Batch submitted",
+      "type": "payout",
+      "payload": {
+        "code": "batch_payout.created",
+        "data": {
+          "batch_id": "bat_5455f71b596aa119041abe3d4aa3620b",
+          "platform_id": "8365ea88-2946-4877-abe1-e02a1015288d",
+          "total_payouts": 10
+        },
+        "type": "payout",
+        "event_name": "batch_payout.created",
+        "description": "Batch submitted"
+      }
+    },
+    {
+      "id": 14,
+      "event_name": "Batch items paid successfully",
+      "code": "batch_payout.completed",
+      "description": "Batch items paid successfully",
+      "type": "payout",
+      "payload": {
+        "code": "batch_payout.completed",
+        "data": {
+          "batch_id": "bat_5455f71b596aa119041abe3d4aa3620b",
+          "platform_id": "8365ea88-2946-4877-abe1-e02a1015288d",
+          "total_payouts": 10
+        },
+        "type": "payout",
+        "event_name": "batch_payout.completed",
+        "description": "Batch items paid successfully"
+      }
+    },
+    {
+      "id": 15,
+      "event_name": "Some batch items failed",
+      "code": "batch_payout.partial",
+      "description": "Some batch items failed",
+      "type": "payout",
+      "payload": {
+        "code": "batch_payout.partial",
+        "data": {
+          "batch_id": "bat_5455f71b596aa119041abe3d4aa3620b",
+          "platform_id": "8365ea88-2946-4877-abe1-e02a1015288d",
+          "total_payouts": 10,
+          "failed_payouts": 5
+        },
+        "type": "payout",
+        "event_name": "batch_payout.partial",
+        "description": "Some batch items failed"
+      }
+    }
+  ]
+}
+```
+
+</ResponseExample>

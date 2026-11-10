@@ -1,0 +1,116 @@
+---
+title: "Update draft credit note"
+description: "Modifies the details of an existing unissued draft credit note. Once a credit note is ISSUED, it can no longer be edited via this endpoint."
+api: "PUT /credit-notes/{id}/draft"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+<ParamField header="Idempotency-Key" type="string">
+  A unique key so a retried request is not processed twice.
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique ID (UUID) of the draft credit note to update.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="amount" type="number" required>
+  Updated credit amount. Must be greater than 0.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  Currency code (e.g. `AUD`).
+</ParamField>
+
+<ParamField body="reason" type="string" required>
+  Updated reason for issuing the credit.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Updated memo or internal accounting remarks.
+</ParamField>
+
+<ParamField body="invoice_id" type="string">
+  Updated target invoice UUID, if reassigning to a different invoice.
+</ParamField>
+
+### Response Body
+
+<ResponseField name="status" type="number">
+  HTTP status code (200).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message describing the update.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated draft credit note entity.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Draft credit note updated successfully. |
+| 400 | Bad Request. Validation failure or credit note is already issued. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 404 | Not Found. Draft credit note not found. |
+| 500 | Internal server error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT https://qa-payments.mygigsters.com.au/api/v1/credit-notes/3/draft \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: cn-req-edit-002" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "amount": 150,
+  "currency": "AUD",
+  "reason": "Customer discount / Service dispute",
+  "description": "150 AUD credit issued for overbilled service hours"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "message": "Draft credit note updated successfully",
+  "data": {
+    "id": 3,
+    "credit_note_number": "CN-0003",
+    "client_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "customer_id": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "invoice_id": "24de1b2b-6875-4cca-927d-2ad3c4d564b5",
+    "invoice_number": "INV-0023",
+    "payment_id": null,
+    "total_amount": "150.00",
+    "remaining_amount": "150.00",
+    "applied_amount": "0.00",
+    "currency": "AUD",
+    "status": "DRAFT",
+    "reason": "Customer discount / Service dispute",
+    "description": "150 AUD credit issued for overbilled service hours",
+    "date": "2026-09-17T10:45:02.000Z",
+    "deleted_at": null,
+    "created_at": "2026-09-17T10:45:02.000Z",
+    "updated_at": "2026-09-17T10:52:03.876Z"
+  }
+}
+```
+
+</ResponseExample>

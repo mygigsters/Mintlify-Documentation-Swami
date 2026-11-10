@@ -1,0 +1,129 @@
+---
+title: "Talent payouts"
+description: "This endpoint processes a payout to a talent (worker) using their bank details."
+api: "POST /payout-talent"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Headers
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique UUID string used to prevent duplicate operations.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="full_name" type="string" required>
+  Full name of the worker (beneficiary).
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Email address of the worker (beneficiary).
+</ParamField>
+
+<ParamField body="phone" type="string" required>
+  Phone number of the worker (beneficiary).
+</ParamField>
+
+<ParamField body="reference" type="string" required>
+  Unique reference for the payout (example: job reference).
+</ParamField>
+
+<ParamField body="amount" type="number" required>
+  Amount to be paid to the worker in decimal dollars (e.g. 109.00). Do not pass cents.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  Currency of the amount to be paid to the worker.
+</ParamField>
+
+<ParamField body="bsb_number" type="string" required>
+  The BSB number of the worker's bank.
+</ParamField>
+
+<ParamField body="account_number" type="string" required>
+  The bank account number of the worker.
+</ParamField>
+
+<ParamField body="account_name" type="string" required>
+  The name associated with the bank account.
+</ParamField>
+
+<ParamField body="mode" type="string">
+  The payout mode defaults to `BANK_TRANSFER` for Australia and `IMPS` for India.AustraliaNPPBANK_TRANSFERIndiaIMPSNEFTRTGSUPIEnsure that the selected payout mode is supported in the recipient's country.
+</ParamField>
+
+### Response Body
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | number | Status code of the request. 200 indicates success. |
+| `message` | string | Summary message of the payout status. |
+| `payout_result`object | object | Contains payout processing result. |
+| ↳`message` | string | Summary message of the payout process. |
+| ↳`transfer_results`array | array | List of transfer results for payouts. |
+| ↳`amount` | number | Amount transferred in each payout transaction. |
+| ↳`currency` | string | Currency of the amount transferred in each payout transaction. |
+| ↳`transfer_id` | string | Unique ID for the processed payout transfer. |
+| ↳`message` | string | Indicates if the payout was successful. |
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Payout processed successfully. |
+| 400 | Bad Request. Invalid parameters or invalid amount format. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 409 | Conflict. Duplicate idempotency key with mismatching parameters. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/payout-talent \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: a3b0f5a1-7c22-4a60-b66a-12885fb73812" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "full_name": "Jane Deshwal",
+  "email": "jane.smith@example.com",
+  "phone": "9876543210",
+  "reference": "JOB-9E7963DB",
+  "amount": 109,
+  "currency": "AUD",
+  "bsb_number": "083064",
+  "account_number": "123456789",
+  "account_name": "Jane Deshwal",
+  "mode": "BANK_TRANSFER"
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Payout processed successfully",
+  "payout_result": {
+    "message": "Payout process completed.",
+    "transfer_results": [
+      {
+        "amount": 109.00,
+        "currency": "AUD",
+        "transfer_id": "ad24faba-e360-4baf-8a93-2fe07d570a4c",
+        "message": "Payout success"
+      }
+    ]
+  }
+}
+```
+
+</ResponseExample>

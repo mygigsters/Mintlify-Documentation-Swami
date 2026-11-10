@@ -21,12 +21,12 @@ flowchart LR
 
 <Steps>
   <Step title="Make sure the customer has a default card">
-    When you retrieve a customer, the response includes a `save_card` link where the customer can securely save a card. Check whether they're ready to be charged with Default Card Status.
+    When you retrieve a customer, the response includes a `save_card` link where the customer can securely save a card. Check whether they're ready to be charged with [Default card status](/api-reference/cards/default-card-status).
 
-    {/* TODO: link "Default Card Status" to its API reference page once the OpenAPI spec is added. */}
+    To collect the card inside your own page instead, use the [Card SDK](/sdks/card-sdk).
   </Step>
   <Step title="Create a payment intent">
-    An intent represents your intention to collect an amount from the customer for a job.
+    An intent represents your intention to collect an amount from the customer for a job. See [Create intent](/api-reference/payment-intents/create-intent).
 
     Set `auto_capture` to `true` to charge immediately on confirmation, or `false` to place a hold and capture later, for example after the job completes.
 
@@ -42,19 +42,35 @@ flowchart LR
   <Step title="Confirm the intent">
     Confirming attempts payment against the customer's default card.
 
-    {/* TODO: paste the Confirm Intent request and response from the API reference. */}
+    ```bash cURL
+    curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/confirm-intent/{customer_id} \
+      -u "YOUR_UUID:YOUR_SECRET" \
+      -H "idempotency-Key: 7b80a149-16ff-4dc8-8eb1-f1f4cfd0d577" \
+      -H "X-API-Version: 1.2" \
+      -H "Content-Type: application/json" \
+      -d '{ "intent_id": "int_hkdmzwzw6h6nmtxbe2u", "auto_capture": false }'
+    ```
+
+    See [Confirm intent](/api-reference/payment-intents/confirm-intent).
   </Step>
   <Step title="Capture, if not auto-captured">
     When you're ready to take the funds, capture the intent for the full or a partial amount.
 
-    If the job falls through, cancel with Cancel Intent. Check the state at any time with Retrieve Intent.
+    ```bash cURL
+    curl -X POST https://qa-payments.mygigsters.com.au/api/v1/customer/capture-intent \
+      -u "YOUR_UUID:YOUR_SECRET" \
+      -H "idempotency-Key: 7b80a149-16ff-4dc8-8eb1-f1f4cfd0d578" \
+      -H "X-API-Version: 1.2" \
+      -H "Content-Type: application/json" \
+      -d '{ "amount": 250, "currency": "AUD", "intent_id": "int_hkdmzwzw6h6nmtxbe2u" }'
+    ```
 
-    {/* TODO: paste the Capture Intent request and response from the API reference. */}
+    If the job falls through, cancel with [Cancel intent](/api-reference/payment-intents/cancel-intent). Check the state at any time with [Retrieve intent](/api-reference/payment-intents/retrieve-intent).
   </Step>
 </Steps>
 
 <Tip>
-  If you don't need the hold and capture pattern, Create Charge creates and processes the payment in a single request.
+  If you don't need the hold and capture pattern, [Create charge](/api-reference/payment-intents/create-charge) creates and processes the payment in a single request.
 </Tip>
 
 ## Next steps

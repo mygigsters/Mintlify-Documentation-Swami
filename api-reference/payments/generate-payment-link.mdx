@@ -1,0 +1,119 @@
+---
+title: "Generate payment link"
+description: "This endpoint allows you to create a payment link. (currently only supports AUD currency)."
+api: "POST /create/payment-link"
+---
+
+### Headers
+
+<ParamField header="X-API-Version" type="string" default="1.2" required>
+  The API version to use. Supported versions are `1.1` and `1.2`.
+</ParamField>
+
+### Headers
+
+<ParamField header="idempotency-key" type="string" required>
+  A unique UUID string used to prevent duplicate operations.
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="amount" type="number" required>
+  The amount for the payment link in decimal dollars (e.g. to charge $250.00 AUD, pass 250.00). Do not pass cents.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  The currency of the payment.
+</ParamField>
+
+<ParamField body="description" type="string" required>
+  Description of the payment link.
+</ParamField>
+
+<ParamField body="expires_at" type="string" required>
+  Expiry date and time for the payment link, must be in future.
+</ParamField>
+
+<ParamField body="reference" type="string" required>
+  Reference for the payment link.
+</ParamField>
+
+<ParamField body="title" type="string" required>
+  Title of the payment link.
+</ParamField>
+
+<ParamField body="reusable" type="boolean">
+  If true, the payment link can be reused for multiple payments. Defaults to false.
+</ParamField>
+
+### Response Body
+
+The response for the Generate Payment Link request is a JSON object with the following schema:
+
+<ResponseField name="message" type="string">
+  Provides information about the payment link generation process.
+</ResponseField>
+
+<ResponseField name="id" type="string">
+  The unique identifier for the generated payment link.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  The URL of the generated payment link.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | If the request is successful, the payment link is generated and the response includes the link details and URL. |
+| 400 | Bad Request. Invalid parameters or invalid amount format. |
+| 401 | Unauthorized. Missing or invalid credentials. |
+| 409 | Conflict. Duplicate idempotency key with mismatching parameters. |
+| 500 | Internal Server Error. |
+
+### Test Card Numbers
+
+| Pan | Brand | Type | Country | Amount | Code | Description | Internal Code | Message |
+|---|---|---|---|---|---|---|---|---|
+| 4035 5010 0000 0008 | Visa | Debit | US | Any | - | - | - | Successful Payment |
+| 2223 0000 4841 0010 | Mastercard | Credit | US | Any | - | - | - | Successful Payment |
+| 5354 5631 3425 7854 | Mastercard | Debit | US | Any | - | - | - | Successful Payment |
+| 4012 0003 0000 1003 | Visa | Credit | RU | 80.59 | 59 | Suspected Fraud | `issuer_declined` | The issuer declined this transaction. |
+| 2223 0000 1018 1375 | Mastercard | Debit | US | 80.05 | 05 | Do not Honor | `issuer_declined` | The issuer declined this transaction. |
+| 2223 0000 1018 1375 | Mastercard | Debit | US | 80.51 | 51 | Insufficient Funds | `issuer_declined` | The issuer declined this transaction. |
+| 4646 4646 4646 4644 | Visa | Credit | US | Any | N/A | Risk Check Failed | `risk_declined` | Declined by fraud risk engine |
+| 1111 1111 1111 1111 | Invalid | Any | N/A | Any | - | - | `validation_error` | The card number is invalid. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/create/payment-link \
+  -u "YOUR_UUID:YOUR_SECRET" \
+  -H "idempotency-Key: e3b0c442-98fc-1c14-9bd4-14f234895678" \
+  -H "X-API-Version: 1.2" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "amount": 250,
+  "currency": "AUD",
+  "description": "Test transaction fee",
+  "expires_at": "2025-03-20T16:00:00Z",
+  "reference": "0007",
+  "title": "INV-0007",
+  "reusable": false
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "message": "Payment link generated",
+  "id": "e3299546-884b-4482-a6e5-61171a61d429",
+  "url": "https://pay.airwallex.com/sgh5k535cz9m"
+}
+```
+
+</ResponseExample>

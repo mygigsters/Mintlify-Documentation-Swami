@@ -1,0 +1,90 @@
+---
+title: "Subscribe webhook events"
+description: "Registers a new webhook destination URL with specified event subscriptions and generates a secure HMAC signing secret key for payload verification."
+api: "POST /partner/webhooks/subscribe"
+authMethod: "bearer"
+---
+
+### Headers
+
+<ParamField header="x-api-version" type="string" required>
+  Target API version (e.g. `1.2`).
+</ParamField>
+
+### Request Body Parameters
+
+<ParamField body="url" type="string" required>
+  Publicly accessible HTTPS destination URL where webhook event payloads will be delivered (e.g. `https://example.com/webhook`).
+</ParamField>
+
+<ParamField body="events" type="array of numbers" required>
+  Array of numeric event IDs to subscribe to (e.g. `[13, 14, 15]` obtained from the **Get Webhook Events** endpoint).
+</ParamField>
+
+### Response Body
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the webhook subscription was created successfully (`true`).
+</ResponseField>
+
+<ResponseField name="id" type="number">
+  Unique identifier assigned to this webhook subscription.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  The registered HTTPS callback endpoint URL.
+</ResponseField>
+
+<ResponseField name="secretKey" type="string">
+  Cryptographic secret key used to compute and verify the HMAC signature of incoming webhook delivery payloads. Store securely.
+</ResponseField>
+
+<ResponseField name="eventIds" type="array of numbers">
+  List of event IDs that are subscribed to this webhook endpoint.
+</ResponseField>
+
+### Response Codes
+
+| Code | Description |
+|---|---|
+| 200 | Webhook subscription registered successfully. |
+| 400 | Bad Request. Invalid destination URL or event IDs. |
+| 401 | Unauthorized. Missing, expired, or invalid partner Bearer token. |
+| 500 | Internal Server Error. |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://qa-payments.mygigsters.com.au/api/v1/partner/webhooks/subscribe \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1.2" \
+  -H "Authorization: Bearer <accessToken>" \
+  -d '{
+  "url": "https://example.com/webhook",
+  "events": [
+    13,
+    14,
+    15
+  ]
+}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "success": true,
+  "id": 2,
+  "url": "https://example.com/webhook",
+  "secret_key": "LptaMacK*9o$HZEAkY0H",
+  "event_ids": [
+    13,
+    14,
+    15
+  ]
+}
+```
+
+</ResponseExample>

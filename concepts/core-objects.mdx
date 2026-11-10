@@ -1,6 +1,20 @@
 ---
-title: "Core objects"
-description: "TODO: migrate from the current docs."
+title: "Core objects and relationships"
+description: "How customers, cards, intents, workers, and payouts relate."
 ---
 
-<Note>This page is a placeholder. Migrate the matching section from the current documentation.</Note>
+The API is organised around a small set of objects. Understanding how they relate makes every endpoint predictable.
+
+| Object | What it represents | Key endpoints |
+|---|---|---|
+| `Customer` | A person or business that pays you. Owns saved cards and a default card. | [Create](/api-reference/customers/customer-create),[Retrieve](/api-reference/customers/customer-details),[Update](/api-reference/customers/customer-update),[Delete](/api-reference/customers/customer-delete) |
+| `Card` | A payment method saved against a customer. One card is the default used by intents and subscriptions. | [List](/api-reference/cards/get-all-cards),[Set default](/api-reference/cards/set-default-card),[Remove](/api-reference/cards/remove-card) |
+| `Payment Intent` | An attempt to collect an amount from a customer for a job. Supports hold-and-capture. | [Create](/api-reference/payment-intents/create-intent),[Confirm](/api-reference/payment-intents/confirm-intent),[Capture](/api-reference/payment-intents/capture-intent) |
+| `Payment Link` | A hosted payment page for a one-off amount (AUD only). Produces an intent when paid. | [Generate](/api-reference/payments/generate-payment-link),[Status](/api-reference/payments/get-payment-link-status) |
+| `Refund` | Money returned to a customer against a payment intent. | [Create](/api-reference/payments/create-refund),[Status](/api-reference/payments/refund-status) |
+| `Worker` | A gig worker (talent) you pay. Owns bank details (AU BSB or India IFSC/UPI) and maps your platform ID to an Airwallex account. | [Create](/api-reference/workers/worker-create),[Retrieve](/api-reference/workers/worker-details),[Update](/api-reference/workers/worker-update),[Bank details](/api-reference/workers/add-bank-details) |
+| `Payout` | A bank transfer to a worker (or one-off talent). Tracked by transferId. | [Payout](/api-reference/payouts/payout-worker),[Status](/api-reference/payouts/payout-status),[Talent payout](/api-reference/payouts/talent-payouts) |
+| `Invoice / Receipt` | PDF documents generated and emailed for payments and payouts. | [Create invoice](/api-reference/invoices/create-send-invoice),[Receipts](/api-reference/invoices/payment-receipt) |
+| `Subscription` | A recurring charge against a customer’s default card. | [Create](/api-reference/subscriptions/create-subscription),[Pause](/api-reference/subscriptions/pause-subscription),[Cancel](/api-reference/subscriptions/cancel-subscription) |
+
+Money flows in from Customers (intents, links, subscriptions) and out to Workers (payouts). Webhooks report movement on both sides.
