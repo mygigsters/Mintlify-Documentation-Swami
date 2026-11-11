@@ -1,0 +1,42 @@
+---
+title: "Onboard an employer"
+description: "Create the employer of record before you submit super contributions, through the API or with ready-made screens."
+---
+
+Every super contribution is debited from an employer. Before you can submit contributions, onboard that employer with their company details, a contact, and the bank account to debit.
+
+## Choose how to onboard
+
+<Columns cols={2}>
+  <Card title="Use the API" icon="code" href="/super/api-reference/employers/onboard-employer">
+    Create the employer from your own backend. Use this when you already hold the employer's details or want your own screens.
+  </Card>
+  <Card title="Use ready-made screens" icon="window-maximize" href="/super/components/employer-onboarding">
+    Send the employer a magic link. They complete a five-step form embedded in your product.
+  </Card>
+</Columns>
+
+## Onboard with the API
+
+<Steps>
+  <Step title="Create the employer">
+    Call [Onboard employer](/super/api-reference/employers/onboard-employer) with the company details, the contact person, and the payment account. The direct debit agreement must be accepted to complete onboarding.
+  </Step>
+  <Step title="Confirm it was created">
+    Fetch the record with [Get employer by ID](/super/api-reference/employers/get-employer-by-id), or list every employer on your account with [List client employers](/super/api-reference/employers/list-client-employers).
+  </Step>
+  <Step title="Keep it up to date">
+    Change details later with [Update employer](/super/api-reference/employers/update-employer).
+  </Step>
+</Steps>
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Add employees" icon="user-plus" href="/super/guides/add-employees">
+    Register the freelancers you'll pay super for.
+  </Card>
+  <Card title="Submit a contribution" icon="paper-plane" href="/super/api-reference/contributions/submit-contribution">
+    Pay super once the employer and employees are set up.
+  </Card>
+</Columns>

@@ -1,0 +1,59 @@
+---
+title: "Freelancer onboarding screens"
+sidebarTitle: "Freelancer onboarding"
+description: "The three-step form a freelancer completes after opening their magic link, including the ATO super fund lookup."
+---
+
+When you invite a freelancer, they receive a magic link. Opening it starts a three-step form. You don't build any of these screens.
+
+<Note>
+  Prefer to create employees from your own backend? See [Add employees](/super/guides/add-employees).
+</Note>
+
+<Steps>
+  <Step title="Personal details">
+    | Field | Notes |
+    |---|---|
+    | Email | Pre-filled and locked if sent by invite |
+    | First name | Required |
+    | Last name | Required |
+    | Gender | Male, Female, Other, Prefer not to say |
+    | Date of birth | DD/MM/YYYY. Used for the ATO lookup in the next step |
+    | Mobile phone | Australian format (04xx xxx xxx) |
+    | Address | Google Maps autocomplete. The freelancer must select from the suggestions |
+    | ABN | 11 digits, formatted as XX XXX XXX XXX |
+    | Tax file number (TFN) | Masked input |
+  </Step>
+  <Step title="Super fund selection">
+    The form looks up any existing fund with the ATO, then shows the freelancer what it found.
+
+    | ATO response | What the freelancer sees |
+    |---|---|
+    | One fund found | The fund is selected automatically. The freelancer confirms and can enter a member number. |
+    | Multiple funds found | The freelancer sees all matched funds and chooses one. |
+    | No fund found | The freelancer searches for their fund by name, ABN, or USI. |
+    | Fund conflicts with one you pre-loaded | A conflict banner appears. The freelancer chooses between the ATO result and the fund you provided. |
+  </Step>
+  <Step title="Review and submit">
+    A read-only summary. The freelancer can go back and edit any section before submitting.
+  </Step>
+</Steps>
+
+## About the ATO fund lookup
+
+Since November 2021, when an employee starts a new job and doesn't choose a fund, the employer must check for an existing ("stapled") fund before opening a default one. This stops people collecting multiple super accounts. The form runs this check for you after the first step.
+
+<Note>
+  If you use the Super API to make contributions, the fund selected here is the one used to route payments, so contributions go to the right fund.
+</Note>
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Employer onboarding" icon="building" href="/super/components/employer-onboarding">
+    See the form employers complete.
+  </Card>
+  <Card title="Install and embed" icon="code" href="/super/components/install">
+    Add the components to your app.
+  </Card>
+</Columns>

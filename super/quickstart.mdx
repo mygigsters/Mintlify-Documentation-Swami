@@ -5,6 +5,10 @@ description: "Go from an API key to a submitted super contribution in six steps.
 
 This walkthrough takes you through a complete super integration in the demo environment, from creating an API key to tracking a contribution.
 
+<Tip>
+  Don't want to build onboarding screens? Steps 3 and 4 can be done with [ready-made screens](/super/components/overview) instead.
+</Tip>
+
 <Steps>
   <Step title="Create an API key">
     Sign in with a one-time passcode and create a key pair. See [Authentication](/super/authentication).
@@ -143,10 +147,10 @@ This walkthrough takes you through a complete super integration in the demo envi
     </CodeGroup>
   </Step>
   <Step title="Onboard an employer">
-    Create the employer of record with [Onboard employer](/super/api-reference/employers/onboard-employer). This sets up the company details, the contact, and the bank account contributions are debited from. The direct debit agreement must be accepted to complete onboarding.
+    Create the employer of record with [Onboard employer](/super/api-reference/employers/onboard-employer). This sets up the company details, the contact, and the bank account contributions are debited from. The direct debit agreement must be accepted to complete onboarding. See [Onboard an employer](/super/guides/onboard-an-employer).
   </Step>
   <Step title="Register your freelancers">
-    Add each freelancer with [Create employee](/super/api-reference/employees/create-employee). To pre-fill their fund details, search with [SuperSelector](/super/api-reference/funds/superselector), or let them pick from [active funds](/super/api-reference/funds/get-active-superannuation-funds).
+    Add each freelancer with [Create employee](/super/api-reference/employees/create-employee). To pre-fill their fund details, search with [SuperSelector](/super/api-reference/funds/superselector), or let them pick from [active funds](/super/api-reference/funds/get-active-superannuation-funds). See [Add employees](/super/guides/add-employees).
   </Step>
   <Step title="Validate before you pay">
     Check each fund's USI with [Validate superannuation fund](/super/api-reference/funds/validate-superannuation-fund). To confirm the fund will accept contributions for that member, use [member verification](/super/guides/member-verification).

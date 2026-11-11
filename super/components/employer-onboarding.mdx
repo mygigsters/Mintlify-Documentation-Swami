@@ -1,0 +1,63 @@
+---
+title: "Employer onboarding screens"
+sidebarTitle: "Employer onboarding"
+description: "The five-step form an employer completes after opening their magic link."
+---
+
+When you invite an employer, they receive a magic link. Opening it starts a five-step form that registers the business. You don't build any of these screens.
+
+<Note>
+  Prefer to create employers from your own backend? See [Onboard an employer](/super/guides/onboard-an-employer).
+</Note>
+
+<Steps>
+  <Step title="Company details">
+    | Field | Notes |
+    |---|---|
+    | Employer name | Required |
+    | ABN | 11 digits |
+    | ACN | 9 digits, optional |
+    | Website | Optional |
+    | Withholding Payer Number (WPN) | Optional |
+    | Location | Dropdown of Australian states |
+    | Business status | Active, Inactive, and so on |
+  </Step>
+  <Step title="Contact person">
+    | Field | Notes |
+    |---|---|
+    | Title | Mr, Mrs, Ms, Miss, Dr, Prof |
+    | Given name | Required |
+    | Family name | Required |
+    | Email | Pre-filled and locked if sent by invite |
+    | Mobile phone | Australian mobile format |
+    | Street address | Required |
+    | Suburb, state, postcode | Required |
+    | Country | Defaults to Australia |
+  </Step>
+  <Step title="Payment setup">
+    | Field | Notes |
+    |---|---|
+    | Direct debit account name | Required |
+    | Direct debit BSB | 6 digits, required |
+    | Direct debit account number | Required |
+    | Refund account | Defaults to the direct debit account, can be changed |
+    | Direct Debit Service Agreement | Must be accepted before continuing |
+  </Step>
+  <Step title="Agreements">
+    The employer accepts the Terms and Conditions, Privacy Policy, Direct Debit Service Agreement, and Master Service Agreement (MSA). A digital signature is also collected.
+  </Step>
+  <Step title="Review and submit">
+    The employer reviews their details and submits.
+  </Step>
+</Steps>
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Freelancer onboarding" icon="user-plus" href="/super/components/employee-onboarding">
+    See the form freelancers complete.
+  </Card>
+  <Card title="Install and embed" icon="code" href="/super/components/install">
+    Add the components to your app.
+  </Card>
+</Columns>

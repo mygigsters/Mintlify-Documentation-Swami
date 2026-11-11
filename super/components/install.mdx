@@ -1,0 +1,183 @@
+---
+title: "Install and embed"
+description: "Add the super components to your React app and mount them with a short-lived token."
+---
+
+Once you have your credentials and package tag, setup takes less than 30 minutes. See [Get access](/super/components/overview#get-access).
+
+## How authentication works
+
+The components use a short-lived JWT for every API call. Your backend exchanges its Basic Auth credentials for a 10-minute JWT, then passes it to the component when it mounts. Basic Auth credentials are never sent to the browser.
+
+<Steps>
+  <Step title="Install the package">
+    ```bash
+    npm install github:mygigsters/super-annuation#v2.1.0
+    ```
+
+    Always pin to a specific version tag. A QA tag, for example `v2.1.0-qa`, is available for testing against staging.
+  </Step>
+  <Step title="Store your Basic Auth credential securely">
+    Keep the credential in a server-side store, such as AWS Secrets Manager, HashiCorp Vault, KMS, or a backend environment variable. It must never appear in front-end code or in any variable that ships to the browser.
+
+    ```bash
+    # Example — backend environment variable (or use your preferred secret store)
+    SUPER_BASIC_AUTH=your-base64-encoded-credential
+    ```
+  </Step>
+  <Step title="Create a backend token endpoint">
+    Your backend calls `POST /widget/session` to exchange Basic Auth for a 10-minute JWT.
+
+    ```text
+    POST https://qa-super.mygigsters.com.au/widget/session
+    Authorization: Basic <base64(apiUsername:apiPassword)>
+
+    → { "token": "eyJhbGci...", "tokenType": "Bearer", "expiresIn": 600 }
+    ```
+
+    Expose the token to your front end through an internal endpoint:
+
+    ```text
+    GET /api/super-token
+    → { "accessToken": "eyJhbGci..." }
+    ```
+
+    <Warning>
+      Never call `/widget/session` from the browser. It only accepts Basic Auth. Passing a Bearer token returns `401`.
+    </Warning>
+  </Step>
+  <Step title="Import the stylesheet">
+    Add this once at your app entry point:
+
+    ```javascript
+    import 'super-annuation/style.css'
+    ```
+  </Step>
+  <Step title="Mount a component">
+    Choose the component that fits. See [Choose a component](/super/components/overview#choose-a-component).
+  </Step>
+</Steps>
+
+## Mount SuperManagementEmbed
+
+No routing is needed. Fetch the token from your backend at session start, pass it in `config.accessToken`, and provide `onTokenExpired` so the token renews automatically.
+
+```javascript SuperPage.jsx
+import { useState, useEffect } from 'react'
+import { SuperManagementEmbed } from 'super-annuation'
+import 'super-annuation/style.css'
+
+export default function SuperPage() {
+  const [accessToken, setAccessToken] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/super-token')
+      .then(r => r.json())
+      .then(({ accessToken }) => setAccessToken(accessToken))
+  }, [])
+
+  if (!accessToken) return null  // or a loading state
+
+  return (
+    <YourSidebarLayout>
+      <SuperManagementEmbed
+        config={{
+          accessToken,
+          frontendBaseUrl: `${window.location.origin}/super`,
+        }}
+        onTokenExpired={async () => {
+          const { accessToken } = await fetch('/api/super-token').then(r => r.json())
+          return accessToken
+        }}
+      />
+    </YourSidebarLayout>
+  )
+}
+```
+
+## Mount SuperApp
+
+`SuperApp` requires React Router v6 or later.
+
+First, add a catch-all route:
+
+```javascript
+import { Routes, Route } from 'react-router-dom'
+import SuperRouteWrapper from './SuperRouteWrapper'
+
+<Routes>
+  <Route path="/super/*" element={<SuperRouteWrapper />} />
+</Routes>
+```
+
+Then create the wrapper:
+
+```javascript SuperRouteWrapper.jsx
+// SuperRouteWrapper.jsx
+import { useState, useEffect } from 'react'
+import { SuperApp } from 'super-annuation'
+import 'super-annuation/style.css'
+
+const SUPER_PATH = '/super'
+
+export default function SuperRouteWrapper() {
+  const [accessToken, setAccessToken] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/super-token')
+      .then(r => r.json())
+      .then(({ accessToken }) => setAccessToken(accessToken))
+  }, [])
+
+  if (!accessToken) return null  // or a loading state
+
+  return (
+    <YourSidebarLayout>
+      <SuperApp
+        embedded
+        basename={SUPER_PATH}
+        config={{
+          accessToken,
+          frontendBaseUrl: `${window.location.origin}${SUPER_PATH}`,
+        }}
+        onTokenExpired={async () => {
+          const { accessToken } = await fetch('/api/super-token').then(r => r.json())
+          return accessToken
+        }}
+      />
+    </YourSidebarLayout>
+  )
+}
+```
+
+## Token expiry
+
+The component manages the token lifecycle for you. It calls `onTokenExpired` 60 seconds before the token expires, so normal sessions never see a `401`.
+
+`onTokenExpired` must return the new token string. If it returns nothing or throws, the component shows a session-expired error. If several requests expire at once, your token endpoint is still only called once.
+
+## Add an error boundary
+
+Wrap a super component in an error boundary so an unexpected error doesn't affect the rest of your application:
+
+```javascript
+import { Component } from 'react'
+import { SuperManagementEmbed } from 'super-annuation'
+
+class SuperErrorBoundary extends Component {
+  state = { hasError: false }
+  static getDerivedStateFromError() { return { hasError: true } }
+  render() {
+    if (this.state.hasError) return <p>Something went wrong. Please refresh.</p>
+    return this.props.children
+  }
+}
+
+export default function SuperPage() {
+  return (
+    <SuperErrorBoundary>
+      <SuperManagementEmbed config={config} />
+    </SuperErrorBoundary>
+  )
+}
+```

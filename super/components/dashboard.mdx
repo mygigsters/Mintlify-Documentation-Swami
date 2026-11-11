@@ -1,0 +1,74 @@
+---
+title: "Management dashboard"
+description: "The screen your admins use to invite, track, and bulk-upload employers and freelancers."
+---
+
+The management dashboard is the main screen your admin users work in. `SuperManagementEmbed` has two tabs. `SuperApp` adds a third for payments.
+
+## Talent tab
+
+Available in both components. It lists every invited freelancer with their onboarding status.
+
+| Action | Description |
+|---|---|
+| Search | Filter by name or email in real time |
+| Filter by status | Complete, Pending, Not Started, Link Expired |
+| Filter by date range | Narrow results by invite date |
+| Send invite | Opens a dialog to send a magic-link email |
+| Send reminder | Re-sends the email to freelancers who haven't finished |
+| View details | Name, email, phone, address, ABN, TFN, super fund, member number, agreements |
+| Export CSV | Downloads the full list |
+| Bulk upload | Upload a CSV to onboard many freelancers at once |
+
+## Clients tab
+
+Available in both components. It has the same layout and actions as the Talent tab, for employer records. The details panel shows:
+
+- company name, ABN, and ACN
+- website and Withholding Payer Number
+- contact name, title, email, and phone
+- business address
+- direct debit account (last 4 digits)
+- agreements accepted
+
+## Payments tab
+
+Available in `SuperApp` only. It shows the contribution payment history across all freelancers and employers. Admins can filter by payment status, export to CSV, and page through the history.
+
+## Bulk upload
+
+Onboard many freelancers at once from the Talent tab.
+
+<Steps>
+  <Step title="Download the CSV template">
+    The template has every supported column: first name, last name, email, phone, ABN, TFN, gender, date of birth, address, super fund USI, and member number.
+  </Step>
+  <Step title="Fill in the data">
+    Any fields left blank are treated as incomplete. Those freelancers receive an email invite to complete their details online.
+  </Step>
+  <Step title="Upload the file">
+    Drag and drop the CSV or use the file picker. Results appear immediately.
+  </Step>
+</Steps>
+
+The upload sorts freelancers into three groups:
+
+| Result | What it means |
+|---|---|
+| All required fields provided | Fully onboarded straight away. Nothing more to do. |
+| Some fields missing | The record is saved in a partial state. Send a magic link so the freelancer can finish. |
+| Could not be saved | Duplicate email or missing fields that can't be recovered. Correct the row and upload again. |
+
+## Magic links
+
+When you send an invite from the dashboard, or through bulk upload, the freelancer or employer receives a unique, single-use link:
+
+```text
+https://yourapp.com/super/super-setup?token=abc123&onboardingFor=Talent&clientName=YourCompany
+```
+
+The component detects the token, validates the link, and launches the right onboarding form with the email pre-filled. If the link has expired or been used, it shows a clear error with the option to request a new one.
+
+<Note>
+  No code is needed on your side, as long as `frontendBaseUrl` is set to the URL where the component is mounted. The `clientName` parameter sets the support email shown on error screens.
+</Note>
