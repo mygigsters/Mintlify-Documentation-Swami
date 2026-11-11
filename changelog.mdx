@@ -10,7 +10,10 @@ description: "What changed in each release of the MyGigsters APIs."
   - EarlyPay amounts are now calculated from updated invoice values
 </Update>
 
-<Update label="September 2026" tags={["EarlyPay"]}>
+<Update label="September 2026" tags={["Payments", "EarlyPay"]}>
+  ## Payments
+  - Credit notes: issue, list, and void credit notes against invoices
+
   ## EarlyPay
   - Rate configuration, available through the API
   - Separate treatment for new and returning users
@@ -33,6 +36,7 @@ description: "What changed in each release of the MyGigsters APIs."
   - Admin dashboard
 
   ## Super
+  - Member verification (MVR): confirm a fund will accept contributions for a member before you pay
   - Webhooks for clearing house onboarding
   - Bulk upload accepts incomplete records, with freelancers finishing onboarding later through a magic link
   - ABNs are validated against the Australian Business Register when you onboard or update an employer
@@ -54,7 +58,6 @@ description: "What changed in each release of the MyGigsters APIs."
   ## Super
   - Magic-link onboarding for employers and freelancers
   - Bulk upload of freelancers
-  - Embeddable onboarding components for your own product
   - Onboarding status tracking for admins
 </Update>
 
@@ -67,12 +70,15 @@ description: "What changed in each release of the MyGigsters APIs."
   - EarlyPay ledger with summary cards, currency breakdown, and a transactions table
 </Update>
 
-<Update label="March 2026" tags={["Payments"]}>
+<Update label="March 2026" tags={["Payments", "Super"]}>
   ## Payments
   - Instant payouts
   - Beneficiary setup, with the option to view and edit beneficiary details
   - Cash balances by currency
   - Redesigned payment dashboard
+
+  ## Super
+  - Embedded components for employer and employee onboarding, ready to drop into your own product
 </Update>
 
 <Update label="January 2026" description="Super" tags={["Super"]}>
@@ -87,7 +93,7 @@ description: "What changed in each release of the MyGigsters APIs."
   - snake_case field names across all requests and responses (breaking; requires the 1.2 header)
   - Idempotency key support on `POST` and `PUT`
   - Card SDK and Beneficiary SDK
-  - Document verification, Partner Account, Wallet balances, and Credit Notes
+  - Document verification, Partner Account, and Wallet balances
   - Restricted API keys
 
   ## Changed

@@ -33,15 +33,17 @@
         "icon": "credit-card",
         "tabs": [
           {
+            "tab": "Home",
+            "hidden": true,
+            "pages": [
+              "index",
+              "home/payments",
+              "home/superannuation"
+            ]
+          },
+          {
             "tab": "Documentation",
             "groups": [
-              {
-                "group": "Welcome",
-                "icon": "house",
-                "pages": [
-                  "index"
-                ]
-              },
               {
                 "group": "Get started",
                 "icon": "rocket",
@@ -405,10 +407,10 @@
             ]
           },
           {
-            "tab": "Ready-made screens",
+            "tab": "Embedded components",
             "groups": [
               {
-                "group": "Embedded components",
+                "group": "Components",
                 "pages": [
                   "super/components/overview",
                   "super/components/employer-onboarding",
@@ -448,6 +450,14 @@
     {
       "source": "/super/guides/embedded-widget",
       "destination": "/super/components/overview"
+    },
+    {
+      "source": "/home/payments",
+      "destination": "/payments/overview"
+    },
+    {
+      "source": "/home/superannuation",
+      "destination": "/super/overview"
     }
   ]
 }
