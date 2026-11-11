@@ -458,5 +458,9 @@
       "source": "/home/superannuation",
       "destination": "/super/overview"
     }
-  ]
+  ],
+  "logo": {
+    "light": "/images/Image.jpeg",
+    "dark": "/images/Image.jpeg"
+  }
 }
