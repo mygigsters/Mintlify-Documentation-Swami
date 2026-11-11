@@ -3,6 +3,85 @@ title: "Changelog"
 description: "What changed in each release of the MyGigsters APIs."
 ---
 
+<Update label="October 2026" tags={["EarlyPay"]}>
+  ## EarlyPay
+  - Choose financing as an option when paying freelancer invoices
+  - Due dates on each deployment
+  - EarlyPay amounts are now calculated from updated invoice values
+</Update>
+
+<Update label="September 2026" tags={["EarlyPay"]}>
+  ## EarlyPay
+  - Rate configuration, available through the API
+  - Separate treatment for new and returning users
+  - Pay Now for approved freelancer invoices, with the payment recorded in the audit trail
+</Update>
+
+<Update label="August 2026" tags={["Payments", "EarlyPay"]}>
+  ## Payments
+  - Email receipts, with content your admins can edit
+  - Wallet numbers shown next to wallet names
+
+  ## EarlyPay
+  - Added a safeguard against paying a financed invoice twice
+</Update>
+
+<Update label="July 2026" tags={["Payments", "Super", "EarlyPay"]}>
+  ## Payments
+  - Role-based access control
+  - API key management
+  - Admin dashboard
+
+  ## Super
+  - Webhooks for clearing house onboarding
+  - Bulk upload accepts incomplete records, with freelancers finishing onboarding later through a magic link
+  - ABNs are validated against the Australian Business Register when you onboard or update an employer
+  - Payment history timeline showing the payment and fund stages
+
+  ## EarlyPay
+  - Auto EarlyPay
+  - One-off and automatic EarlyPay flows for freelancers
+</Update>
+
+<Update label="June 2026" tags={["EarlyPay"]}>
+  ## EarlyPay
+  - One-off EarlyPay
+  - Introductory EarlyPay offer
+  - Invoice financing: capital requests, deployments, ledger, spot repayments, and fee invoices
+</Update>
+
+<Update label="May 2026" tags={["Super"]}>
+  ## Super
+  - Magic-link onboarding for employers and freelancers
+  - Bulk upload of freelancers
+  - Embeddable onboarding components for your own product
+  - Onboarding status tracking for admins
+</Update>
+
+<Update label="April 2026" tags={["Super", "EarlyPay"]}>
+  ## Super
+  - Field-level encryption for tax file numbers
+  - Uniqueness checks for member numbers and ABNs during onboarding
+
+  ## EarlyPay
+  - EarlyPay ledger with summary cards, currency breakdown, and a transactions table
+</Update>
+
+<Update label="March 2026" tags={["Payments"]}>
+  ## Payments
+  - Instant payouts
+  - Beneficiary setup, with the option to view and edit beneficiary details
+  - Cash balances by currency
+  - Redesigned payment dashboard
+</Update>
+
+<Update label="January 2026" description="Super" tags={["Super"]}>
+  ## Super
+  - Employer onboarding
+  - Stricter validation of ABNs, member numbers, dates of birth, and addresses on employee records
+  - Fixed combined filters on employee search, and empty results from contribution history
+</Update>
+
 <Update label="January 2026" description="Version 1.2" tags={["Payments", "Current"]}>
   ## Added
   - snake_case field names across all requests and responses (breaking; requires the 1.2 header)
