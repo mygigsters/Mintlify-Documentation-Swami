@@ -1,0 +1,67 @@
+---
+title: "Ready-made super screens"
+sidebarTitle: "Overview"
+description: "Drop MyGigsters' pre-built employer and freelancer onboarding screens into your product instead of building your own."
+---
+
+You don't have to build super onboarding yourself. MyGigsters provides front-end components that you embed in your React app. They handle employer onboarding, freelancer onboarding, magic-link invites, and bulk upload. No backend work and no routing setup.
+
+<Note>
+  This is the front-end option. If you'd rather build your own screens, use the API: [Onboard an employer](/super/guides/onboard-an-employer) and [Add employees](/super/guides/add-employees).
+</Note>
+
+## What's included
+
+<Columns cols={2}>
+  <Card title="Employer onboarding" icon="building" href="/super/components/employer-onboarding">
+    A five-step form that registers the business, its contact, and its direct debit account.
+  </Card>
+  <Card title="Freelancer onboarding" icon="user-plus" href="/super/components/employee-onboarding">
+    A three-step form that collects personal details and finds the freelancer's super fund.
+  </Card>
+  <Card title="Management dashboard" icon="table-columns" href="/super/components/dashboard">
+    Invite, track, remind, and bulk-upload employers and freelancers.
+  </Card>
+  <Card title="Install and embed" icon="code" href="/super/components/install">
+    Add the package and mount a component. Setup takes less than 30 minutes.
+  </Card>
+</Columns>
+
+## Choose a component
+
+There are two components. Both render inside your existing layout, so your sidebar, header, and navigation stay intact.
+
+| | `SuperManagementEmbed` | `SuperApp` |
+|---|---|---|
+| Best for | Onboarding and fund management without contributions | Teams using the Super API for contributions, who want the full experience |
+| Talent tab: invite, view, onboard | Yes | Yes |
+| Clients tab: invite, view, onboard | Yes | Yes |
+| Payments tab: contributions and history | No | Yes |
+| Freelancer onboarding (3 steps, with ATO fund lookup) | Yes | Yes |
+| Employer onboarding (5 steps) | Yes | Yes |
+| Magic-link invites | Yes | Yes |
+| Bulk upload | Yes | Yes |
+| Needs your app's router | No | Yes, React Router v6 or later |
+| Extra dependencies | None | `react-router-dom`, `@tanstack/react-query` |
+
+```text Layout
+┌─────────────────────────────────────────────────────┐
+│  Your App Header                                    │
+├──────────────┬──────────────────────────────────────┤
+│              │  ┌ Talent ┬ Clients ┐                │
+│  Your        │  │                  │                │
+│  Sidebar     │  │  Super widget    │                │
+│              │  │  renders here    │                │
+│              │  └──────────────────┘                │
+└──────────────┴──────────────────────────────────────┘
+```
+
+## Get access
+
+Contact the super team with:
+
+- your application's base URL, so your credentials can be provisioned
+- whether you use the Super API to make contributions, which decides the component that fits
+- whether you need worker sync enabled
+
+You'll receive your `apiUsername` and `apiPassword` credentials and the current package tag.

@@ -1,0 +1,45 @@
+---
+title: "Add employees"
+description: "Register the freelancers you pay super for, through the API or with ready-made screens."
+---
+
+An employee record holds a freelancer's personal details and their super fund. You need one for each freelancer before you submit contributions for them.
+
+## Choose how to add employees
+
+<Columns cols={2}>
+  <Card title="Use the API" icon="code" href="/super/api-reference/employees/create-employee">
+    Create employees from your own backend. Use this when you already hold their details or want your own screens.
+  </Card>
+  <Card title="Use ready-made screens" icon="window-maximize" href="/super/components/employee-onboarding">
+    Send each freelancer a magic link. They enter their own details, and the form finds their super fund for them.
+  </Card>
+</Columns>
+
+## Add employees with the API
+
+<Steps>
+  <Step title="Find the freelancer's fund">
+    Pre-fill fund details with [SuperSelector](/super/api-reference/funds/superselector), or let the freelancer choose from [active superannuation funds](/super/api-reference/funds/get-active-superannuation-funds). Check a USI with [Validate superannuation fund](/super/api-reference/funds/validate-superannuation-fund).
+  </Step>
+  <Step title="Create the employee">
+    Call [Create employee](/super/api-reference/employees/create-employee). To have the fund confirm it will accept contributions for this member, use [Create employee (v2)](/super/api-reference/employees/create-employee-v2) instead, which runs [member verification](/super/guides/member-verification) automatically.
+  </Step>
+  <Step title="Add many at once">
+    Upload a CSV with [Bulk upload employees (v2)](/super/api-reference/employees/bulk-upload-employees-v2).
+  </Step>
+  <Step title="Find and update records">
+    Use [List all employees](/super/api-reference/employees/list-all-employees), [Search employees](/super/api-reference/employees/search-employees), and [Update employee](/super/api-reference/employees/update-employee).
+  </Step>
+</Steps>
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Verify members" icon="user-check" href="/super/guides/member-verification">
+    Confirm the fund will accept contributions before you pay.
+  </Card>
+  <Card title="Submit a contribution" icon="paper-plane" href="/super/api-reference/contributions/submit-contribution">
+    Pay super for your employees.
+  </Card>
+</Columns>

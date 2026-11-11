@@ -314,6 +314,8 @@
                 "group": "Guides",
                 "icon": "book-open",
                 "pages": [
+                  "super/guides/onboard-an-employer",
+                  "super/guides/add-employees",
                   "super/guides/member-verification",
                   "super/guides/async-submissions",
                   "super/guides/smsf"
@@ -403,12 +405,16 @@
             ]
           },
           {
-            "tab": "SDKs",
+            "tab": "Ready-made screens",
             "groups": [
               {
                 "group": "Embedded components",
                 "pages": [
-                  "super/guides/embedded-widget"
+                  "super/components/overview",
+                  "super/components/employer-onboarding",
+                  "super/components/employee-onboarding",
+                  "super/components/dashboard",
+                  "super/components/install"
                 ]
               }
             ]
@@ -437,5 +443,11 @@
       "cursor"
     ],
     "display": "header"
-  }
+  },
+  "redirects": [
+    {
+      "source": "/super/guides/embedded-widget",
+      "destination": "/super/components/overview"
+    }
+  ]
 }
