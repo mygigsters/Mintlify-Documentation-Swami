@@ -1,8 +1,8 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "MyGigsters Payments API",
-  "description": "Collect payments from your customers and pay out your workers through one API, built for marketplaces.",
+  "name": "MyGigsters Docs",
+  "description": "Build payments and superannuation into your marketplace with the MyGigsters APIs.",
   "colors": {
     "primary": "#6253E5",
     "light": "#8B80F0",
@@ -10,6 +10,10 @@
   },
   "navbar": {
     "links": [
+      {
+        "label": "Changelog",
+        "href": "/changelog"
+      },
       {
         "label": "Support",
         "href": "mailto:hello@mygigsters.com.au"
@@ -22,262 +26,304 @@
     }
   },
   "navigation": {
-    "tabs": [
+    "products": [
       {
-        "tab": "Documentation",
-        "groups": [
+        "product": "Payments",
+        "description": "Collect payments and pay workers",
+        "icon": "credit-card",
+        "tabs": [
           {
-            "group": "Get started",
-            "icon": "rocket",
-            "pages": [
-              "index",
-              "get-started/how-it-works",
-              "get-started/quickstart",
-              "get-started/authentication",
-              "get-started/environments"
+            "tab": "Documentation",
+            "groups": [
+              {
+                "group": "Welcome",
+                "icon": "house",
+                "pages": [
+                  "index"
+                ]
+              },
+              {
+                "group": "Get started",
+                "icon": "rocket",
+                "pages": [
+                  "payments/overview",
+                  "get-started/how-it-works",
+                  "get-started/quickstart",
+                  "get-started/authentication",
+                  "get-started/environments"
+                ]
+              },
+              {
+                "group": "Collect payments",
+                "icon": "credit-card",
+                "pages": [
+                  "guides/charge-a-customer",
+                  "guides/payment-links",
+                  "guides/subscriptions",
+                  "guides/refunds"
+                ]
+              },
+              {
+                "group": "Pay workers",
+                "icon": "money-bill-transfer",
+                "pages": [
+                  "guides/onboard-and-pay-a-worker"
+                ]
+              },
+              {
+                "group": "Invoice and reconcile",
+                "icon": "file-invoice-dollar",
+                "pages": [
+                  "guides/invoices-and-receipts",
+                  "guides/credit-notes"
+                ]
+              },
+              {
+                "group": "Verify workers",
+                "icon": "id-card",
+                "pages": [
+                  "guides/document-verification"
+                ]
+              },
+              {
+                "group": "Partner accounts",
+                "icon": "sitemap",
+                "pages": [
+                  "platform/overview"
+                ]
+              },
+              {
+                "group": "Concepts",
+                "icon": "book-open",
+                "pages": [
+                  "concepts/core-objects",
+                  "concepts/payment-intent-lifecycle",
+                  "concepts/security-model"
+                ]
+              },
+              {
+                "group": "Build securely",
+                "icon": "shield-halved",
+                "pages": [
+                  "security/webhooks",
+                  "security/api-keys-and-rotation",
+                  "security/restricted-keys",
+                  "security/idempotency",
+                  "security/versioning"
+                ]
+              }
             ]
           },
           {
-            "group": "Collect payments",
-            "icon": "credit-card",
-            "pages": [
-              "guides/charge-a-customer",
-              "guides/payment-links",
-              "guides/subscriptions",
-              "guides/refunds"
+            "tab": "API reference",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "api-reference/introduction",
+                  "api-reference/errors-and-conventions"
+                ]
+              },
+              {
+                "group": "Partner account",
+                "pages": [
+                  "api-reference/partner-account/partner-authenticate",
+                  "api-reference/partner-account/partner-rotate-auth-key",
+                  "api-reference/partner-account/partner-connected-account",
+                  "api-reference/partner-account/partner-ca-status",
+                  "api-reference/partner-account/partner-ca-magic-link",
+                  "api-reference/partner-account/partner-ca-simulate-status",
+                  "api-reference/partner-account/partner-ca-balance",
+                  "api-reference/partner-account/partner-ca-transactions",
+                  "api-reference/partner-account/partner-batch-payout",
+                  "api-reference/partner-account/partner-batch-status"
+                ]
+              },
+              {
+                "group": "Partner webhooks",
+                "pages": [
+                  "api-reference/partner-webhooks/partner-webhook-events",
+                  "api-reference/partner-webhooks/partner-webhook-subscribe",
+                  "api-reference/partner-webhooks/partner-webhook-list",
+                  "api-reference/partner-webhooks/partner-webhook-update"
+                ]
+              },
+              {
+                "group": "Customers",
+                "pages": [
+                  "api-reference/customers/customer-create",
+                  "api-reference/customers/customer-details",
+                  "api-reference/customers/customer-update",
+                  "api-reference/customers/customer-delete"
+                ]
+              },
+              {
+                "group": "Cards",
+                "pages": [
+                  "api-reference/cards/default-card-status",
+                  "api-reference/cards/card-details",
+                  "api-reference/cards/set-default-card",
+                  "api-reference/cards/get-all-cards",
+                  "api-reference/cards/get-all-cards-single",
+                  "api-reference/cards/remove-card"
+                ]
+              },
+              {
+                "group": "Payment intents",
+                "pages": [
+                  "api-reference/payment-intents/create-intent",
+                  "api-reference/payment-intents/update-intent",
+                  "api-reference/payment-intents/confirm-intent",
+                  "api-reference/payment-intents/capture-intent",
+                  "api-reference/payment-intents/cancel-intent",
+                  "api-reference/payment-intents/retrieve-intent",
+                  "api-reference/payment-intents/create-charge"
+                ]
+              },
+              {
+                "group": "Payments",
+                "pages": [
+                  "api-reference/payments/generate-payment-link",
+                  "api-reference/payments/get-payment-link-status",
+                  "api-reference/payments/get-payment-details",
+                  "api-reference/payments/create-refund",
+                  "api-reference/payments/refund-status"
+                ]
+              },
+              {
+                "group": "Wallet",
+                "pages": [
+                  "api-reference/wallet/get-wallet"
+                ]
+              },
+              {
+                "group": "Workers",
+                "pages": [
+                  "api-reference/workers/worker-create",
+                  "api-reference/workers/worker-details",
+                  "api-reference/workers/worker-update",
+                  "api-reference/workers/add-bank-details",
+                  "api-reference/workers/beneficiary-url",
+                  "api-reference/workers/worker-delete"
+                ]
+              },
+              {
+                "group": "Payouts",
+                "pages": [
+                  "api-reference/payouts/payout-worker",
+                  "api-reference/payouts/payout-status",
+                  "api-reference/payouts/talent-payouts",
+                  "api-reference/payouts/payout-history"
+                ]
+              },
+              {
+                "group": "Invoices",
+                "pages": [
+                  "api-reference/invoices/get-all-invoices",
+                  "api-reference/invoices/create-send-invoice",
+                  "api-reference/invoices/delete-invoice",
+                  "api-reference/invoices/payment-receipt",
+                  "api-reference/invoices/payout-receipt"
+                ]
+              },
+              {
+                "group": "Credit notes",
+                "pages": [
+                  "api-reference/credit-notes/create-draft-credit-note",
+                  "api-reference/credit-notes/update-draft-credit-note",
+                  "api-reference/credit-notes/delete-draft-credit-note",
+                  "api-reference/credit-notes/issue-credit-note",
+                  "api-reference/credit-notes/apply-credit-note",
+                  "api-reference/credit-notes/refund-credit-note",
+                  "api-reference/credit-notes/void-credit-note",
+                  "api-reference/credit-notes/list-credit-notes",
+                  "api-reference/credit-notes/get-credit-note",
+                  "api-reference/credit-notes/get-credit-note-allocations",
+                  "api-reference/credit-notes/download-credit-note"
+                ]
+              },
+              {
+                "group": "Subscriptions",
+                "pages": [
+                  "api-reference/subscriptions/list-subscriptions",
+                  "api-reference/subscriptions/create-subscription",
+                  "api-reference/subscriptions/update-subscription",
+                  "api-reference/subscriptions/pause-subscription",
+                  "api-reference/subscriptions/resume-subscription",
+                  "api-reference/subscriptions/cancel-subscription"
+                ]
+              },
+              {
+                "group": "Document verification",
+                "pages": [
+                  "api-reference/document-verification/verify-abn",
+                  "api-reference/document-verification/verify-driving-license",
+                  "api-reference/document-verification/verify-visa",
+                  "api-reference/document-verification/verify-passport",
+                  "api-reference/document-verification/verify-vehicle",
+                  "api-reference/document-verification/initiate-police-check",
+                  "api-reference/document-verification/police-check-status",
+                  "api-reference/document-verification/right-to-work"
+                ]
+              }
             ]
           },
           {
-            "group": "Pay workers",
-            "icon": "money-bill-transfer",
-            "pages": [
-              "guides/onboard-and-pay-a-worker"
+            "tab": "SDKs",
+            "groups": [
+              {
+                "group": "Embedded components",
+                "pages": [
+                  "sdks/card-sdk",
+                  "sdks/beneficiary-sdk"
+                ]
+              }
             ]
           },
           {
-            "group": "Invoice and reconcile",
-            "icon": "file-invoice-dollar",
-            "pages": [
-              "guides/invoices-and-receipts",
-              "guides/credit-notes"
-            ]
-          },
-          {
-            "group": "Verify workers",
-            "icon": "id-card",
-            "pages": [
-              "guides/document-verification"
-            ]
-          },
-          {
-            "group": "Partner accounts",
-            "icon": "sitemap",
-            "pages": [
-              "platform/overview"
-            ]
-          },
-          {
-            "group": "Concepts",
-            "icon": "book-open",
-            "pages": [
-              "concepts/core-objects",
-              "concepts/payment-intent-lifecycle",
-              "concepts/security-model"
-            ]
-          },
-          {
-            "group": "Build securely",
-            "icon": "shield-halved",
-            "pages": [
-              "security/webhooks",
-              "security/api-keys-and-rotation",
-              "security/restricted-keys",
-              "security/idempotency",
-              "security/versioning"
+            "tab": "Changelog",
+            "groups": [
+              {
+                "group": "Releases",
+                "pages": [
+                  "changelog"
+                ]
+              }
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
-        "groups": [
+        "product": "Superannuation",
+        "description": "Pay super for freelancers",
+        "icon": "piggy-bank",
+        "tabs": [
           {
-            "group": "Overview",
-            "pages": [
-              "api-reference/introduction",
-              "api-reference/errors-and-conventions"
+            "tab": "Documentation",
+            "groups": [
+              {
+                "group": "Get started",
+                "icon": "rocket",
+                "pages": [
+                  "super/overview",
+                  "super/quickstart",
+                  "super/authentication"
+                ]
+              },
+              {
+                "group": "Guides",
+                "icon": "book-open",
+                "pages": [
+                  "super/guides/member-verification",
+                  "super/guides/async-submissions",
+                  "super/guides/smsf"
+                ]
+              }
             ]
           },
           {
-            "group": "Partner account",
-            "pages": [
-              "api-reference/partner-account/partner-authenticate",
-              "api-reference/partner-account/partner-rotate-auth-key",
-              "api-reference/partner-account/partner-connected-account",
-              "api-reference/partner-account/partner-ca-status",
-              "api-reference/partner-account/partner-ca-magic-link",
-              "api-reference/partner-account/partner-ca-simulate-status",
-              "api-reference/partner-account/partner-ca-balance",
-              "api-reference/partner-account/partner-ca-transactions",
-              "api-reference/partner-account/partner-batch-payout",
-              "api-reference/partner-account/partner-batch-status"
-            ]
-          },
-          {
-            "group": "Partner webhooks",
-            "pages": [
-              "api-reference/partner-webhooks/partner-webhook-events",
-              "api-reference/partner-webhooks/partner-webhook-subscribe",
-              "api-reference/partner-webhooks/partner-webhook-list",
-              "api-reference/partner-webhooks/partner-webhook-update"
-            ]
-          },
-          {
-            "group": "Customers",
-            "pages": [
-              "api-reference/customers/customer-create",
-              "api-reference/customers/customer-details",
-              "api-reference/customers/customer-update",
-              "api-reference/customers/customer-delete"
-            ]
-          },
-          {
-            "group": "Cards",
-            "pages": [
-              "api-reference/cards/default-card-status",
-              "api-reference/cards/card-details",
-              "api-reference/cards/set-default-card",
-              "api-reference/cards/get-all-cards",
-              "api-reference/cards/get-all-cards-single",
-              "api-reference/cards/remove-card"
-            ]
-          },
-          {
-            "group": "Payment intents",
-            "pages": [
-              "api-reference/payment-intents/create-intent",
-              "api-reference/payment-intents/update-intent",
-              "api-reference/payment-intents/confirm-intent",
-              "api-reference/payment-intents/capture-intent",
-              "api-reference/payment-intents/cancel-intent",
-              "api-reference/payment-intents/retrieve-intent",
-              "api-reference/payment-intents/create-charge"
-            ]
-          },
-          {
-            "group": "Payments",
-            "pages": [
-              "api-reference/payments/generate-payment-link",
-              "api-reference/payments/get-payment-link-status",
-              "api-reference/payments/get-payment-details",
-              "api-reference/payments/create-refund",
-              "api-reference/payments/refund-status"
-            ]
-          },
-          {
-            "group": "Wallet",
-            "pages": [
-              "api-reference/wallet/get-wallet"
-            ]
-          },
-          {
-            "group": "Workers",
-            "pages": [
-              "api-reference/workers/worker-create",
-              "api-reference/workers/worker-details",
-              "api-reference/workers/worker-update",
-              "api-reference/workers/add-bank-details",
-              "api-reference/workers/beneficiary-url",
-              "api-reference/workers/worker-delete"
-            ]
-          },
-          {
-            "group": "Payouts",
-            "pages": [
-              "api-reference/payouts/payout-worker",
-              "api-reference/payouts/payout-status",
-              "api-reference/payouts/talent-payouts",
-              "api-reference/payouts/payout-history"
-            ]
-          },
-          {
-            "group": "Invoices",
-            "pages": [
-              "api-reference/invoices/get-all-invoices",
-              "api-reference/invoices/create-send-invoice",
-              "api-reference/invoices/delete-invoice",
-              "api-reference/invoices/payment-receipt",
-              "api-reference/invoices/payout-receipt"
-            ]
-          },
-          {
-            "group": "Credit notes",
-            "pages": [
-              "api-reference/credit-notes/create-draft-credit-note",
-              "api-reference/credit-notes/update-draft-credit-note",
-              "api-reference/credit-notes/delete-draft-credit-note",
-              "api-reference/credit-notes/issue-credit-note",
-              "api-reference/credit-notes/apply-credit-note",
-              "api-reference/credit-notes/refund-credit-note",
-              "api-reference/credit-notes/void-credit-note",
-              "api-reference/credit-notes/list-credit-notes",
-              "api-reference/credit-notes/get-credit-note",
-              "api-reference/credit-notes/get-credit-note-allocations",
-              "api-reference/credit-notes/download-credit-note"
-            ]
-          },
-          {
-            "group": "Subscriptions",
-            "pages": [
-              "api-reference/subscriptions/list-subscriptions",
-              "api-reference/subscriptions/create-subscription",
-              "api-reference/subscriptions/update-subscription",
-              "api-reference/subscriptions/pause-subscription",
-              "api-reference/subscriptions/resume-subscription",
-              "api-reference/subscriptions/cancel-subscription"
-            ]
-          },
-          {
-            "group": "Document verification",
-            "pages": [
-              "api-reference/document-verification/verify-abn",
-              "api-reference/document-verification/verify-driving-license",
-              "api-reference/document-verification/verify-visa",
-              "api-reference/document-verification/verify-passport",
-              "api-reference/document-verification/verify-vehicle",
-              "api-reference/document-verification/initiate-police-check",
-              "api-reference/document-verification/police-check-status",
-              "api-reference/document-verification/right-to-work"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Superannuation",
-        "groups": [
-          {
-            "group": "Get started",
-            "icon": "rocket",
-            "pages": [
-              "super/overview",
-              "super/quickstart",
-              "super/authentication"
-            ]
-          },
-          {
-            "group": "Guides",
-            "icon": "book-open",
-            "pages": [
-              "super/guides/member-verification",
-              "super/guides/async-submissions",
-              "super/guides/smsf",
-              "super/guides/embedded-widget"
-            ]
-          },
-          {
-            "group": "API reference",
-            "icon": "code",
-            "pages": [
+            "tab": "API reference",
+            "groups": [
               {
                 "group": "API keys",
                 "pages": [
@@ -355,28 +401,16 @@
                 ]
               }
             ]
-          }
-        ]
-      },
-      {
-        "tab": "SDKs",
-        "groups": [
+          },
           {
-            "group": "Embedded components",
-            "pages": [
-              "sdks/card-sdk",
-              "sdks/beneficiary-sdk"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Changelog",
-        "groups": [
-          {
-            "group": "Releases",
-            "pages": [
-              "changelog"
+            "tab": "SDKs",
+            "groups": [
+              {
+                "group": "Embedded components",
+                "pages": [
+                  "super/guides/embedded-widget"
+                ]
+              }
             ]
           }
         ]
