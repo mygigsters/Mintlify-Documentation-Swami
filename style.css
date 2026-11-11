@@ -1,0 +1,29 @@
+/* Make the product switcher (Payments / Superannuation) stand out in the top bar. */
+#navbar .flex-1 > button[aria-haspopup="menu"] {
+  border: 1.5px solid #6253E5;
+  background: rgba(98, 83, 229, 0.08);
+  border-radius: 999px;
+  padding: 6px 14px;
+  height: auto;
+  font-weight: 600;
+  font-size: 14px;
+  color: #4F41C9;
+}
+
+#navbar .flex-1 > button[aria-haspopup="menu"]:hover {
+  background: rgba(98, 83, 229, 0.16);
+}
+
+#navbar .flex-1 > button[aria-haspopup="menu"] svg {
+  color: #6253E5;
+}
+
+.dark #navbar .flex-1 > button[aria-haspopup="menu"] {
+  border-color: #8B80F0;
+  background: rgba(139, 128, 240, 0.14);
+  color: #c9c3fa;
+}
+
+.dark #navbar .flex-1 > button[aria-haspopup="menu"] svg {
+  color: #8B80F0;
+}
