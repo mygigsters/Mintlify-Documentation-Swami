@@ -92,7 +92,6 @@ Pass these options to `init()`:
 | `containerId` (required) | string | The `id` of the DOM element where the form will be mounted (e.g. `"beneficiary-form"`). |
 | `env` (optional) | string | Environment to connect to. Use `"demo"` for testing (QA) or `"prod"` for live. Defaults to `"prod"`. |
 | `mode` (optional) | string | UI theme — `"light"` or `"dark"`. Defaults to `"light"`. |
-| `talentId` (optional) | string | Optional talent / worker ID to associate the beneficiary with a specific worker in your system. |
 | `onSuccess` (optional) | function | Callback fired when the beneficiary is saved successfully. Receives the result data object as an argument. |
 | `onError` (optional) | function | Callback fired when an error occurs. Receives the error object as an argument. |
 | `onClose` (optional) | function | Callback fired when the user closes the form. |
@@ -131,8 +130,7 @@ Wrap `init()` in a `try/catch` to handle initialization errors:
 try {
   const sdk = new MygigstersBeneficiarySDK();
   await sdk.init({
-    apiKey: 'your_api_key',
-    apiSecret: 'your_api_secret',
+    token: "eyJhbGciOiJSUzI1Ni...", // Pre-fetched token from GET /api/v1/client/me
     env: 'demo',
     containerId: 'beneficiary-form',
   });
