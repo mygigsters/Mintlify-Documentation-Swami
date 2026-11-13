@@ -880,7 +880,7 @@
       "name": "Member verification",
       "item": [
         {
-          "name": "\u2605 MVR-01 Create an employee with verification (v2)",
+          "name": "MVR-01 Create an employee with verification (v2)",
           "event": [
             {
               "listen": "prerequest",
@@ -909,7 +909,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"\\u2605 MVR-01 Create an employee with verification (v2)\", function () {",
+                  "pm.test(\"MVR-01 Create an employee with verification (v2)\", function () {",
                   "  pm.response.to.have.status(201);",
                   "  const b = pm.response.json();",
                   "  pm.expect([\"NOT_APPLICABLE\", \"PENDING\", \"VERIFIED\", \"WARNING\", \"REJECTED\", \"NOT_SUPPORTED\", \"TIMED_OUT\"]).to.include(b.mvrStatus);",
@@ -997,14 +997,14 @@
           }
         },
         {
-          "name": "\u2605 MVR-03 Submit a verification request",
+          "name": "MVR-03 Submit a verification request",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"\\u2605 MVR-03 Submit a verification request\", function () {",
+                  "pm.test(\"MVR-03 Submit a verification request\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  const b = pm.response.json();",
                   "  pm.expect(b.transactionId).to.be.a(\"string\");",
@@ -1046,14 +1046,14 @@
           }
         },
         {
-          "name": "\u2605 MVR-04 Get the verification outcome",
+          "name": "MVR-04 Get the verification outcome",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"\\u2605 MVR-04 Get the verification outcome\", function () {",
+                  "pm.test(\"MVR-04 Get the verification outcome\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  pm.expect([\"PENDING\", \"VERIFIED\", \"WARNING\", \"REJECTED\", \"TIMED_OUT\"]).to.include(pm.response.json().status);",
                   "});"
