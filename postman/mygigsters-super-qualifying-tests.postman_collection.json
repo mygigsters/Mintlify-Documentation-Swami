@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "41d8529e-1bce-5e3f-9ab7-6e9bece4f10b",
     "name": "MyGigsters Super: qualifying tests",
-    "description": "Test scenarios for each MyGigsters Super API capability. Starred scenarios are the go-live checks. Run the folders in order against the demo (QA) environment. See https://mg-payments-api.mintlify.site/super/test-your-configuration",
+    "description": "Test scenarios for each MyGigsters Super API capability. Starred scenarios are the go-live checks. Run the folders in order against the demo (QA) environment. See https://docs.mygigsters.com/super/test-your-configuration",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
