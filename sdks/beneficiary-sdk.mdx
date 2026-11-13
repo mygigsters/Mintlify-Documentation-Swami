@@ -33,8 +33,7 @@ Add the SDK script tag to your HTML page. No build step required.
   <!-- Initialize -->
   <script>
     MygigstersBeneficiary.init({
-      apiKey: "your_api_key",
-      apiSecret: "your_secret_key",
+      token: "your_jwt_token",          // from GET /api/v1/client/me
       env: "demo",              // "demo" or "prod"
       containerId: "beneficiary-form",
       mode: "light",            // "light" or "dark"
@@ -57,8 +56,7 @@ You can pass configuration directly on the `<script>` tag — no extra JavaScrip
 <script
   src="https://qa-payments.mygigsters.com.au/beneficiary-sdk-entry.js"
   data-mygigsters-config='{
-    "apiKey":      "your_api_key",
-    "apiSecret":   "your_secret_key",
+    "token": "your_jwt_token",          // from GET /api/v1/client/me
     "env":         "demo",
     "containerId": "beneficiary-form",
     "mode":        "light"
@@ -90,8 +88,7 @@ Pass these options to `init()`:
 
 | Parameter | Type | Description |
 |---|---|---|
-| `apiKey` (required) | string | Your UUID-style API key generated from the MyGigsters dashboard (API Keys section). |
-| `apiSecret` (required) | string | The one-time secret / random password shown when the API key was created. |
+| `token` (required) | string | JWT Bearer token required by the SDK. Pass this as `token` to `sdk.init()`. |
 | `containerId` (required) | string | The `id` of the DOM element where the form will be mounted (e.g. `"beneficiary-form"`). |
 | `env` (optional) | string | Environment to connect to. Use `"demo"` for testing (QA) or `"prod"` for live. Defaults to `"prod"`. |
 | `mode` (optional) | string | UI theme — `"light"` or `"dark"`. Defaults to `"light"`. |
