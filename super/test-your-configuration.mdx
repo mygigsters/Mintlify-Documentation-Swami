@@ -3,7 +3,7 @@ title: "Test your configuration"
 description: "Run the qualifying test suite in Postman to confirm your Super integration works before you go live."
 ---
 
-MyGigsters provides a pre-configured Postman collection that tests your Super integration. It has 18 go-live checks that you must pass before moving to production, plus 24 further scenarios, and it checks each response for you.
+MyGigsters provides a pre-configured Postman collection that tests your Super integration. It has 15 go-live checks that you must pass before moving to production, plus 27 further scenarios, and it checks each response for you.
 
 <Tip>
   Run the suite against the demo (QA) environment with your demo API key. Don't run it against production: it creates employers and employees and submits contributions.
@@ -30,7 +30,7 @@ MyGigsters provides a pre-configured Postman collection that tests your Super in
     Select the **MyGigsters Super QA** environment and set the variables below.
   </Step>
   <Step title="Run the collection">
-    Open the collection, select **Run**, keep the folders in their original order, and select **Run MyGigsters Super: qualifying tests**. By default only the 18 go-live checks run and the rest are skipped. Each scenario saves the IDs the next one needs, so run the whole collection in order.
+    Open the collection, select **Run**, keep the folders in their original order, and select **Run MyGigsters Super: qualifying tests**. By default only the 15 go-live checks run and the rest are skipped. Each scenario saves the IDs the next one needs, so run the whole collection in order.
   </Step>
   <Step title="Review the results">
     Every scenario shows as passed or failed with its ID, for example `CON-04`. Select a failed scenario to see the request and response.
@@ -59,7 +59,7 @@ The scenarios are grouped by capability, in the order the collection runs them.
 
 | Marker | Meaning |
 |:-:|---|
-| ★ | Go-live check. Must pass before you move to production. There are 18. |
+| ★ | Go-live check. Must pass before you move to production. There are 15. |
 | No marker | Further scenario. Recommended, and useful when a go-live check fails. Run with `suite` set to `all`. |
 
 In Postman, go-live checks have the same ★ at the start of their name.
@@ -125,10 +125,10 @@ Confirms you can verify a member with their fund before you pay. See [member ver
 
 | | ID | Scenario | Request | Expected result |
 |:-:|---|---|---|---|
-| ★ | MVR-01 | Create an employee with verification (v2) | `POST /v2/employees` | `201`. Response includes `mvrStatus`. |
+|  | MVR-01 | Create an employee with verification (v2) | `POST /v2/employees` | `201`. Response includes `mvrStatus`. |
 |  | MVR-02 | Validate a verification request | `POST /v2/mvr/validate` | `200`. `success` is `true`. |
-| ★ | MVR-03 | Submit a verification request | `POST /v2/mvr/submit` | `200`. Returns a `transactionId`. |
-| ★ | MVR-04 | Get the verification outcome | `GET /v2/mvr/{transactionId}` | `200`. `status` is a valid verification status. |
+|  | MVR-03 | Submit a verification request | `POST /v2/mvr/submit` | `200`. Returns a `transactionId`. |
+|  | MVR-04 | Get the verification outcome | `GET /v2/mvr/{transactionId}` | `200`. `status` is a valid verification status. |
 |  | MVR-05 | Unknown verification returns not found | `GET /v2/mvr/txn-00000000-0000-0000-0000-000000000000` | `404`. Verification not found. |
 |  | MVR-06 | Force a verified status (testing only) | `PATCH /v2/mvr/employee/{employeeId}` | `200`. Status is set to `VERIFIED`. |
 |  | MVR-07 | Employee shows the verified status | `GET /v1/employees/{employeeId}` | `200`. `mvrStatus` is `VERIFIED`. |
@@ -194,14 +194,14 @@ Confirms your backend can create the short-lived token the embedded components n
 
 ## Move to production
 
-Your integration is ready for production when all 18 go-live checks pass in the demo environment.
+Your integration is ready for production when all 15 go-live checks pass in the demo environment.
 
 <Steps>
   <Step title="Export your results">
     In the Postman runner, select **Export Results**.
   </Step>
   <Step title="Send them to us">
-    Email the file to [hello@mygigsters.com.au](mailto:hello@mygigsters.com.au) with your client name. If a check fails for a reason you expect, for example a fund that doesn't support verification yet, say so in your email.
+    Email the file to [hello@mygigsters.com.au](mailto:hello@mygigsters.com.au) with your client name. If a check fails for a reason you expect, say so in your email.
   </Step>
   <Step title="Switch to production">
     Once we confirm, create a production API key and change your base URL to `https://super.mygigsters.com.au`. See [Authentication](/super/authentication).

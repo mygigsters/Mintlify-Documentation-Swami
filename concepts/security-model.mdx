@@ -1,18 +1,87 @@
 ---
 title: "Security model"
-description: "How the API keeps credentials and card data safe."
+description: "How MyGigsters protects your credentials, your data, and your payouts."
 ---
 
-Security is a core pillar of the MyGigsters Payments API. We employ modern cryptographic standards and architectural barriers to ensure keys, credentials, and financial details are kept strictly secure.
+This page covers how data is encrypted, how to manage your API keys, what we log, where your data is stored, and how often we test our defences.
 
-## HTTPS Only
+## Encryption
 
-All API communications are strictly encrypted over TLS (HTTPS). Unencrypted HTTP calls are rejected automatically to prevent packet sniffing and man-in-the-middle attacks.
+| Where | How it's protected |
+|---|---|
+| In transit | Every API call is encrypted with TLS (HTTPS). Unencrypted HTTP calls are rejected. |
+| At rest | All stored data is encrypted with AES-256, the current standard on the cloud platforms we run on. |
 
-## Server-to-Server Calls
+## Server-to-server calls
 
-API secret credentials must never be embedded in client-side applications (like mobile apps or web frontends). All authenticated API requests must be made from your secure backend servers.
+Never embed secret API credentials in a mobile app or web front end. Make every authenticated request from your own backend servers.
 
-## PCI-DSS Compliance
+## Card data
 
-MyGigsters avoids storing raw credit card details on your platform. Card details are entered via secure, hosted Elements and SDK frames directly serving from MyGigsters, returning a secure card token for subsequent payments.
+Raw card details never touch your servers. Your customers enter them in hosted fields and SDK frames served by MyGigsters, and you receive a card token to use for payments. See the [Card SDK](/sdks/card-sdk).
+
+## API key management
+
+### Rotate keys every month
+
+We recommend rotating your API keys every month. You can do it in code, with no downtime, so rotation can run on a schedule instead of relying on someone to remember.
+
+<Steps>
+  <Step title="Call the rotate endpoint">
+    Authenticate with your current key and call `POST /api/v1/api-keys/rotate`. You receive a new key.
+  </Step>
+  <Step title="Switch over during the grace period">
+    Both keys are accepted until the grace period ends, so you can deploy the new key without interrupting service.
+  </Step>
+  <Step title="The old key expires">
+    When the grace period ends, the old key stops working automatically.
+  </Step>
+</Steps>
+
+You can also revoke a key immediately if you think it has been exposed. See [API keys and key rotation](/security/api-keys-and-rotation).
+
+### Limit what each key can do
+
+Give each application or integration its own restricted key. A restricted key has a permission for each module, such as Payments, Payouts, Workers, or Invoices, so it can only reach the resources that integration needs. If a restricted key leaks, the damage is limited to those modules. See [Restricted keys](/security/restricted-keys).
+
+### Good practice
+
+- Store keys in a secrets manager, never in source code.
+- Use a separate key for each environment and each integration.
+- Rotate monthly, and straight away when someone with access leaves your team.
+- Revoke keys you no longer use.
+
+## Audit logging
+
+| What's logged | Details |
+|---|---|
+| Payout attempts | Every attempt, successful or not, with the IP address and user name that made it. |
+| API key events | Every key created, rotated, revoked, and expired. |
+
+Logs are kept for seven years.
+
+## Data residency
+
+We aim to store your data in your own country.
+
+| Your country | Where your data is stored |
+|---|---|
+| Australia | Sydney and Melbourne |
+| India | Mumbai |
+| Singapore | Singapore |
+| South Africa | Cape Town |
+
+## Penetration testing
+
+Our systems are penetration tested every three months.
+
+## More ways to build securely
+
+<Columns cols={2}>
+  <Card title="Receive webhooks" icon="webhook" href="/security/webhooks">
+    Verify that events come from MyGigsters.
+  </Card>
+  <Card title="Idempotency" icon="repeat" href="/security/idempotency">
+    Retry requests safely without paying twice.
+  </Card>
+</Columns>
