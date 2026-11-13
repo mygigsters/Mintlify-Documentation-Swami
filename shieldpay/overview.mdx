@@ -20,8 +20,8 @@ ShieldPay checks each payout before any money moves. It stops payouts that look 
   <Card title="Anomaly detection" icon="chart-line" href="/shieldpay/anomaly-detection">
     A machine learning model that spots payouts that don't match your normal pattern, in real time.
   </Card>
-  <Card title="Smart Rules" icon="sliders" href="/shieldpay/smart-rules">
-    Velocity limits that cap the number of payouts and the total amount paid.
+  <Card title="Guardrails" icon="sliders" href="/shieldpay/guardrails">
+    Velocity controls that cap the number of payouts and the total amount paid.
   </Card>
   <Card title="Review workflow" icon="user-check" href="/shieldpay/flagged-payouts">
     Flagged payouts are held for a person to investigate, then allow or block.
@@ -52,7 +52,7 @@ Every payout you create, through the API or the dashboard, is scanned. A payout 
 Three things can flag or block a payout:
 
 - **Anomaly detection** flags payouts that deviate from your expected behaviour, and blocks payouts to recipients on the ShieldPay risk list.
-- **Smart Rules** reject or hold payouts that breach an amount limit, a count limit, or your downtime window.
+- **Guardrails** reject or hold payouts that breach an amount limit, a count limit, or your downtime window.
 - **Smart Lists** block payouts to anyone on your own blocklist. Payouts to anyone on your trusted list skip risk checks.
 
 ## Set up ShieldPay
@@ -61,8 +61,8 @@ Three things can flag or block a payout:
   <Step title="Turn on anomaly detection">
     Email [hello@mygigsters.com.au](mailto:hello@mygigsters.com.au) to have the model enabled for your account. No integration work is needed. See [Anomaly detection](/shieldpay/anomaly-detection).
   </Step>
-  <Step title="Set your Smart Rules">
-    Apply the recommended rules in one click, or set each limit yourself. See [Smart Rules](/shieldpay/smart-rules).
+  <Step title="Set your Guardrails">
+    Apply the recommended guardrails in one click, or set each limit yourself. See [Guardrails](/shieldpay/guardrails).
   </Step>
   <Step title="Add your Smart Lists">
     Add the accounts you want blocked, and the beneficiaries you trust. See [Smart Lists](/shieldpay/smart-lists).

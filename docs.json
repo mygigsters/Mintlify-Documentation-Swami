@@ -77,7 +77,7 @@
                 "pages": [
                   "shieldpay/overview",
                   "shieldpay/anomaly-detection",
-                  "shieldpay/smart-rules",
+                  "shieldpay/guardrails",
                   "shieldpay/smart-lists",
                   "shieldpay/flagged-payouts",
                   "shieldpay/blocked-payouts",

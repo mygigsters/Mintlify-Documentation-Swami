@@ -1,25 +1,25 @@
 ---
-title: "Smart Rules"
-description: "Velocity limits that cap how much you pay out and how often."
+title: "Guardrails"
+description: "Velocity controls that cap how much you pay out and how often."
 ---
 
 <Info>
   ShieldPay is in development and not yet available. This page describes how it will work.
 </Info>
 
-Smart Rules set velocity limits on your payouts. They cap either the number of payouts or the total amount. Use them to protect against unauthorised access, excessive or duplicate payouts, and abuse by end users.
+Guardrails are ShieldPay's velocity controls. They cap the number of payouts or the total amount paid within a set period, and can stop payouts entirely during hours you choose. Use them to protect against unauthorised access, excessive or duplicate payouts, and abuse by end users.
 
-<Frame caption="Smart Rules in the dashboard.">
-  <img src="/images/shieldpay/rules.png" alt="The Smart Rules screen showing amount limits, payout count limits, and payout downtime" />
+<Frame caption="Guardrails in the dashboard.">
+  <img src="/images/shieldpay/guardrails.png" alt="The Guardrails screen showing amount limits, payout count limits, and payout downtime" />
 </Frame>
 
-## Apply the recommended rules
+## Apply the recommended guardrails
 
-To get started quickly, go to **ShieldPay > Smart Rules** and select **Apply all rules as recommended**. This turns on every recommended rule in one step. You can change any of them afterwards.
+To get started quickly, go to **ShieldPay > Guardrails** and select **Apply all guardrails as recommended**. This turns on every recommended guardrail in one step. You can change any of them afterwards.
 
 ## Choose what happens when a limit is breached
 
-Each rule has one of two actions. Unless you change it, a payout that breaches a rule is held for approval.
+Each guardrail has one of two actions. Unless you change it, a payout that breaches a guardrail is held for approval.
 
 | Action | What happens |
 |---|---|
@@ -40,7 +40,7 @@ Amount limits cap the value of payouts. There are five, and each has its own on/
 
 To set an amount limit:
 
-1. Go to **ShieldPay > Smart Rules**.
+1. Go to **ShieldPay > Guardrails**.
 2. Select the **Edit** icon next to the limit.
 3. Enter the amount and choose the action.
 4. Select **Save**.
@@ -58,7 +58,7 @@ Count limits cap the number of payouts to one beneficiary. All three apply per b
 
 To set a count limit:
 
-1. Go to **ShieldPay > Smart Rules > Payout count limits**.
+1. Go to **ShieldPay > Guardrails > Payout count limits**.
 2. Select the **Edit** icon next to the limit.
 3. Enter the number of payouts and choose the action.
 4. Select **Save**.
@@ -69,7 +69,7 @@ Downtime is a daily window when no payouts are allowed. Use it to stop payouts o
 
 To set downtime:
 
-1. Go to **ShieldPay > Smart Rules > Payout downtime**.
+1. Go to **ShieldPay > Guardrails > Payout downtime**.
 2. Select **Edit**.
 3. Set the start time and end time.
 4. Select **Save**.
@@ -78,10 +78,10 @@ A payout created during downtime is rejected or held, depending on the action yo
 
 ## What your integration sees
 
-| Rule breached | Status code |
+| Guardrail breached | Status code |
 |---|---|
 | Any amount limit | `TRANSFER_LIMIT_BREACH` |
 | Any payout count limit | `VELOCITY_CHECK_FAILED` |
 | Payout downtime | `INSIDE_BLACKOUT_WINDOW` |
 
-The payout status is `APPROVAL_PENDING` if the rule holds payouts, or `REJECTED` if the rule rejects them. See [Statuses and webhooks](/shieldpay/statuses-and-webhooks).
+The payout status is `APPROVAL_PENDING` if the guardrail holds payouts, or `REJECTED` if it rejects them. See [Statuses and webhooks](/shieldpay/statuses-and-webhooks).

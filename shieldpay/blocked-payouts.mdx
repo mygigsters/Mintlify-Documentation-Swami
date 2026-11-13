@@ -16,7 +16,7 @@ A blocked payout is one that ShieldPay stopped permanently because of possible f
 ## Why a payout is blocked
 
 - **Anomaly detection:** the recipient is on the ShieldPay risk list of high-risk bank accounts, PayIDs, emails, and mobile numbers.
-- **Smart Rules:** a rule set to reject payouts was breached, or the payout was created during downtime.
+- **Guardrails:** a guardrail set to reject payouts was breached, or the payout was created during downtime.
 - **My blocklists:** the recipient matches an entry on a blocklist you maintain.
 
 ## Find blocked payouts
@@ -58,7 +58,7 @@ Initiated at, Payout ID, Beneficiary ID, Funding source (the wallet the payout w
 | Email on ShieldPay risk list | The email address is flagged as high risk. |
 | Mobile number on ShieldPay risk list | The mobile number is flagged as high risk. |
 
-### From Smart Rules
+### From Guardrails
 
 | Block reason | What it means |
 |---|---|
@@ -70,7 +70,7 @@ Initiated at, Payout ID, Beneficiary ID, Funding source (the wallet the payout w
 | Payout count limit exceeded | The payout takes one beneficiary over their daily, weekly, or monthly count. |
 | Initiated during downtime | The payout was created inside your downtime window. |
 
-A Smart Rule can hold a payout for review instead of blocking it. See [Smart Rules](/shieldpay/smart-rules#choose-what-happens-when-a-limit-is-breached).
+A guardrail can hold a payout for review instead of blocking it. See [Guardrails](/shieldpay/guardrails#choose-what-happens-when-a-limit-is-breached).
 
 ### From your blocklists
 

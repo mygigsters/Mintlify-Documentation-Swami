@@ -16,7 +16,7 @@ The other pages in this section are the specification. Build the feature to matc
 |---|---|---|
 | Scan | Every payout, from the API and the dashboard, is evaluated before funds leave the wallet. | [Overview](/shieldpay/overview) |
 | Anomaly detection | Model that flags deviations from a marketplace's own history. ShieldPay risk list of bank accounts, PayIDs, emails, and mobile numbers. Per-account enablement. Keep pending or auto-allow setting. | [Anomaly detection](/shieldpay/anomaly-detection) |
-| Smart Rules | Five amount limits, three count limits, one downtime window. Toggle per limit. Action per rule: hold or reject. One-click recommended set. | [Smart Rules](/shieldpay/smart-rules) |
+| Guardrails | Five amount limits, three count limits, one downtime window. Toggle per limit. Action per guardrail: hold or reject. One-click recommended set. | [Guardrails](/shieldpay/guardrails) |
 | Smart Lists | Blocklists and trusted lists for four identifier types. Single add, bulk upload with sample file, edit, delete. | [Smart Lists](/shieldpay/smart-lists) |
 | Flagged payouts | Four review categories, summary figures, date and status filters, CSV export, single and bulk allow or block with one-time code, detail page. | [Flagged payouts](/shieldpay/flagged-payouts) |
 | Blocked payouts | Summary figures, table, block reasons, date filter. No unblock. | [Blocked payouts](/shieldpay/blocked-payouts) |
@@ -30,11 +30,12 @@ The other pages in this section are the specification. Build the feature to matc
 | UPI VPA | PayID |
 | Bank account with IFSC | Bank account with bank code (BSB in Australia) |
 | Blacklist, whitelist | Blocklist, trusted list, grouped as Smart Lists |
+| Smart Rules | Guardrails, described in the documentation as velocity controls |
 | Fund source | Funding source (wallet) |
 | OTP | One-time code |
 | Daily notifications by email, SMS, and WhatsApp | Email and SMS |
 | Enable through account manager or support form | Email hello@mygigsters.com.au |
-| Request "pending review" for Smart Rules through account manager | Self-serve action on each rule |
+| Request "pending review" for Guardrails through account manager | Self-serve action on each guardrail |
 
 ## Proposed, not in the reference product
 
@@ -44,18 +45,18 @@ These fill gaps the reference documentation leaves open. Confirm each before bui
 - **`APPROVAL_PENDING` with `INSIDE_BLACKOUT_WINDOW`.** The reference lists this code under `REJECTED` only, but says a downtime breach can also flag a payout.
 - **Count-limit block reason.** The reference lists five amount-limit block reasons and none for count limits.
 - **Note, Added by, and Added on** columns on Smart Lists entries.
-- **Dashboard placement** under a ShieldPay group in Control Tower: Risky payouts, Smart Rules, Smart Lists.
+- **Dashboard placement** under a ShieldPay group in Control Tower: Risky payouts, Guardrails, Smart Lists.
 
 ## Open decisions
 
 | Question | Why it matters |
 |---|---|
-| In what order are trusted list, blocklist, risk list, Smart Rules, and anomaly detection evaluated? Which wins when two apply? | The spec says trusted recipients skip risk checks. Decide whether that also skips Smart Rules and your own blocklist. |
+| In what order are trusted list, blocklist, risk list, Guardrails, and anomaly detection evaluated? Which wins when two apply? | The spec says trusted recipients skip risk checks. Decide whether that also skips Guardrails and your own blocklist. |
 | Does a held payout reserve wallet funds? | Affects balance shown and whether later payouts can overdraw. |
 | Does a held payout expire if no one reviews it? After how long? | The reference doesn't define an expiry. |
 | Who can allow, block, edit rules, and edit lists? | The reference says "authorised user" only. Map to existing roles. |
 | Do rule and list changes need second-admin sign-off? | The existing Rules screen in Control Tower uses sign-off. |
-| What are the recommended rule values? | Needed for **Apply all rules as recommended**. |
+| What are the recommended guardrail values? | Needed for **Apply all guardrails as recommended**. |
 | Which timezone do daily, weekly, and monthly windows and downtime use? | Marketplace timezone or AEST/AEDT. |
 | Are limits per wallet and per currency? | Marketplaces can hold wallets in several currencies. |
 | How do held payouts count towards amount and count limits? | Decide whether pending and blocked payouts count. |
