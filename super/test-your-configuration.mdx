@@ -1,0 +1,212 @@
+---
+title: "Test your configuration"
+description: "Run the qualifying test suite in Postman to confirm your Super integration works before you go live."
+---
+
+MyGigsters provides a pre-configured Postman collection that tests your Super integration. It covers the critical scenarios for every Super capability, 42 in total, and checks each response for you.
+
+<Tip>
+  Run the suite against the demo (QA) environment with your demo API key. Don't run it against production: it creates employers and employees and submits contributions.
+</Tip>
+
+## What you need
+
+- [Postman](https://www.postman.com/downloads/), desktop or web.
+- A demo API key. See [Authentication](/super/authentication).
+- An employer that has finished onboarding at the clearing house. You receive the `employer.onboarded_at_clearing_house` webhook when it's ready.
+
+## Test using Postman
+
+<Steps>
+  <Step title="Import the collection and environment">
+    In Postman, select **Import** and paste each link.
+
+    | File | Link |
+    |---|---|
+    | Collection | `https://raw.githubusercontent.com/mygigsters/Mintlify-Documentation-Swami/main/postman/mygigsters-super-qualifying-tests.postman_collection.json` |
+    | Environment | `https://raw.githubusercontent.com/mygigsters/Mintlify-Documentation-Swami/main/postman/mygigsters-super-qa.postman_environment.json` |
+  </Step>
+  <Step title="Fill in the environment">
+    Select the **MyGigsters Super QA** environment and set the variables below.
+  </Step>
+  <Step title="Run the collection">
+    Open the collection, select **Run**, keep the folders in their original order, and select **Run MyGigsters Super: qualifying tests**. Each scenario saves the IDs the next one needs, so run the whole collection or whole folders in order.
+  </Step>
+  <Step title="Review the results">
+    Every scenario shows as passed or failed with its ID, for example `CON-04`. Select a failed scenario to see the request and response.
+  </Step>
+</Steps>
+
+### Environment variables
+
+| Variable | Required | What to enter |
+|---|---|---|
+| `baseUrl` | Yes | `https://qa-super.mygigsters.com.au`. Already set. |
+| `apiUsername` | Yes | Your demo `apiUsername`. |
+| `apiPassword` | Yes | Your demo `apiPassword`. |
+| `existingEmployerId` | Recommended | The ID of an employer that has finished onboarding at the clearing house. Used for verification and contributions. If blank, the suite uses the employer it creates in EMPR-01, which may not be ready yet. |
+| `fundUsi` | Optional | The USI to test with. If blank, the suite uses the first fund returned by FND-01. |
+| `employerAbn` | Yes | A valid ABN for the test employer created in EMPR-01. Replace the default with your own if it's rejected as already in use. |
+| `smsfAbn` | Optional | The ABN of the SMSF used in the SMSF scenarios. |
+| `webhookUrl` | Optional | The HTTPS endpoint to register in WHK-01. |
+
+The suite generates a unique email, tax file number, member number, and payroll number for each employee it creates, so you can run it as often as you like.
+
+## Critical test scenarios
+
+The scenarios are grouped by capability, in the order the collection runs them.
+
+### Authentication
+
+Confirms your API key works and that bad credentials are refused. See [authentication](/super/authentication).
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| AUTH-01 | Valid API key is accepted | `GET /v1/employees` | `200`. Returns your employee list. |
+| AUTH-02 | Invalid API key is rejected | `GET /v1/employees` | `401`. Request is refused. |
+
+### Funds
+
+Confirms you can list funds, validate a USI, and look up a worker's existing fund. See [funds](/super/api-reference/funds/get-active-superannuation-funds).
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| FND-01 | List active funds | `GET /v1/contributions/funds/active` | `200`. Returns a non-empty `funds` array. |
+| FND-02 | Validate an active fund | `POST /v1/contributions/fund/validate` | `200`. `success` is `true` and a `transactionId` is returned. |
+| FND-03 | Reject an invalid USI | `POST /v1/contributions/fund/validate` | `400`. Validation fails. |
+| FND-04 | Find a fund with SuperSelector | `POST /v1/verification/superselector` | `200`. `matchResult` is `MATCH` or `NO_MATCH`. |
+
+### Employers
+
+Confirms you can onboard an employer and that invalid details are rejected. See [employers](/super/guides/onboard-an-employer).
+
+<Note>
+  EMPR-01 creates a new employer on every run. A new employer isn't ready for contributions until it finishes onboarding at the clearing house, so set `existingEmployerId` for the later folders.
+</Note>
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| EMPR-01 | Onboard an employer | `POST /v1/employers/onboard` | `201`. Returns an `employerId`. |
+| EMPR-02 | Reject a duplicate contact email | `POST /v1/employers/onboard` | `400`. Error code `4003`. |
+| EMPR-03 | Reject an ABN that fails the checksum | `POST /v1/employers/onboard` | `400`. Employer is not created. |
+| EMPR-04 | Get the employer by ID | `GET /v1/employers/{employerId}` | `200`. Returns the employer you created. |
+| EMPR-05 | List your employers | `GET /v1/clients/me/employers` | `200`. The list includes the new employer. |
+| EMPR-06 | Unknown employer returns not found | `GET /v1/employers/000000000000000000000000` | `404`. Employer not found. |
+
+### Employees
+
+Confirms you can create, find, and update the workers you pay super for. See [employees](/super/guides/add-employees).
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| EMPE-01 | Create an employee | `POST /v1/employees` | `201`. Returns an `employeeId`. |
+| EMPE-02 | Reject a duplicate email | `POST /v1/employees` | `400`. Employee is not created. |
+| EMPE-03 | Get the employee by ID | `GET /v1/employees/{employeeId}` | `200`. Returns the employee you created. |
+| EMPE-04 | Search employees by email | `GET /v1/employees/search` | `200`. Results include the new employee. |
+| EMPE-05 | Update the employee | `PUT /v1/employees/{employeeId}` | `200`. Payroll number is updated. |
+| EMPE-06 | Unknown employee returns not found | `GET /v1/employees/000000000000000000000000` | `404`. Employee not found. |
+| EMPE-07 | Get super owed for the employee | `GET /v1/employees/{employeeId}/super-owed` | `200`. Returns a `total` amount. |
+
+### Member verification
+
+Confirms you can verify a member with their fund before you pay. See [member verification](/super/guides/member-verification).
+
+<Note>
+  MVR-02 and MVR-03 need an employer that has finished onboarding at the clearing house. If the fund doesn't support verification yet, MVR-03 returns `400` with error code `4032`. Set `fundUsi` to a fund that supports it.
+</Note>
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| MVR-01 | Create an employee with verification (v2) | `POST /v2/employees` | `201`. Response includes `mvrStatus`. |
+| MVR-02 | Validate a verification request | `POST /v2/mvr/validate` | `200`. `success` is `true`. |
+| MVR-03 | Submit a verification request | `POST /v2/mvr/submit` | `200`. Returns a `transactionId`. |
+| MVR-04 | Get the verification outcome | `GET /v2/mvr/{transactionId}` | `200`. `status` is a valid verification status. |
+| MVR-05 | Unknown verification returns not found | `GET /v2/mvr/txn-00000000-0000-0000-0000-000000000000` | `404`. Verification not found. |
+| MVR-06 | Force a verified status (testing only) | `PATCH /v2/mvr/employee/{employeeId}` | `200`. Status is set to `VERIFIED`. |
+| MVR-07 | Employee shows the verified status | `GET /v1/employees/{employeeId}` | `200`. `mvrStatus` is `VERIFIED`. |
+
+### Contributions
+
+Confirms you can submit contributions, both directly and asynchronously, and that retries are safe. See [contributions](/super/guides/async-submissions).
+
+<Note>
+  These scenarios submit contributions of A$1.00 for the employee created in EMPE-01.
+</Note>
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| CON-01 | Submit a contribution | `POST /v1/contributions/contribution` | `200`. Returns a `transactionId`. |
+| CON-02 | Reject a contribution for an unknown employee | `POST /v1/contributions/contribution` | `400` or `404`. Nothing is submitted. |
+| CON-03 | Submit a contribution asynchronously | `POST /v2/contributions` | `202`. `status` is `ACCEPTED` and a `transactionId` is returned. |
+| CON-04 | Retry with the same idempotency key | `POST /v2/contributions` | `202`. Returns the original `transactionId`. Nothing is submitted twice. |
+| CON-05 | Reuse the key with a different body | `POST /v2/contributions` | `409`. Conflict. |
+| CON-06 | Missing idempotency key | `POST /v2/contributions` | `400`. Request is rejected. |
+| CON-07 | Get the async submission status | `GET /v2/contributions/{transactionId}` | `200`. `status` is a valid submission status. |
+| CON-08 | Get contribution history | `GET /v1/contributions/submitted/history` | `200`. Returns a `contributions` array. |
+
+### Payment status
+
+Confirms you can track a contribution after you submit it. See [payment status](/super/api-reference/payment-status/get-payment-status).
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| PAY-01 | Get the payment status of a contribution | `GET /v1/payments/paymentstatus/transaction/{transactionId}` | `200`. Returns the payment overview. |
+| PAY-02 | Unknown transaction returns not found | `GET /v1/payments/paymentstatus/transaction/txn-00000000-0000-0000-0000-000000000000` | `400` or `404`. Transaction not found. |
+
+### Self-managed super funds
+
+Confirms you can pay contributions to a self-managed super fund. See [self-managed super funds](/super/guides/smsf).
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| SMSF-01 | Create an employee with an SMSF | `POST /v1/employees` | `201`. Returns an `employeeId`. |
+| SMSF-02 | Reject an employee with both a USI and an SMSF | `POST /v1/employees` | `400`. Employee is not created. |
+| SMSF-03 | Submit a contribution to an SMSF | `POST /v1/contributions/contribution` | `200`. Returns a `transactionId`. |
+
+### Webhooks
+
+Confirms you can register the endpoint that receives events. See [webhooks](/super/api-reference/webhooks/register-webhook).
+
+<Note>
+  Registering a webhook replaces your current demo webhook URL and rotates its secret. Set `webhookUrl` to an endpoint you control, or skip this folder.
+</Note>
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| WHK-01 | Register a webhook | `POST /v1/webhooks` | `200` or `201`. Returns a `webhookSecret`. |
+| WHK-02 | Reject an invalid webhook URL | `POST /v1/webhooks` | `400`. Webhook is not changed. |
+
+### Embedded components
+
+Confirms your backend can create the short-lived token the embedded components need. See [embedded components](/super/components/install).
+
+| ID | Scenario | Request | Expected result |
+|---|---|---|---|
+| CMP-01 | Create a component session | `POST /widget/session` | `200`. Returns a `token` that expires in 600 seconds. |
+
+## Qualify your integration
+
+Your configuration qualifies when all 42 critical scenarios pass in the demo environment.
+
+1. In the Postman runner, select **Export Results**.
+2. Email the file to [hello@mygigsters.com.au](mailto:hello@mygigsters.com.au) with your client name.
+
+If a scenario fails for a reason you expect, for example a fund that doesn't support verification yet, say so in your email.
+
+## Not covered yet
+
+These need manual steps or specific timing, so they aren't in the critical set. They'll be added as the suite grows.
+
+| Capability | Why it's not in the critical set |
+|---|---|
+| Creating an API key | Needs a one-time passcode sent by email. See [Authentication](/super/authentication). |
+| Bulk upload of employees | Needs a CSV file attached to the request. |
+| Cancelling a contribution batch | Only works while the debit is initiated but not yet cleared. |
+| Verification outcomes from a fund | A fund can take 24 to 48 hours to respond. MVR-06 forces a status instead. |
+| Payment status changes over time | Payments move through their stages over several days. |
+| Webhook deliveries | Needs a public endpoint that records what it receives. |
+| Embedded component screens | The onboarding forms and dashboard are tested in a browser, not through the API. |
+
+## Get help
+
+Email [hello@mygigsters.com.au](mailto:hello@mygigsters.com.au) with the scenario ID, the `transactionId` from the response if there is one, and the time you ran the test.
