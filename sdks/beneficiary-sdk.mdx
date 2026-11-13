@@ -74,9 +74,9 @@ Either include the `<script>` tag for CDN usage (exposes `window.MygigstersBenef
 
 Add an empty `<div>` with a unique `id` (e.g. `<div id="beneficiary-form"></div>`). The SDK will mount its UI inside this element using Shadow DOM for full style isolation.
 
-### 3. Initialize with Credentials
+### 3. Initialize with Token
 
-Call `.init(config)` with your API key and secret. The SDK authenticates against the MyGigsters backend, then renders the beneficiary form inside the container.
+Call `GET /api/v1/client/me` on your backend/app using HTTP Basic Auth (`apiKey:apiSecret`) to retrieve your `token` and `myGigsterId`. Then call `.init(config)` passing `token` (from `POST /api/v1/customer`). The SDK authenticates against the MyGigsters backend, then renders the beneficiary form inside the container. API credentials are never passed to the SDK.
 
 ### 4. Handle Callbacks
 
