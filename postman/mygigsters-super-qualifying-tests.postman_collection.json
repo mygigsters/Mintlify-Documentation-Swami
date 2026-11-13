@@ -1,0 +1,2014 @@
+{
+  "info": {
+    "_postman_id": "41d8529e-1bce-5e3f-9ab7-6e9bece4f10b",
+    "name": "MyGigsters Super: qualifying tests",
+    "description": "Critical test scenarios for each MyGigsters Super API capability. Run the folders in order against the demo (QA) environment. See https://mg-payments-api.mintlify.site/super/test-your-configuration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{apiUsername}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{apiPassword}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Runs before every request. Works out which employer and fund the tests use.",
+          "const pick = (a, b) => pm.environment.get(a) || pm.collectionVariables.get(b) || \"\";",
+          "pm.collectionVariables.set(\"activeEmployerId\", pick(\"existingEmployerId\", \"newEmployerId\"));",
+          "pm.collectionVariables.set(\"activeUsi\", pick(\"fundUsi\", \"discoveredUsi\"));",
+          "const now = new Date();",
+          "pm.collectionVariables.set(\"payPeriodStart\", Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));",
+          "pm.collectionVariables.set(\"payPeriodEnd\", Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "AUTH-01 Valid API key is accepted",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"AUTH-01 Valid API key is accepted\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.have.property(\"employees\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees"
+              ]
+            },
+            "description": "Expected: 200. Returns your employee list."
+          }
+        },
+        {
+          "name": "AUTH-02 Invalid API key is rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"AUTH-02 Invalid API key is rejected\", function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees"
+              ]
+            },
+            "description": "Expected: 401. Request is refused.",
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "invalid-user",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "invalid-password",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Funds",
+      "item": [
+        {
+          "name": "FND-01 List active funds",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"FND-01 List active funds\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const funds = pm.response.json().funds;",
+                  "  pm.expect(funds).to.be.an(\"array\").that.is.not.empty;",
+                  "  pm.expect(funds[0]).to.have.property(\"usi\");",
+                  "  pm.collectionVariables.set(\"discoveredUsi\", funds[0].usi);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/contributions/funds/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "contributions",
+                "funds",
+                "active"
+              ]
+            },
+            "description": "Expected: 200. Returns a non-empty funds array."
+          }
+        },
+        {
+          "name": "FND-02 Validate an active fund",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"FND-02 Validate an active fund\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.success).to.eql(true);",
+                  "  pm.expect(b.transactionId).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/contributions/fund/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "contributions",
+                "fund",
+                "validate"
+              ]
+            },
+            "description": "Expected: 200. success is true and a transactionId is returned.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fundUsis\": [\n    \"{{activeUsi}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "FND-03 Reject an invalid USI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"FND-03 Reject an invalid USI\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/contributions/fund/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "contributions",
+                "fund",
+                "validate"
+              ]
+            },
+            "description": "Expected: 400. Validation fails.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fundUsis\": [\n    \"00000000000000\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "FND-04 Find a fund with SuperSelector",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"FND-04 Find a fund with SuperSelector\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect([\"MATCH\", \"NO_MATCH\"]).to.include(b.matchResult);",
+                  "  pm.expect(b.funds).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/verification/superselector",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verification",
+                "superselector"
+              ]
+            },
+            "description": "Expected: 200. matchResult is MATCH or NO_MATCH.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee\": {\n    \"name\": {\n      \"familyName\": \"Brown\",\n      \"givenName\": \"Lisa\"\n    },\n    \"dob\": {\n      \"day\": 13,\n      \"month\": \"DECEMBER\",\n      \"year\": 1988\n    },\n    \"postCode\": \"2093\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employers",
+      "item": [
+        {
+          "name": "EMPR-01 Onboard an employer",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const uniq = Date.now().toString() + Math.floor(Math.random() * 1000);",
+                  "pm.collectionVariables.set(\"uniq\", uniq);",
+                  "pm.collectionVariables.set(\"employerEmail\", \"qa.employer.\" + uniq + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPR-01 Onboard an employer\", function () {",
+                  "  pm.response.to.have.status(201);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.employerId).to.be.a(\"string\");",
+                  "  pm.collectionVariables.set(\"newEmployerId\", b.employerId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employers/onboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employers",
+                "onboard"
+              ]
+            },
+            "description": "Expected: 201. Returns an employerId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyDetails\": {\n    \"employerName\": \"Qualifying Test Employer {{uniq}}\",\n    \"australianBusinessNumber\": \"{{employerAbn}}\",\n    \"status\": \"ACTIVE\",\n    \"contributionsEnabled\": true,\n    \"employeeServicesEnabled\": false,\n    \"singleTouchPayrollEnabled\": true,\n    \"splitMultiEmployerBatch\": true,\n    \"withholderPayerNumber\": \"123456789\",\n    \"employerArrangement\": \"ARR001\",\n    \"location\": \"SYDNEY\",\n    \"acn\": \"123456789\",\n    \"website\": \"https://example.com\",\n    \"registrationIp\": \"203.0.113.42\"\n  },\n  \"contactPerson\": {\n    \"givenName\": \"Test\",\n    \"familyName\": \"Contact\",\n    \"emailAddress\": \"{{employerEmail}}\",\n    \"title\": \"Mr\",\n    \"otherName\": \"\",\n    \"mobilePhone\": \"0400000000\",\n    \"telephone\": \"0400000000\",\n    \"areaCode\": \"08\",\n    \"signatoryName\": \"Test Contact\",\n    \"signatoryPosition\": \"Director\"\n  },\n  \"companyAddress\": {\n    \"addressType\": \"POSTAL\",\n    \"addressLine1\": \"1 Example Street\",\n    \"addressLine2\": \"\",\n    \"addressLine3\": \"\",\n    \"suburb\": \"ADELAIDE\",\n    \"postcode\": \"5000\",\n    \"state\": \"SA\",\n    \"country\": \"Australia\"\n  },\n  \"directDebitAccount\": {\n    \"accountName\": \"Qualifying Test Employer\",\n    \"bsb\": \"062000\",\n    \"accountNumber\": \"12345678\"\n  },\n  \"refundAccount\": {\n    \"accountName\": \"Qualifying Test Employer\",\n    \"bsb\": \"062000\",\n    \"accountNumber\": \"12345678\"\n  },\n  \"directDebitAgreement\": {\n    \"agreedToTerms\": true,\n    \"agreedAt\": \"2024-01-15T10:30:00Z\"\n  },\n  \"legalAgreements\": {\n    \"termsAndConditions\": true,\n    \"privacyPolicy\": true,\n    \"directDebitServiceAgreement\": true,\n    \"masterServiceAgreement\": true\n  },\n  \"digitalSignature\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "EMPR-02 Reject a duplicate contact email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPR-02 Reject a duplicate contact email\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.text()).to.include(\"4003\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employers/onboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employers",
+                "onboard"
+              ]
+            },
+            "description": "Expected: 400. Error code 4003.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyDetails\": {\n    \"employerName\": \"Qualifying Test Employer {{uniq}}\",\n    \"australianBusinessNumber\": \"{{employerAbn}}\",\n    \"status\": \"ACTIVE\",\n    \"contributionsEnabled\": true,\n    \"employeeServicesEnabled\": false,\n    \"singleTouchPayrollEnabled\": true,\n    \"splitMultiEmployerBatch\": true,\n    \"withholderPayerNumber\": \"123456789\",\n    \"employerArrangement\": \"ARR001\",\n    \"location\": \"SYDNEY\",\n    \"acn\": \"123456789\",\n    \"website\": \"https://example.com\",\n    \"registrationIp\": \"203.0.113.42\"\n  },\n  \"contactPerson\": {\n    \"givenName\": \"Test\",\n    \"familyName\": \"Contact\",\n    \"emailAddress\": \"{{employerEmail}}\",\n    \"title\": \"Mr\",\n    \"otherName\": \"\",\n    \"mobilePhone\": \"0400000000\",\n    \"telephone\": \"0400000000\",\n    \"areaCode\": \"08\",\n    \"signatoryName\": \"Test Contact\",\n    \"signatoryPosition\": \"Director\"\n  },\n  \"companyAddress\": {\n    \"addressType\": \"POSTAL\",\n    \"addressLine1\": \"1 Example Street\",\n    \"addressLine2\": \"\",\n    \"addressLine3\": \"\",\n    \"suburb\": \"ADELAIDE\",\n    \"postcode\": \"5000\",\n    \"state\": \"SA\",\n    \"country\": \"Australia\"\n  },\n  \"directDebitAccount\": {\n    \"accountName\": \"Qualifying Test Employer\",\n    \"bsb\": \"062000\",\n    \"accountNumber\": \"12345678\"\n  },\n  \"refundAccount\": {\n    \"accountName\": \"Qualifying Test Employer\",\n    \"bsb\": \"062000\",\n    \"accountNumber\": \"12345678\"\n  },\n  \"directDebitAgreement\": {\n    \"agreedToTerms\": true,\n    \"agreedAt\": \"2024-01-15T10:30:00Z\"\n  },\n  \"legalAgreements\": {\n    \"termsAndConditions\": true,\n    \"privacyPolicy\": true,\n    \"directDebitServiceAgreement\": true,\n    \"masterServiceAgreement\": true\n  },\n  \"digitalSignature\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "EMPR-03 Reject an ABN that fails the checksum",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPR-03 Reject an ABN that fails the checksum\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employers/onboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employers",
+                "onboard"
+              ]
+            },
+            "description": "Expected: 400. Employer is not created.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyDetails\": {\n    \"employerName\": \"Qualifying Test Employer {{uniq}}\",\n    \"australianBusinessNumber\": \"34623710897\",\n    \"status\": \"ACTIVE\",\n    \"contributionsEnabled\": true,\n    \"employeeServicesEnabled\": false,\n    \"singleTouchPayrollEnabled\": true,\n    \"splitMultiEmployerBatch\": true,\n    \"withholderPayerNumber\": \"123456789\",\n    \"employerArrangement\": \"ARR001\",\n    \"location\": \"SYDNEY\",\n    \"acn\": \"123456789\",\n    \"website\": \"https://example.com\",\n    \"registrationIp\": \"203.0.113.42\"\n  },\n  \"contactPerson\": {\n    \"givenName\": \"Test\",\n    \"familyName\": \"Contact\",\n    \"emailAddress\": \"qa.employer.badabn.{{uniq}}@example.com\",\n    \"title\": \"Mr\",\n    \"otherName\": \"\",\n    \"mobilePhone\": \"0400000000\",\n    \"telephone\": \"0400000000\",\n    \"areaCode\": \"08\",\n    \"signatoryName\": \"Test Contact\",\n    \"signatoryPosition\": \"Director\"\n  },\n  \"companyAddress\": {\n    \"addressType\": \"POSTAL\",\n    \"addressLine1\": \"1 Example Street\",\n    \"addressLine2\": \"\",\n    \"addressLine3\": \"\",\n    \"suburb\": \"ADELAIDE\",\n    \"postcode\": \"5000\",\n    \"state\": \"SA\",\n    \"country\": \"Australia\"\n  },\n  \"directDebitAccount\": {\n    \"accountName\": \"Qualifying Test Employer\",\n    \"bsb\": \"062000\",\n    \"accountNumber\": \"12345678\"\n  },\n  \"refundAccount\": {\n    \"accountName\": \"Qualifying Test Employer\",\n    \"bsb\": \"062000\",\n    \"accountNumber\": \"12345678\"\n  },\n  \"directDebitAgreement\": {\n    \"agreedToTerms\": true,\n    \"agreedAt\": \"2024-01-15T10:30:00Z\"\n  },\n  \"legalAgreements\": {\n    \"termsAndConditions\": true,\n    \"privacyPolicy\": true,\n    \"directDebitServiceAgreement\": true,\n    \"masterServiceAgreement\": true\n  },\n  \"digitalSignature\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "EMPR-04 Get the employer by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPR-04 Get the employer by ID\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employers/{{newEmployerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employers",
+                "{{newEmployerId}}"
+              ]
+            },
+            "description": "Expected: 200. Returns the employer you created."
+          }
+        },
+        {
+          "name": "EMPR-05 List your employers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPR-05 List your employers\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const ids = pm.response.json().employers.map(e => e.id);",
+                  "  pm.expect(ids).to.include(pm.collectionVariables.get(\"newEmployerId\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/clients/me/employers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "clients",
+                "me",
+                "employers"
+              ]
+            },
+            "description": "Expected: 200. The list includes the new employer."
+          }
+        },
+        {
+          "name": "EMPR-06 Unknown employer returns not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPR-06 Unknown employer returns not found\", function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employers/000000000000000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employers",
+                "000000000000000000000000"
+              ]
+            },
+            "description": "Expected: 404. Employer not found."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "EMPE-01 Create an employee",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const uniq = Date.now().toString() + Math.floor(Math.random() * 1000);",
+                  "pm.collectionVariables.set(\"uniq\", uniq);",
+                  "function validTfn() {",
+                  "  const w = [1, 4, 3, 7, 5, 8, 6, 9, 10];",
+                  "  while (true) {",
+                  "    const d = Array.from({ length: 8 }, (_, i) => (i === 0 ? 1 + Math.floor(Math.random() * 9) : Math.floor(Math.random() * 10)));",
+                  "    const last = d.reduce((s, x, i) => s + x * w[i], 0) % 11;",
+                  "    if (last < 10) return d.join(\"\") + last;",
+                  "  }",
+                  "}",
+                  "pm.collectionVariables.set(\"employeeEmail\", \"qa.employee.\" + uniq + \"@example.com\");",
+                  "pm.collectionVariables.set(\"employeeTfn\", validTfn());",
+                  "pm.collectionVariables.set(\"memberNumber\", \"QT\" + uniq.slice(-9));",
+                  "pm.collectionVariables.set(\"payrollNumber\", \"EMP-\" + uniq.slice(-9));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPE-01 Create an employee\", function () {",
+                  "  pm.response.to.have.status(201);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.employeeId).to.be.a(\"string\");",
+                  "  pm.collectionVariables.set(\"employeeId\", b.employeeId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees"
+              ]
+            },
+            "description": "Expected: 201. Returns an employeeId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{employeeEmail}}\",\n  \"name\": {\n    \"firstName\": \"Lisa\",\n    \"lastName\": \"Brown\"\n  },\n  \"gender\": \"FEMALE\",\n  \"dob\": {\n    \"year\": 1988,\n    \"month\": \"DECEMBER\",\n    \"day\": 13\n  },\n  \"address\": {\n    \"australianAddress\": {\n      \"line1\": \"640 Gordon Street\",\n      \"line2\": \" \",\n      \"line3\": \" \",\n      \"line4\": \" \",\n      \"suburb\": \"MANLY VALE\",\n      \"postCode\": \"2093\",\n      \"stateOrTerritory\": \"NSW\",\n      \"countryCode\": \"AU\"\n    }\n  },\n  \"taxFileNumber\": \"{{employeeTfn}}\",\n  \"usi\": \"{{activeUsi}}\",\n  \"memberNumber\": \"{{memberNumber}}\",\n  \"employmentPayrollNumber\": \"{{payrollNumber}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "EMPE-02 Reject a duplicate email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPE-02 Reject a duplicate email\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees"
+              ]
+            },
+            "description": "Expected: 400. Employee is not created.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{employeeEmail}}\",\n  \"name\": {\n    \"firstName\": \"Lisa\",\n    \"lastName\": \"Brown\"\n  },\n  \"gender\": \"FEMALE\",\n  \"dob\": {\n    \"year\": 1988,\n    \"month\": \"DECEMBER\",\n    \"day\": 13\n  },\n  \"address\": {\n    \"australianAddress\": {\n      \"line1\": \"640 Gordon Street\",\n      \"line2\": \" \",\n      \"line3\": \" \",\n      \"line4\": \" \",\n      \"suburb\": \"MANLY VALE\",\n      \"postCode\": \"2093\",\n      \"stateOrTerritory\": \"NSW\",\n      \"countryCode\": \"AU\"\n    }\n  },\n  \"taxFileNumber\": \"{{employeeTfn}}\",\n  \"usi\": \"{{activeUsi}}\",\n  \"memberNumber\": \"{{memberNumber}}\",\n  \"employmentPayrollNumber\": \"{{payrollNumber}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "EMPE-03 Get the employee by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPE-03 Get the employee by ID\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get(\"employeeEmail\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees",
+                "{{employeeId}}"
+              ]
+            },
+            "description": "Expected: 200. Returns the employee you created."
+          }
+        },
+        {
+          "name": "EMPE-04 Search employees by email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPE-04 Search employees by email\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const ids = pm.response.json().employees.map(e => e.employeeId);",
+                  "  pm.expect(ids).to.include(pm.collectionVariables.get(\"employeeId\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/search?email={{employeeEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{employeeEmail}}"
+                }
+              ]
+            },
+            "description": "Expected: 200. Results include the new employee."
+          }
+        },
+        {
+          "name": "EMPE-05 Update the employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPE-05 Update the employee\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees",
+                "{{employeeId}}"
+              ]
+            },
+            "description": "Expected: 200. Payroll number is updated.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usi\": \"{{activeUsi}}\",\n  \"memberNumber\": \"{{memberNumber}}\",\n  \"employmentPayrollNumber\": \"{{payrollNumber}}-B\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "EMPE-06 Unknown employee returns not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPE-06 Unknown employee returns not found\", function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/000000000000000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees",
+                "000000000000000000000000"
+              ]
+            },
+            "description": "Expected: 404. Employee not found."
+          }
+        },
+        {
+          "name": "EMPE-07 Get super owed for the employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"EMPE-07 Get super owed for the employee\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.have.property(\"total\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeId}}/super-owed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees",
+                "{{employeeId}}",
+                "super-owed"
+              ]
+            },
+            "description": "Expected: 200. Returns a total amount."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Member verification",
+      "item": [
+        {
+          "name": "MVR-01 Create an employee with verification (v2)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const uniq = Date.now().toString() + Math.floor(Math.random() * 1000);",
+                  "pm.collectionVariables.set(\"uniq\", uniq);",
+                  "function validTfn() {",
+                  "  const w = [1, 4, 3, 7, 5, 8, 6, 9, 10];",
+                  "  while (true) {",
+                  "    const d = Array.from({ length: 8 }, (_, i) => (i === 0 ? 1 + Math.floor(Math.random() * 9) : Math.floor(Math.random() * 10)));",
+                  "    const last = d.reduce((s, x, i) => s + x * w[i], 0) % 11;",
+                  "    if (last < 10) return d.join(\"\") + last;",
+                  "  }",
+                  "}",
+                  "pm.collectionVariables.set(\"employeeEmail\", \"qa.employee.\" + uniq + \"@example.com\");",
+                  "pm.collectionVariables.set(\"employeeTfn\", validTfn());",
+                  "pm.collectionVariables.set(\"memberNumber\", \"QT\" + uniq.slice(-9));",
+                  "pm.collectionVariables.set(\"payrollNumber\", \"EMP-\" + uniq.slice(-9));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"MVR-01 Create an employee with verification (v2)\", function () {",
+                  "  pm.response.to.have.status(201);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect([\"NOT_APPLICABLE\", \"PENDING\", \"VERIFIED\", \"WARNING\", \"REJECTED\", \"NOT_SUPPORTED\", \"TIMED_OUT\"]).to.include(b.mvrStatus);",
+                  "  pm.collectionVariables.set(\"mvrEmployeeId\", b.employeeId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "employees"
+              ]
+            },
+            "description": "Expected: 201. Response includes mvrStatus.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{employeeEmail}}\",\n  \"name\": {\n    \"firstName\": \"Lisa\",\n    \"lastName\": \"Brown\"\n  },\n  \"gender\": \"FEMALE\",\n  \"dob\": {\n    \"year\": 1988,\n    \"month\": \"DECEMBER\",\n    \"day\": 13\n  },\n  \"address\": {\n    \"australianAddress\": {\n      \"line1\": \"640 Gordon Street\",\n      \"line2\": \" \",\n      \"line3\": \" \",\n      \"line4\": \" \",\n      \"suburb\": \"MANLY VALE\",\n      \"postCode\": \"2093\",\n      \"stateOrTerritory\": \"NSW\",\n      \"countryCode\": \"AU\"\n    }\n  },\n  \"taxFileNumber\": \"{{employeeTfn}}\",\n  \"usi\": \"{{activeUsi}}\",\n  \"memberNumber\": \"{{memberNumber}}\",\n  \"employmentPayrollNumber\": \"{{payrollNumber}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "MVR-02 Validate a verification request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"MVR-02 Validate a verification request\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().success).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/mvr/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "mvr",
+                "validate"
+              ]
+            },
+            "description": "Expected: 200. success is true.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{mvrEmployeeId}}\",\n  \"employerId\": \"{{activeEmployerId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "MVR-03 Submit a verification request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"MVR-03 Submit a verification request\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.transactionId).to.be.a(\"string\");",
+                  "  pm.collectionVariables.set(\"mvrTransactionId\", b.transactionId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/mvr/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "mvr",
+                "submit"
+              ]
+            },
+            "description": "Expected: 200. Returns a transactionId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{mvrEmployeeId}}\",\n  \"employerId\": \"{{activeEmployerId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "MVR-04 Get the verification outcome",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"MVR-04 Get the verification outcome\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect([\"PENDING\", \"VERIFIED\", \"WARNING\", \"REJECTED\", \"TIMED_OUT\"]).to.include(pm.response.json().status);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v2/mvr/{{mvrTransactionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "mvr",
+                "{{mvrTransactionId}}"
+              ]
+            },
+            "description": "Expected: 200. status is a valid verification status."
+          }
+        },
+        {
+          "name": "MVR-05 Unknown verification returns not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"MVR-05 Unknown verification returns not found\", function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v2/mvr/txn-00000000-0000-0000-0000-000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "mvr",
+                "txn-00000000-0000-0000-0000-000000000000"
+              ]
+            },
+            "description": "Expected: 404. Verification not found."
+          }
+        },
+        {
+          "name": "MVR-06 Force a verified status (testing only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"MVR-06 Force a verified status (testing only)\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/mvr/employee/{{mvrEmployeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "mvr",
+                "employee",
+                "{{mvrEmployeeId}}"
+              ]
+            },
+            "description": "Expected: 200. Status is set to VERIFIED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"VERIFIED\",\n  \"reason\": \"Qualifying test run.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "MVR-07 Employee shows the verified status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"MVR-07 Employee shows the verified status\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().mvrStatus).to.eql(\"VERIFIED\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{mvrEmployeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees",
+                "{{mvrEmployeeId}}"
+              ]
+            },
+            "description": "Expected: 200. mvrStatus is VERIFIED."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contributions",
+      "item": [
+        {
+          "name": "CON-01 Submit a contribution",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CON-01 Submit a contribution\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.success).to.eql(true);",
+                  "  pm.collectionVariables.set(\"transactionId\", b.transactionId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/contributions/contribution",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "contributions",
+                "contribution"
+              ]
+            },
+            "description": "Expected: 200. Returns a transactionId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employerId\": \"{{activeEmployerId}}\",\n  \"contributionDetails\": {\n    \"funds\": [\n      {\n        \"usi\": \"{{activeUsi}}\",\n        \"amountForFund\": {\n          \"value\": 1.0,\n          \"currency\": \"AUD\"\n        },\n        \"members\": [\n          {\n            \"employeeId\": \"{{employeeId}}\",\n            \"payPeriodStartDate\": {{payPeriodStart}},\n            \"payPeriodEndDate\": {{payPeriodEnd}},\n            \"employmentStatus\": \"FULL_TIME\",\n            \"totalMemberContributionAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            },\n            \"superGuaranteeAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            }\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CON-02 Reject a contribution for an unknown employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CON-02 Reject a contribution for an unknown employee\", function () {",
+                  "  pm.expect([400, 404], \"status \" + pm.response.code).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/contributions/contribution",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "contributions",
+                "contribution"
+              ]
+            },
+            "description": "Expected: 400 or 404. Nothing is submitted.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employerId\": \"{{activeEmployerId}}\",\n  \"contributionDetails\": {\n    \"funds\": [\n      {\n        \"usi\": \"{{activeUsi}}\",\n        \"amountForFund\": {\n          \"value\": 1.0,\n          \"currency\": \"AUD\"\n        },\n        \"members\": [\n          {\n            \"employeeId\": \"000000000000000000000000\",\n            \"payPeriodStartDate\": {{payPeriodStart}},\n            \"payPeriodEndDate\": {{payPeriodEnd}},\n            \"employmentStatus\": \"FULL_TIME\",\n            \"totalMemberContributionAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            },\n            \"superGuaranteeAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            }\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CON-03 Submit a contribution asynchronously",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"idempotencyKey\", \"qualifying-\" + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CON-03 Submit a contribution asynchronously\", function () {",
+                  "  pm.response.to.have.status(202);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.transactionId).to.be.a(\"string\");",
+                  "  pm.collectionVariables.set(\"asyncTransactionId\", b.transactionId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/contributions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "contributions"
+              ]
+            },
+            "description": "Expected: 202. status is ACCEPTED and a transactionId is returned.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employerId\": \"{{activeEmployerId}}\",\n  \"contributionDetails\": {\n    \"funds\": [\n      {\n        \"usi\": \"{{activeUsi}}\",\n        \"amountForFund\": {\n          \"value\": 1.0,\n          \"currency\": \"AUD\"\n        },\n        \"members\": [\n          {\n            \"employeeId\": \"{{employeeId}}\",\n            \"payPeriodStartDate\": {{payPeriodStart}},\n            \"payPeriodEndDate\": {{payPeriodEnd}},\n            \"employmentStatus\": \"FULL_TIME\",\n            \"totalMemberContributionAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            },\n            \"superGuaranteeAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            }\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CON-04 Retry with the same idempotency key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CON-04 Retry with the same idempotency key\", function () {",
+                  "  pm.response.to.have.status(202);",
+                  "  pm.expect(pm.response.json().transactionId).to.eql(pm.collectionVariables.get(\"asyncTransactionId\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/contributions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "contributions"
+              ]
+            },
+            "description": "Expected: 202. Returns the original transactionId. Nothing is submitted twice.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employerId\": \"{{activeEmployerId}}\",\n  \"contributionDetails\": {\n    \"funds\": [\n      {\n        \"usi\": \"{{activeUsi}}\",\n        \"amountForFund\": {\n          \"value\": 1.0,\n          \"currency\": \"AUD\"\n        },\n        \"members\": [\n          {\n            \"employeeId\": \"{{employeeId}}\",\n            \"payPeriodStartDate\": {{payPeriodStart}},\n            \"payPeriodEndDate\": {{payPeriodEnd}},\n            \"employmentStatus\": \"FULL_TIME\",\n            \"totalMemberContributionAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            },\n            \"superGuaranteeAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            }\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CON-05 Reuse the key with a different body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CON-05 Reuse the key with a different body\", function () {",
+                  "  pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/contributions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "contributions"
+              ]
+            },
+            "description": "Expected: 409. Conflict.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employerId\": \"{{activeEmployerId}}\",\n  \"contributionDetails\": {\n    \"funds\": [\n      {\n        \"usi\": \"{{activeUsi}}\",\n        \"amountForFund\": {\n          \"value\": 2.0,\n          \"currency\": \"AUD\"\n        },\n        \"members\": [\n          {\n            \"employeeId\": \"{{employeeId}}\",\n            \"payPeriodStartDate\": {{payPeriodStart}},\n            \"payPeriodEndDate\": {{payPeriodEnd}},\n            \"employmentStatus\": \"FULL_TIME\",\n            \"totalMemberContributionAmount\": {\n              \"value\": 2.0,\n              \"currency\": \"AUD\"\n            },\n            \"superGuaranteeAmount\": {\n              \"value\": 2.0,\n              \"currency\": \"AUD\"\n            }\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CON-06 Missing idempotency key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CON-06 Missing idempotency key\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v2/contributions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "contributions"
+              ]
+            },
+            "description": "Expected: 400. Request is rejected.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employerId\": \"{{activeEmployerId}}\",\n  \"contributionDetails\": {\n    \"funds\": [\n      {\n        \"usi\": \"{{activeUsi}}\",\n        \"amountForFund\": {\n          \"value\": 1.0,\n          \"currency\": \"AUD\"\n        },\n        \"members\": [\n          {\n            \"employeeId\": \"{{employeeId}}\",\n            \"payPeriodStartDate\": {{payPeriodStart}},\n            \"payPeriodEndDate\": {{payPeriodEnd}},\n            \"employmentStatus\": \"FULL_TIME\",\n            \"totalMemberContributionAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            },\n            \"superGuaranteeAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            }\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CON-07 Get the async submission status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CON-07 Get the async submission status\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect([\"ACCEPTED\", \"PROCESSING\", \"SUBMITTED\", \"FAILED\", \"UNDER_REVIEW\"]).to.include(pm.response.json().status);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v2/contributions/{{asyncTransactionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v2",
+                "contributions",
+                "{{asyncTransactionId}}"
+              ]
+            },
+            "description": "Expected: 200. status is a valid submission status."
+          }
+        },
+        {
+          "name": "CON-08 Get contribution history",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CON-08 Get contribution history\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().contributions).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/contributions/submitted/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "contributions",
+                "submitted",
+                "history"
+              ]
+            },
+            "description": "Expected: 200. Returns a contributions array."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment status",
+      "item": [
+        {
+          "name": "PAY-01 Get the payment status of a contribution",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"PAY-01 Get the payment status of a contribution\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/payments/paymentstatus/transaction/{{transactionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "payments",
+                "paymentstatus",
+                "transaction",
+                "{{transactionId}}"
+              ]
+            },
+            "description": "Expected: 200. Returns the payment overview."
+          }
+        },
+        {
+          "name": "PAY-02 Unknown transaction returns not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"PAY-02 Unknown transaction returns not found\", function () {",
+                  "  pm.expect([400, 404], \"status \" + pm.response.code).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/payments/paymentstatus/transaction/txn-00000000-0000-0000-0000-000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "payments",
+                "paymentstatus",
+                "transaction",
+                "txn-00000000-0000-0000-0000-000000000000"
+              ]
+            },
+            "description": "Expected: 400 or 404. Transaction not found."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Self-managed super funds",
+      "item": [
+        {
+          "name": "SMSF-01 Create an employee with an SMSF",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const uniq = Date.now().toString() + Math.floor(Math.random() * 1000);",
+                  "pm.collectionVariables.set(\"uniq\", uniq);",
+                  "function validTfn() {",
+                  "  const w = [1, 4, 3, 7, 5, 8, 6, 9, 10];",
+                  "  while (true) {",
+                  "    const d = Array.from({ length: 8 }, (_, i) => (i === 0 ? 1 + Math.floor(Math.random() * 9) : Math.floor(Math.random() * 10)));",
+                  "    const last = d.reduce((s, x, i) => s + x * w[i], 0) % 11;",
+                  "    if (last < 10) return d.join(\"\") + last;",
+                  "  }",
+                  "}",
+                  "pm.collectionVariables.set(\"employeeEmail\", \"qa.employee.\" + uniq + \"@example.com\");",
+                  "pm.collectionVariables.set(\"employeeTfn\", validTfn());",
+                  "pm.collectionVariables.set(\"memberNumber\", \"QT\" + uniq.slice(-9));",
+                  "pm.collectionVariables.set(\"payrollNumber\", \"EMP-\" + uniq.slice(-9));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"SMSF-01 Create an employee with an SMSF\", function () {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.collectionVariables.set(\"smsfEmployeeId\", pm.response.json().employeeId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees"
+              ]
+            },
+            "description": "Expected: 201. Returns an employeeId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{employeeEmail}}\",\n  \"name\": {\n    \"firstName\": \"Lisa\",\n    \"lastName\": \"Brown\"\n  },\n  \"gender\": \"FEMALE\",\n  \"dob\": {\n    \"year\": 1988,\n    \"month\": \"DECEMBER\",\n    \"day\": 13\n  },\n  \"address\": {\n    \"australianAddress\": {\n      \"line1\": \"640 Gordon Street\",\n      \"line2\": \" \",\n      \"line3\": \" \",\n      \"line4\": \" \",\n      \"suburb\": \"MANLY VALE\",\n      \"postCode\": \"2093\",\n      \"stateOrTerritory\": \"NSW\",\n      \"countryCode\": \"AU\"\n    }\n  },\n  \"taxFileNumber\": \"{{employeeTfn}}\",\n  \"smsf\": {\n    \"organisationName\": \"Test Superannuation Fund\",\n    \"australianBusinessNumber\": \"{{smsfAbn}}\",\n    \"esaAlias\": \"SUPERCHOICE\",\n    \"account\": {\n      \"accountName\": \"Test Superannuation Fund\",\n      \"bsb\": \"923100\",\n      \"accountNumber\": \"62645812\"\n    }\n  },\n  \"memberNumber\": \"{{memberNumber}}\",\n  \"employmentPayrollNumber\": \"{{payrollNumber}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SMSF-02 Reject an employee with both a USI and an SMSF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"SMSF-02 Reject an employee with both a USI and an SMSF\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "employees"
+              ]
+            },
+            "description": "Expected: 400. Employee is not created.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa.employee.both.{{uniq}}@example.com\",\n  \"name\": {\n    \"firstName\": \"Lisa\",\n    \"lastName\": \"Brown\"\n  },\n  \"gender\": \"FEMALE\",\n  \"dob\": {\n    \"year\": 1988,\n    \"month\": \"DECEMBER\",\n    \"day\": 13\n  },\n  \"address\": {\n    \"australianAddress\": {\n      \"line1\": \"640 Gordon Street\",\n      \"line2\": \" \",\n      \"line3\": \" \",\n      \"line4\": \" \",\n      \"suburb\": \"MANLY VALE\",\n      \"postCode\": \"2093\",\n      \"stateOrTerritory\": \"NSW\",\n      \"countryCode\": \"AU\"\n    }\n  },\n  \"taxFileNumber\": \"{{employeeTfn}}\",\n  \"usi\": \"{{activeUsi}}\",\n  \"smsf\": {\n    \"organisationName\": \"Test Superannuation Fund\",\n    \"australianBusinessNumber\": \"{{smsfAbn}}\",\n    \"esaAlias\": \"SUPERCHOICE\",\n    \"account\": {\n      \"accountName\": \"Test Superannuation Fund\",\n      \"bsb\": \"923100\",\n      \"accountNumber\": \"62645812\"\n    }\n  },\n  \"memberNumber\": \"{{memberNumber}}\",\n  \"employmentPayrollNumber\": \"{{payrollNumber}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SMSF-03 Submit a contribution to an SMSF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"SMSF-03 Submit a contribution to an SMSF\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().transactionId).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/contributions/contribution",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "contributions",
+                "contribution"
+              ]
+            },
+            "description": "Expected: 200. Returns a transactionId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employerId\": \"{{activeEmployerId}}\",\n  \"contributionDetails\": {\n    \"funds\": [\n      {\n        \"smsf\": {\n          \"organisationName\": \"Test Superannuation Fund\",\n          \"australianBusinessNumber\": \"{{smsfAbn}}\",\n          \"esaAlias\": \"SUPERCHOICE\",\n          \"account\": {\n            \"accountName\": \"Test Superannuation Fund\",\n            \"bsb\": \"923100\",\n            \"accountNumber\": \"62645812\"\n          }\n        },\n        \"amountForFund\": {\n          \"value\": 1.0,\n          \"currency\": \"AUD\"\n        },\n        \"members\": [\n          {\n            \"employeeId\": \"{{smsfEmployeeId}}\",\n            \"payPeriodStartDate\": {{payPeriodStart}},\n            \"payPeriodEndDate\": {{payPeriodEnd}},\n            \"employmentStatus\": \"FULL_TIME\",\n            \"totalMemberContributionAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            },\n            \"superGuaranteeAmount\": {\n              \"value\": 1.0,\n              \"currency\": \"AUD\"\n            }\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "WHK-01 Register a webhook",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"WHK-01 Register a webhook\", function () {",
+                  "  pm.expect([200, 201], \"status \" + pm.response.code).to.include(pm.response.code);",
+                  "  pm.expect(pm.response.json().webhookSecret).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "webhooks"
+              ]
+            },
+            "description": "Expected: 200 or 201. Returns a webhookSecret.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"{{webhookUrl}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "WHK-02 Reject an invalid webhook URL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"WHK-02 Reject an invalid webhook URL\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "webhooks"
+              ]
+            },
+            "description": "Expected: 400. Webhook is not changed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"not-a-url\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Embedded components",
+      "item": [
+        {
+          "name": "CMP-01 Create a component session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CMP-01 Create a component session\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.token).to.be.a(\"string\");",
+                  "  pm.expect(b.tokenType).to.eql(\"Bearer\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/widget/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "widget",
+                "session"
+              ]
+            },
+            "description": "Expected: 200. Returns a token that expires in 600 seconds."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "activeEmployerId",
+      "value": ""
+    },
+    {
+      "key": "activeUsi",
+      "value": ""
+    },
+    {
+      "key": "newEmployerId",
+      "value": ""
+    },
+    {
+      "key": "discoveredUsi",
+      "value": ""
+    },
+    {
+      "key": "uniq",
+      "value": ""
+    },
+    {
+      "key": "employerEmail",
+      "value": ""
+    },
+    {
+      "key": "employeeEmail",
+      "value": ""
+    },
+    {
+      "key": "employeeTfn",
+      "value": ""
+    },
+    {
+      "key": "memberNumber",
+      "value": ""
+    },
+    {
+      "key": "payrollNumber",
+      "value": ""
+    },
+    {
+      "key": "employeeId",
+      "value": ""
+    },
+    {
+      "key": "mvrEmployeeId",
+      "value": ""
+    },
+    {
+      "key": "mvrTransactionId",
+      "value": ""
+    },
+    {
+      "key": "transactionId",
+      "value": ""
+    },
+    {
+      "key": "asyncTransactionId",
+      "value": ""
+    },
+    {
+      "key": "idempotencyKey",
+      "value": ""
+    },
+    {
+      "key": "smsfEmployeeId",
+      "value": ""
+    },
+    {
+      "key": "payPeriodStart",
+      "value": ""
+    },
+    {
+      "key": "payPeriodEnd",
+      "value": ""
+    }
+  ]
+}

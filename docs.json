@@ -308,7 +308,8 @@
                 "pages": [
                   "super/overview",
                   "super/quickstart",
-                  "super/authentication"
+                  "super/authentication",
+                  "super/test-your-configuration"
                 ]
               },
               {
