@@ -72,6 +72,20 @@
                 ]
               },
               {
+                "group": "ShieldPay",
+                "icon": "shield-check",
+                "pages": [
+                  "shieldpay/overview",
+                  "shieldpay/anomaly-detection",
+                  "shieldpay/smart-rules",
+                  "shieldpay/smart-lists",
+                  "shieldpay/flagged-payouts",
+                  "shieldpay/blocked-payouts",
+                  "shieldpay/statuses-and-webhooks",
+                  "shieldpay/build-notes"
+                ]
+              },
+              {
                 "group": "Invoice and reconcile",
                 "icon": "file-invoice-dollar",
                 "pages": [
