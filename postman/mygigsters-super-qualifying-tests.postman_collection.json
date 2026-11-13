@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "41d8529e-1bce-5e3f-9ab7-6e9bece4f10b",
     "name": "MyGigsters Super: qualifying tests",
-    "description": "Critical test scenarios for each MyGigsters Super API capability. Run the folders in order against the demo (QA) environment. See https://mg-payments-api.mintlify.site/super/test-your-configuration",
+    "description": "Test scenarios for each MyGigsters Super API capability. Starred scenarios are the go-live checks. Run the folders in order against the demo (QA) environment. See https://mg-payments-api.mintlify.site/super/test-your-configuration",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -32,7 +32,12 @@
           "pm.collectionVariables.set(\"activeUsi\", pick(\"fundUsi\", \"discoveredUsi\"));",
           "const now = new Date();",
           "pm.collectionVariables.set(\"payPeriodStart\", Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));",
-          "pm.collectionVariables.set(\"payPeriodEnd\", Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0));"
+          "pm.collectionVariables.set(\"payPeriodEnd\", Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0));",
+          "// suite = \"go-live\" runs only the starred go-live checks. suite = \"all\" runs everything.",
+          "const suite = (pm.environment.get(\"suite\") || \"go-live\").toLowerCase();",
+          "if (suite !== \"all\" && !pm.info.requestName.startsWith(\"\u2605\") && pm.execution && pm.execution.skipRequest) {",
+          "  pm.execution.skipRequest();",
+          "}"
         ]
       }
     }
@@ -42,14 +47,14 @@
       "name": "Authentication",
       "item": [
         {
-          "name": "AUTH-01 Valid API key is accepted",
+          "name": "\u2605 AUTH-01 Valid API key is accepted",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"AUTH-01 Valid API key is accepted\", function () {",
+                  "pm.test(\"\\u2605 AUTH-01 Valid API key is accepted\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  pm.expect(pm.response.json()).to.have.property(\"employees\");",
                   "});"
@@ -74,14 +79,14 @@
           }
         },
         {
-          "name": "AUTH-02 Invalid API key is rejected",
+          "name": "\u2605 AUTH-02 Invalid API key is rejected",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"AUTH-02 Invalid API key is rejected\", function () {",
+                  "pm.test(\"\\u2605 AUTH-02 Invalid API key is rejected\", function () {",
                   "  pm.response.to.have.status(401);",
                   "});"
                 ]
@@ -125,14 +130,14 @@
       "name": "Funds",
       "item": [
         {
-          "name": "FND-01 List active funds",
+          "name": "\u2605 FND-01 List active funds",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"FND-01 List active funds\", function () {",
+                  "pm.test(\"\\u2605 FND-01 List active funds\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  const funds = pm.response.json().funds;",
                   "  pm.expect(funds).to.be.an(\"array\").that.is.not.empty;",
@@ -162,14 +167,14 @@
           }
         },
         {
-          "name": "FND-02 Validate an active fund",
+          "name": "\u2605 FND-02 Validate an active fund",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"FND-02 Validate an active fund\", function () {",
+                  "pm.test(\"\\u2605 FND-02 Validate an active fund\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  const b = pm.response.json();",
                   "  pm.expect(b.success).to.eql(true);",
@@ -313,7 +318,7 @@
       "name": "Employers",
       "item": [
         {
-          "name": "EMPR-01 Onboard an employer",
+          "name": "\u2605 EMPR-01 Onboard an employer",
           "event": [
             {
               "listen": "prerequest",
@@ -331,7 +336,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"EMPR-01 Onboard an employer\", function () {",
+                  "pm.test(\"\\u2605 EMPR-01 Onboard an employer\", function () {",
                   "  pm.response.to.have.status(201);",
                   "  const b = pm.response.json();",
                   "  pm.expect(b.employerId).to.be.a(\"string\");",
@@ -466,14 +471,14 @@
           }
         },
         {
-          "name": "EMPR-04 Get the employer by ID",
+          "name": "\u2605 EMPR-04 Get the employer by ID",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"EMPR-04 Get the employer by ID\", function () {",
+                  "pm.test(\"\\u2605 EMPR-04 Get the employer by ID\", function () {",
                   "  pm.response.to.have.status(200);",
                   "});"
                 ]
@@ -570,7 +575,7 @@
       "name": "Employees",
       "item": [
         {
-          "name": "EMPE-01 Create an employee",
+          "name": "\u2605 EMPE-01 Create an employee",
           "event": [
             {
               "listen": "prerequest",
@@ -599,7 +604,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"EMPE-01 Create an employee\", function () {",
+                  "pm.test(\"\\u2605 EMPE-01 Create an employee\", function () {",
                   "  pm.response.to.have.status(201);",
                   "  const b = pm.response.json();",
                   "  pm.expect(b.employeeId).to.be.a(\"string\");",
@@ -640,14 +645,14 @@
           }
         },
         {
-          "name": "EMPE-02 Reject a duplicate email",
+          "name": "\u2605 EMPE-02 Reject a duplicate email",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"EMPE-02 Reject a duplicate email\", function () {",
+                  "pm.test(\"\\u2605 EMPE-02 Reject a duplicate email\", function () {",
                   "  pm.response.to.have.status(400);",
                   "});"
                 ]
@@ -685,14 +690,14 @@
           }
         },
         {
-          "name": "EMPE-03 Get the employee by ID",
+          "name": "\u2605 EMPE-03 Get the employee by ID",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"EMPE-03 Get the employee by ID\", function () {",
+                  "pm.test(\"\\u2605 EMPE-03 Get the employee by ID\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get(\"employeeEmail\"));",
                   "});"
@@ -875,7 +880,7 @@
       "name": "Member verification",
       "item": [
         {
-          "name": "MVR-01 Create an employee with verification (v2)",
+          "name": "\u2605 MVR-01 Create an employee with verification (v2)",
           "event": [
             {
               "listen": "prerequest",
@@ -904,7 +909,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"MVR-01 Create an employee with verification (v2)\", function () {",
+                  "pm.test(\"\\u2605 MVR-01 Create an employee with verification (v2)\", function () {",
                   "  pm.response.to.have.status(201);",
                   "  const b = pm.response.json();",
                   "  pm.expect([\"NOT_APPLICABLE\", \"PENDING\", \"VERIFIED\", \"WARNING\", \"REJECTED\", \"NOT_SUPPORTED\", \"TIMED_OUT\"]).to.include(b.mvrStatus);",
@@ -992,14 +997,14 @@
           }
         },
         {
-          "name": "MVR-03 Submit a verification request",
+          "name": "\u2605 MVR-03 Submit a verification request",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"MVR-03 Submit a verification request\", function () {",
+                  "pm.test(\"\\u2605 MVR-03 Submit a verification request\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  const b = pm.response.json();",
                   "  pm.expect(b.transactionId).to.be.a(\"string\");",
@@ -1041,14 +1046,14 @@
           }
         },
         {
-          "name": "MVR-04 Get the verification outcome",
+          "name": "\u2605 MVR-04 Get the verification outcome",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"MVR-04 Get the verification outcome\", function () {",
+                  "pm.test(\"\\u2605 MVR-04 Get the verification outcome\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  pm.expect([\"PENDING\", \"VERIFIED\", \"WARNING\", \"REJECTED\", \"TIMED_OUT\"]).to.include(pm.response.json().status);",
                   "});"
@@ -1191,14 +1196,14 @@
       "name": "Contributions",
       "item": [
         {
-          "name": "CON-01 Submit a contribution",
+          "name": "\u2605 CON-01 Submit a contribution",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"CON-01 Submit a contribution\", function () {",
+                  "pm.test(\"\\u2605 CON-01 Submit a contribution\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  const b = pm.response.json();",
                   "  pm.expect(b.success).to.eql(true);",
@@ -1286,7 +1291,7 @@
           }
         },
         {
-          "name": "CON-03 Submit a contribution asynchronously",
+          "name": "\u2605 CON-03 Submit a contribution asynchronously",
           "event": [
             {
               "listen": "prerequest",
@@ -1302,7 +1307,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"CON-03 Submit a contribution asynchronously\", function () {",
+                  "pm.test(\"\\u2605 CON-03 Submit a contribution asynchronously\", function () {",
                   "  pm.response.to.have.status(202);",
                   "  const b = pm.response.json();",
                   "  pm.expect(b.transactionId).to.be.a(\"string\");",
@@ -1347,14 +1352,14 @@
           }
         },
         {
-          "name": "CON-04 Retry with the same idempotency key",
+          "name": "\u2605 CON-04 Retry with the same idempotency key",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"CON-04 Retry with the same idempotency key\", function () {",
+                  "pm.test(\"\\u2605 CON-04 Retry with the same idempotency key\", function () {",
                   "  pm.response.to.have.status(202);",
                   "  pm.expect(pm.response.json().transactionId).to.eql(pm.collectionVariables.get(\"asyncTransactionId\"));",
                   "});"
@@ -1491,14 +1496,14 @@
           }
         },
         {
-          "name": "CON-07 Get the async submission status",
+          "name": "\u2605 CON-07 Get the async submission status",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"CON-07 Get the async submission status\", function () {",
+                  "pm.test(\"\\u2605 CON-07 Get the async submission status\", function () {",
                   "  pm.response.to.have.status(200);",
                   "  pm.expect([\"ACCEPTED\", \"PROCESSING\", \"SUBMITTED\", \"FAILED\", \"UNDER_REVIEW\"]).to.include(pm.response.json().status);",
                   "});"
@@ -1563,14 +1568,14 @@
       "name": "Payment status",
       "item": [
         {
-          "name": "PAY-01 Get the payment status of a contribution",
+          "name": "\u2605 PAY-01 Get the payment status of a contribution",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"PAY-01 Get the payment status of a contribution\", function () {",
+                  "pm.test(\"\\u2605 PAY-01 Get the payment status of a contribution\", function () {",
                   "  pm.response.to.have.status(200);",
                   "});"
                 ]
@@ -1801,14 +1806,14 @@
       "name": "Webhooks",
       "item": [
         {
-          "name": "WHK-01 Register a webhook",
+          "name": "\u2605 WHK-01 Register a webhook",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"WHK-01 Register a webhook\", function () {",
+                  "pm.test(\"\\u2605 WHK-01 Register a webhook\", function () {",
                   "  pm.expect([200, 201], \"status \" + pm.response.code).to.include(pm.response.code);",
                   "  pm.expect(pm.response.json().webhookSecret).to.be.a(\"string\");",
                   "});"
