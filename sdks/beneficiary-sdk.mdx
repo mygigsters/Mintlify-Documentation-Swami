@@ -76,7 +76,7 @@ Add an empty `<div>` with a unique `id` (e.g. `<div id="beneficiary-form"></div>
 
 ### 3. Initialize with Token
 
-Call `GET /api/v1/client/me` on your backend/app using HTTP Basic Auth (`apiKey:apiSecret`) to retrieve your `token` and `myGigsterId`. Then call `.init(config)` passing `token` (from `POST /api/v1/customer`). The SDK authenticates against the MyGigsters backend, then renders the beneficiary form inside the container. API credentials are never passed to the SDK.
+Call `GET /api/v1/client/me` on your backend/app using HTTP Basic Auth (`apiKey:apiSecret`) to retrieve your `token` Then call `.init(config)` passing `token` . The SDK authenticates against the MyGigsters backend, then renders the beneficiary form inside the container. API credentials are never passed to the SDK.
 
 ### 4. Handle Callbacks
 
@@ -108,6 +108,61 @@ After initialization, you can control the form programmatically:
 | `destroy()` | void | Completely remove the form from the DOM and clean up all resources. Call this when navigating away or unmounting. |
 | `setTheme(mode)` | void | Switch the UI theme at runtime. Pass `"light"` or `"dark"`. |
 | `getInstance()` (CDN only) | object | Returns the underlying SDK instance for advanced use (only available when using the CDN/script tag approach). |
+
+## Get Client Info (API)
+
+Before initializing the Card SDK, you need your `myGigsterId` and the customer's `customerId`. Call the `GET /api/v1/client/me` endpoint using your API credentials (HTTP Basic Auth `uuid:randomPasswordShowOnce`) to retrieve your client profile and `myGigsterId`. To obtain the `customerId`, create a customer using the [Customer Create API](/api-reference/customers/customer-create) (`POST /api/v1/customer`).
+
+`GET /api/v1/client/me`
+
+### Request Headers
+
+```http
+Content-Type: application/json
+x-api-version: 1.2
+Authorization: Basic {base64_encoded_combination of uuid:randomPasswordShowOnce}
+```
+
+### cURL Request Example
+
+```bash
+curl --location 'https://qa-payments.mygigsters.com.au/api/v1/client/me' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-version: 1.2' \
+  --header 'Authorization: Basic MGI3YjFiMTctOTJhZC00Yjc4LWFhN2ItNjI2ODBhOWUzOGExOkt1aFNEa3NCVmFXQFNPQyhZQCFh'
+```
+
+### Example Response (200 OK)
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "data": {
+    "id": 1,
+    "myGigsterId": "4407c3ba-10c9-4822-9f51-c2c96692f8d7",
+    "token": "eyJhbGciOiJSUzI1NiIs......",
+    "fullName": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "businessName": "Example Marketplace Pty Ltd",
+    "address": null,
+    "acn": "123456789",
+    "phone": "9876543210"
+  }
+}
+```
+
+### Response Fields for SDK
+
+| Field | Type | Description |
+| :-- | :-- | :-- |
+| `token` (required) | string | JWT Bearer token required by the SDK. Pass this as `token` to `sdk.init()`. |
+| `myGigsterId` (required) | string | Your unique client identifier in MyGigsters. |
+| `fullName` | string | Client full name. |
+| `email` | string | Client registered email address. |
+| `businessName` | string | Registered business name. |
+| `acn` | string | Australian Company Number (if applicable). |
+| `phone` | string | Contact phone number. |
 
 ## Important Notes
 
