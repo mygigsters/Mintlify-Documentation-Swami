@@ -107,7 +107,7 @@ api: "POST https://qa-super.mygigsters.com.au/v1/employers/onboard"
 ```bash cURL
 curl 'https://qa-super.mygigsters.com.au/v1/employers/onboard' -X POST \
     -u "apiUsername:apiPassword"  \
-    -H "Content-Type: application/json" --data '{"companyDetails":{"employerName":"MyGigsters Technologies Pty Ltd","australianBusinessNumber":"34623710896","status":"ACTIVE","contributionsEnabled":true,"employeeServicesEnabled":false,"singleTouchPayrollEnabled":true,"splitMultiEmployerBatch":true,"withholderPayerNumber":"123456789","employerArrangement":"ARR001","location":"SYDNEY","acn":"123456789","website":"https://example.com","registrationIp":"203.0.113.42"},"contactPerson":{"givenName":"Swaminathan","familyName":"Narayanan","emailAddress":"jane.smith@example.com","title":"Mr","otherName":"","mobilePhone":"0452624731","telephone":"0452624731","areaCode":"08","signatoryName":"Swaminathan Narayanan","signatoryPosition":"CPO"},"companyAddress":{"addressType":"POSTAL","addressLine1":"UNIT 6 17 THIRZA AVENUE","addressLine2":"","addressLine3":"","suburb":"MITCHELL PARK","postcode":"5043","state":"SA","country":"Australia"},"directDebitAccount":{"accountName":"MyGigsters Technology Pty Ltd","bsb":"085005","accountNumber":"310895575"},"refundAccount":{"accountName":"MyGigsters Technology Pty Ltd","bsb":"085005","accountNumber":"310895575"},"directDebitAgreement":{"agreedToTerms":true,"agreedAt":"2024-01-15T10:30:00Z"},"legalAgreements":{"termsAndConditions":true,"privacyPolicy":true,"directDebitServiceAgreement":true,"masterServiceAgreement":true},"digitalSignature":"iVBORw0KGgoAAAANSUhEUgAA..."}'
+    -H "Content-Type: application/json" --data '{"companyDetails":{"employerName":"MyGigsters Technologies Pty Ltd","australianBusinessNumber":"34623710896","status":"ACTIVE","contributionsEnabled":true,"employeeServicesEnabled":false,"singleTouchPayrollEnabled":true,"splitMultiEmployerBatch":true,"withholderPayerNumber":"123456789","employerArrangement":"ARR001","location":"SYDNEY","acn":"123456789","website":"https://example.com","registrationIp":"203.0.113.42"},"contactPerson":{"givenName":"Swaminathan","familyName":"Narayanan","emailAddress":"jane.smith@example.com","title":"Mr","otherName":"","mobilePhone":"0400000000","telephone":"0400000000","areaCode":"08","signatoryName":"Swaminathan Narayanan","signatoryPosition":"CPO"},"companyAddress":{"addressType":"POSTAL","addressLine1":"UNIT 6 17 THIRZA AVENUE","addressLine2":"","addressLine3":"","suburb":"MITCHELL PARK","postcode":"5043","state":"SA","country":"Australia"},"directDebitAccount":{"accountName":"MyGigsters Technology Pty Ltd","bsb":"062000","accountNumber":"12345678"},"refundAccount":{"accountName":"MyGigsters Technology Pty Ltd","bsb":"062000","accountNumber":"12345678"},"directDebitAgreement":{"agreedToTerms":true,"agreedAt":"2024-01-15T10:30:00Z"},"legalAgreements":{"termsAndConditions":true,"privacyPolicy":true,"directDebitServiceAgreement":true,"masterServiceAgreement":true},"digitalSignature":"iVBORw0KGgoAAAANSUhEUgAA..."}'
 ```
 
 ```javascript Node.js
@@ -139,8 +139,8 @@ const response = await fetch("https://qa-super.mygigsters.com.au/v1/employers/on
       "emailAddress": "jane.smith@example.com",
       "title": "Mr",
       "otherName": "",
-      "mobilePhone": "0452624731",
-      "telephone": "0452624731",
+      "mobilePhone": "0400000000",
+      "telephone": "0400000000",
       "areaCode": "08",
       "signatoryName": "Swaminathan Narayanan",
       "signatoryPosition": "CPO"
@@ -157,13 +157,13 @@ const response = await fetch("https://qa-super.mygigsters.com.au/v1/employers/on
     },
     "directDebitAccount": {
       "accountName": "MyGigsters Technology Pty Ltd",
-      "bsb": "085005",
-      "accountNumber": "310895575"
+      "bsb": "062000",
+      "accountNumber": "12345678"
     },
     "refundAccount": {
       "accountName": "MyGigsters Technology Pty Ltd",
-      "bsb": "085005",
-      "accountNumber": "310895575"
+      "bsb": "062000",
+      "accountNumber": "12345678"
     },
     "directDebitAgreement": {
       "agreedToTerms": true,
@@ -211,8 +211,8 @@ response = requests.post(
             "emailAddress": "jane.smith@example.com",
             "title": "Mr",
             "otherName": "",
-            "mobilePhone": "0452624731",
-            "telephone": "0452624731",
+            "mobilePhone": "0400000000",
+            "telephone": "0400000000",
             "areaCode": "08",
             "signatoryName": "Swaminathan Narayanan",
             "signatoryPosition": "CPO",
@@ -229,13 +229,13 @@ response = requests.post(
         },
         "directDebitAccount": {
             "accountName": "MyGigsters Technology Pty Ltd",
-            "bsb": "085005",
-            "accountNumber": "310895575",
+            "bsb": "062000",
+            "accountNumber": "12345678",
         },
         "refundAccount": {
             "accountName": "MyGigsters Technology Pty Ltd",
-            "bsb": "085005",
-            "accountNumber": "310895575",
+            "bsb": "062000",
+            "accountNumber": "12345678",
         },
         "directDebitAgreement": {
             "agreedToTerms": True,
@@ -286,8 +286,8 @@ request.body = <<~JSON
       "emailAddress": "jane.smith@example.com",
       "title": "Mr",
       "otherName": "",
-      "mobilePhone": "0452624731",
-      "telephone": "0452624731",
+      "mobilePhone": "0400000000",
+      "telephone": "0400000000",
       "areaCode": "08",
       "signatoryName": "Swaminathan Narayanan",
       "signatoryPosition": "CPO"
@@ -304,13 +304,13 @@ request.body = <<~JSON
     },
     "directDebitAccount": {
       "accountName": "MyGigsters Technology Pty Ltd",
-      "bsb": "085005",
-      "accountNumber": "310895575"
+      "bsb": "062000",
+      "accountNumber": "12345678"
     },
     "refundAccount": {
       "accountName": "MyGigsters Technology Pty Ltd",
-      "bsb": "085005",
-      "accountNumber": "310895575"
+      "bsb": "062000",
+      "accountNumber": "12345678"
     },
     "directDebitAgreement": {
       "agreedToTerms": true,
@@ -368,8 +368,8 @@ curl_setopt_array($ch, [
     "emailAddress": "jane.smith@example.com",
     "title": "Mr",
     "otherName": "",
-    "mobilePhone": "0452624731",
-    "telephone": "0452624731",
+    "mobilePhone": "0400000000",
+    "telephone": "0400000000",
     "areaCode": "08",
     "signatoryName": "Swaminathan Narayanan",
     "signatoryPosition": "CPO"
@@ -386,13 +386,13 @@ curl_setopt_array($ch, [
   },
   "directDebitAccount": {
     "accountName": "MyGigsters Technology Pty Ltd",
-    "bsb": "085005",
-    "accountNumber": "310895575"
+    "bsb": "062000",
+    "accountNumber": "12345678"
   },
   "refundAccount": {
     "accountName": "MyGigsters Technology Pty Ltd",
-    "bsb": "085005",
-    "accountNumber": "310895575"
+    "bsb": "062000",
+    "accountNumber": "12345678"
   },
   "directDebitAgreement": {
     "agreedToTerms": true,
@@ -450,8 +450,8 @@ public class Example {
             "    \"emailAddress\": \"jane.smith@example.com\",",
             "    \"title\": \"Mr\",",
             "    \"otherName\": \"\",",
-            "    \"mobilePhone\": \"0452624731\",",
-            "    \"telephone\": \"0452624731\",",
+            "    \"mobilePhone\": \"0400000000\",",
+            "    \"telephone\": \"0400000000\",",
             "    \"areaCode\": \"08\",",
             "    \"signatoryName\": \"Swaminathan Narayanan\",",
             "    \"signatoryPosition\": \"CPO\"",
@@ -468,13 +468,13 @@ public class Example {
             "  },",
             "  \"directDebitAccount\": {",
             "    \"accountName\": \"MyGigsters Technology Pty Ltd\",",
-            "    \"bsb\": \"085005\",",
-            "    \"accountNumber\": \"310895575\"",
+            "    \"bsb\": \"062000\",",
+            "    \"accountNumber\": \"12345678\"",
             "  },",
             "  \"refundAccount\": {",
             "    \"accountName\": \"MyGigsters Technology Pty Ltd\",",
-            "    \"bsb\": \"085005\",",
-            "    \"accountNumber\": \"310895575\"",
+            "    \"bsb\": \"062000\",",
+            "    \"accountNumber\": \"12345678\"",
             "  },",
             "  \"directDebitAgreement\": {",
             "    \"agreedToTerms\": true,",
@@ -538,8 +538,8 @@ func main() {
     "emailAddress": "jane.smith@example.com",
     "title": "Mr",
     "otherName": "",
-    "mobilePhone": "0452624731",
-    "telephone": "0452624731",
+    "mobilePhone": "0400000000",
+    "telephone": "0400000000",
     "areaCode": "08",
     "signatoryName": "Swaminathan Narayanan",
     "signatoryPosition": "CPO"
@@ -556,13 +556,13 @@ func main() {
   },
   "directDebitAccount": {
     "accountName": "MyGigsters Technology Pty Ltd",
-    "bsb": "085005",
-    "accountNumber": "310895575"
+    "bsb": "062000",
+    "accountNumber": "12345678"
   },
   "refundAccount": {
     "accountName": "MyGigsters Technology Pty Ltd",
-    "bsb": "085005",
-    "accountNumber": "310895575"
+    "bsb": "062000",
+    "accountNumber": "12345678"
   },
   "directDebitAgreement": {
     "agreedToTerms": true,
@@ -626,8 +626,8 @@ request.Content = new StringContent(@"{
     ""emailAddress"": ""jane.smith@example.com"",
     ""title"": ""Mr"",
     ""otherName"": """",
-    ""mobilePhone"": ""0452624731"",
-    ""telephone"": ""0452624731"",
+    ""mobilePhone"": ""0400000000"",
+    ""telephone"": ""0400000000"",
     ""areaCode"": ""08"",
     ""signatoryName"": ""Swaminathan Narayanan"",
     ""signatoryPosition"": ""CPO""
@@ -644,13 +644,13 @@ request.Content = new StringContent(@"{
   },
   ""directDebitAccount"": {
     ""accountName"": ""MyGigsters Technology Pty Ltd"",
-    ""bsb"": ""085005"",
-    ""accountNumber"": ""310895575""
+    ""bsb"": ""062000"",
+    ""accountNumber"": ""12345678""
   },
   ""refundAccount"": {
     ""accountName"": ""MyGigsters Technology Pty Ltd"",
-    ""bsb"": ""085005"",
-    ""accountNumber"": ""310895575""
+    ""bsb"": ""062000"",
+    ""accountNumber"": ""12345678""
   },
   ""directDebitAgreement"": {
     ""agreedToTerms"": true,
