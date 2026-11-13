@@ -174,9 +174,9 @@ The SDK requires `window.crypto.subtle` which is only available over **HTTPS** (
 
 Make sure the target `<div>` exists in the DOM before calling `init()`. In React, call it inside `useEffect`; in Vue, use `mounted()`.
 
-### Invalid API credentials
+### Token is required error
 
-Double-check that `apiKey` and `apiSecret` match the values in your MyGigsters dashboard. The secret is shown only once — if lost, generate a new one.
+Ensure you have called `GET /api/v1/client/me` using your Basic Auth credentials (`apiKey:apiSecret`) to retrieve the `token` before initializing the SDK.
 
 ### Airwallex form doesn't load
 
