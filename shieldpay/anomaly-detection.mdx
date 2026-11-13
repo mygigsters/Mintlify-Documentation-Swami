@@ -1,0 +1,57 @@
+---
+title: "Anomaly detection"
+description: "A machine learning model that flags payouts that don't match your normal behaviour."
+---
+
+<Info>
+  ShieldPay is in development and not yet available. This page describes how it will work.
+</Info>
+
+Anomaly detection is a machine learning model built for payouts. It flags any payout that deviates from your expected behaviour as possible fraud, and it catches individual payouts in real time. You don't need to integrate anything.
+
+## Turn it on
+
+Email [hello@mygigsters.com.au](mailto:hello@mygigsters.com.au) and ask for ShieldPay anomaly detection to be enabled on your account.
+
+## How it works
+
+<Steps>
+  <Step title="It learns what's normal">
+    The model analyses your payout history to find your typical patterns.
+  </Step>
+  <Step title="It spots what's unusual">
+    The model monitors each new payout and flags any that differ significantly from those patterns.
+  </Step>
+  <Step title="You investigate">
+    Review the flagged payout's details, then allow or block it. See [Flagged payouts](/shieldpay/flagged-payouts).
+  </Step>
+</Steps>
+
+## What it looks for
+
+| Signal | Example |
+|---|---|
+| Unusual payout amount | A high-value payout that departs from your past behaviour. |
+| Spike in payout frequency | An unusual number of payouts to one bank account in a short time. |
+| Patterns over time | Cumulative totals across several time windows. For example, payouts rising over 30 days, followed by a much steeper hourly rise within that period. |
+
+The model also blocks payouts to recipients on the ShieldPay risk list. See [block reasons](/shieldpay/blocked-payouts#block-reasons).
+
+## Choose what happens to flagged payouts
+
+By default, a payout the model flags is held until someone reviews it. You can change this in **Risky payouts > Flagged payouts > Configuration**.
+
+| Setting | What happens |
+|---|---|
+| Keep pending for review | The payout is held until someone allows or blocks it. This is the default. |
+| Auto-allow | The payout is allowed automatically, and you're notified. It appears under **Auto-allowed**. |
+
+This setting applies to payouts flagged by the model. Payouts held by a Smart Rule always wait for review.
+
+## Trust a beneficiary
+
+If a beneficiary is genuine, mark them as trusted so the model treats their payouts as legitimate. You can do this from a flagged payout, or in [Smart Lists](/shieldpay/smart-lists#trusted-lists).
+
+## Notifications
+
+Once ShieldPay is on, you receive a daily notification about blocked and flagged payouts by email and SMS. You can also review them in the dashboard at any time.
