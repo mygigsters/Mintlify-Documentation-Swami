@@ -198,8 +198,7 @@ Need your API key? Head to the **Generate API Key** section of the MyGigsters Se
 <!-- 3. Initialize -->
 <script>
   MygigstersBeneficiary.init({
-    apiKey: "your_api_key",
-    apiSecret: "your_secret_key",
+    token: "eyJhbGciOiJSUzI1Ni...", // Pre-fetched token from GET /api/v1/client/me
     env: "demo",
     containerId: "beneficiary-form",
     mode: "light",
@@ -220,8 +219,7 @@ import { MygigstersBeneficiarySDK }
 
 const sdk = new MygigstersBeneficiarySDK();
 await sdk.init({
-  apiKey:      "your_api_key",
-  apiSecret:   "your_api_secret",
+  token: "eyJhbGciOiJSUzI1Ni...", // Pre-fetched token from GET /api/v1/client/me
   env:         "demo",
   containerId: "beneficiary-form",
   mode:        "light",
