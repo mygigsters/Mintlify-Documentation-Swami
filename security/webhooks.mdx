@@ -91,16 +91,26 @@ Every webhook payload has the same outer envelope. The resource that changed is 
 | Field | Type | Description |
 |---|---|---|
 | `code` | string | Unique event identifier, for example `payment_intent.succeeded`. |
-| `event_name` | string | Name of the event that triggered the webhook. |
+| `eventName` | string | Name of the event that triggered the webhook. |
 | `type` | string | The category of the event: `payment`, `payout`, `beneficiary`, or `invoice`. |
 | `description` | string | Brief description of the event. |
 | `data` | object | The resource payload. Its shape depends on the event type. |
+| `eventId` | string | A unique `eventId` for every webhook event |
 
 <Warning>
-  The envelope has no top-level event ID. To match an event to your own records and to detect duplicates:
+  ## Handling Duplicate Webhook Events
 
-  - **Payment intents:** use `data.merchant_order_id`, which matches the `job_id` you passed when creating the intent, and `data.id`, the payment intent ID.
-  - **Payouts and transfers:** use `data.reference` or `data.remarks`, which carries your internal payout or invoice identifier, and `data.id`.
+  MG Payments may deliver the same webhook event multiple times, particularly when the receiving endpoint is temporarily unavailable or does not return a successful HTTP response.
+
+  Your integration should implement idempotent webhook handling to ensure that duplicate deliveries do not result in duplicate transactions or business operations.
+
+  ### Recommended approach: Event ID
+
+  Webhook events include a unique `eventId`.
+
+  Use `eventId` as your primary deduplication identifier.
+
+  Store processed event IDs in your database and check whether an event has already been processed before executing your business logic.
 </Warning>
 
 ## Event catalogue
