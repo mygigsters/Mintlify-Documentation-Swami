@@ -466,5 +466,9 @@
   },
   "metadata": {
     "timestamp": true
+  },
+  "favicon": {
+    "light": "/images/MyGigsters_logo1-DGhS4GTd.png",
+    "dark": "/images/MyGigsters_logo1-DGhS4GTd.png"
   }
 }
