@@ -462,7 +462,8 @@
   ],
   "logo": {
     "light": "/images/Image.jpeg",
-    "dark": "/images/Image.jpeg"
+    "dark": "/images/Image.jpeg",
+    "href": "https://mygigsters.com/"
   },
   "metadata": {
     "timestamp": true
