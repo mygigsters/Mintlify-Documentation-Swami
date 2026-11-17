@@ -24,7 +24,9 @@ Webhooks send your server an HTTP `POST` whenever an event you've subscribed to 
 
 ## Verify the signature
 
-Every webhook request includes an `x-signature-key` header. Compare it with the signature key configured for your webhook, and reject requests where it doesn't match.
+Every webhook request includes an `x-signature-key` header containing an HMAC-SHA256 signature generated using your configured webhook secret key and the request payload.
+
+You must independently generate the signature using your webhook secret key and the **raw request body**, then compare it with the received signature. Reject requests if the signatures do not match.
 
 ```http Request headers
 Content-Type: application/json
@@ -32,9 +34,29 @@ x-signature-key: your-generated-signature-key
 ```
 
 ```javascript Node.js
+const crypto = require("crypto");
+
 const receivedSignature = req.headers["x-signature-key"];
-if (receivedSignature !== process.env.WEBHOOK_SIGNATURE_KEY) {
-  return res.status(401).json({ status: "invalid_signature" });
+
+// Generate the expected HMAC-SHA256 signature
+const expectedSignature = crypto
+  .createHmac("sha256", process.env.WEBHOOK_SIGNATURE_KEY)
+  .update(req.rawBody)
+  .digest("hex");
+
+// Compare signatures securely
+const isValid =
+  typeof receivedSignature === "string" &&
+  receivedSignature.length === expectedSignature.length &&
+  crypto.timingSafeEqual(
+    Buffer.from(receivedSignature, "utf8"),
+    Buffer.from(expectedSignature, "utf8")
+  );
+
+if (!isValid) {
+  return res.status(401).json({
+    status: "invalid_signature"
+  });
 }
 ```
 
